@@ -7,7 +7,8 @@ web/dist
 # Build artifacts
 build/
 bin/
-memos
+# Compiled binary at repository root only (do not use bare "memos" — it ignores cmd/memos/)
+/memos
 
 .DS_Store
 
