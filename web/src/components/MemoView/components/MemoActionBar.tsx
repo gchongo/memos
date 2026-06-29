@@ -8,11 +8,13 @@ import {
 } from "lucide-react";
 import { useCallback, useMemo } from "react";
 import toast from "react-hot-toast";
+import { useLocation } from "react-router-dom";
 import { useComposeDialog } from "@/contexts/ComposeDialogContext";
 import { useInstance } from "@/contexts/InstanceContext";
 import { useUpdateMemo } from "@/hooks/useMemoQueries";
 import { useMemoViewCount } from "@/hooks/useMemoViewCount";
 import useCurrentUser from "@/hooks/useCurrentUser";
+import useNavigateTo from "@/hooks/useNavigateTo";
 import { cn } from "@/lib/utils";
 import { State } from "@/types/proto/api/v1/common_pb";
 import { MemoRelation_Type } from "@/types/proto/api/v1/memo_service_pb";
@@ -44,7 +46,10 @@ const ActionButton = ({ label, count, alwaysShowCount, active, activeClassName, 
   <button
     type="button"
     aria-label={label}
-    onClick={onClick}
+    onClick={(event) => {
+      event.stopPropagation();
+      onClick?.();
+    }}
     className={cn(
       "group/action flex min-w-[36px] max-w-[80px] items-center gap-1 rounded-full p-2 text-muted-foreground transition-colors hover:bg-[var(--x-accent)]/10 hover:text-[var(--x-accent)]",
       active && activeClassName,
@@ -59,11 +64,15 @@ const ActionButton = ({ label, count, alwaysShowCount, active, activeClassName, 
 
 const MemoActionBar = () => {
   const t = useTranslate();
+  const location = useLocation();
+  const navigateTo = useNavigateTo();
   const currentUser = useCurrentUser();
-  const { memo, openCommentEditor } = useMemoViewContext();
+  const { memo, parentPage, openCommentEditor } = useMemoViewContext();
   const { openComposeWithQuote } = useComposeDialog();
   const { memoRelatedSetting } = useInstance();
   const { mutateAsync: updateMemo } = useUpdateMemo();
+
+  const isInMemoDetailPage = location.pathname.startsWith(`/${memo.name}`) || location.pathname.startsWith("/memos/shares/");
 
   const commentCount = computeCommentAmount(memo);
   const likeCount = memo.reactions.length;
@@ -86,8 +95,12 @@ const MemoActionBar = () => {
       toast.error(t("auth.protected-memo-notice"));
       return;
     }
-    openCommentEditor();
-  }, [currentUser, openCommentEditor, t]);
+    if (isInMemoDetailPage) {
+      openCommentEditor();
+      return;
+    }
+    navigateTo(`/${memo.name}#comments`, { state: { from: parentPage } });
+  }, [currentUser, isInMemoDetailPage, memo.name, navigateTo, openCommentEditor, parentPage, t]);
 
   const handleRepost = useCallback(() => {
     if (!currentUser) {

@@ -2,6 +2,7 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import useCurrentUser from "@/hooks/useCurrentUser";
+import useNavigateTo from "@/hooks/useNavigateTo";
 import { useUser } from "@/hooks/useUserQueries";
 import { findTagMetadata } from "@/lib/tag";
 import { cn } from "@/lib/utils";
@@ -11,11 +12,11 @@ import MemoShareImageDialog from "../MemoActionMenu/MemoShareImageDialog";
 import MemoEditor from "../MemoEditor";
 import PreviewImageDialog from "../PreviewImageDialog";
 import UserAvatar from "../UserAvatar";
-import { MemoBody, MemoCommentListView, MemoHeader } from "./components";
+import { MemoBody, MemoHeader } from "./components";
 import MemoActionBar from "./components/MemoActionBar";
 import { MEMO_CARD_BASE_CLASSES } from "./constants";
 import { useImagePreview } from "./hooks";
-import { computeCommentAmount, MemoViewContext } from "./MemoViewContext";
+import { MemoViewContext } from "./MemoViewContext";
 import type { MemoViewProps } from "./types";
 import { useTranslate } from "@/utils/i18n";
 
@@ -57,9 +58,23 @@ const MemoView: React.FC<MemoViewProps> = (props: MemoViewProps) => {
   const openCommentEditor = useCallback(() => setShowCommentEditor(true), []);
   const closeCommentEditor = useCallback(() => setShowCommentEditor(false), []);
 
+  const navigateTo = useNavigateTo();
   const location = useLocation();
   const isInMemoDetailPage = location.pathname.startsWith(`/${memoData.name}`) || location.pathname.startsWith("/memos/shares/");
-  const showCommentPreview = !isInMemoDetailPage && computeCommentAmount(memoData) > 0;
+
+  const handleArticleClick = useCallback(
+    (event: React.MouseEvent<HTMLElement>) => {
+      if (isInMemoDetailPage) {
+        return;
+      }
+      const target = event.target as HTMLElement;
+      if (target.closest("a, button, input, textarea, [contenteditable='true'], [data-no-memo-nav]")) {
+        return;
+      }
+      navigateTo(`/${memoData.name}`, { state: { from: parentPage } });
+    },
+    [isInMemoDetailPage, memoData.name, navigateTo, parentPage],
+  );
 
   useEffect(() => {
     const card = cardRef.current;
@@ -141,9 +156,10 @@ const MemoView: React.FC<MemoViewProps> = (props: MemoViewProps) => {
 
   const article = (
     <article
-      className={cn(MEMO_CARD_BASE_CLASSES, showCommentPreview ? "border-b-0" : "", className)}
+      className={cn(MEMO_CARD_BASE_CLASSES, !isInMemoDetailPage && "cursor-pointer", className)}
       ref={cardRef}
       tabIndex={readonly ? -1 : 0}
+      onClick={handleArticleClick}
     >
       {(showCreator ? creator : currentUser) && (
         <Link
@@ -185,9 +201,9 @@ const MemoView: React.FC<MemoViewProps> = (props: MemoViewProps) => {
 
   return (
     <MemoViewContext.Provider value={contextValue}>
-      <div className={cn("w-full", showCommentPreview ? "border-b border-border" : "")}>
+      <div className="w-full">
         {article}
-        {showCommentEditor && currentUser && (
+        {showCommentEditor && currentUser && isInMemoDetailPage && (
           <div className="border-b border-border px-4 pb-4 pl-[52px]">
             <MemoEditor
               variant="feed"
@@ -200,7 +216,6 @@ const MemoView: React.FC<MemoViewProps> = (props: MemoViewProps) => {
             />
           </div>
         )}
-        {showCommentPreview && <MemoCommentListView />}
       </div>
     </MemoViewContext.Provider>
   );
