@@ -1,4 +1,4 @@
-import type { Location, Memo, Visibility } from "@/types/proto/api/v1/memo_service_pb";
+import type { Location, Memo, MemoRelation, Visibility } from "@/types/proto/api/v1/memo_service_pb";
 import type { AudioRecorderStatus } from "../hooks/useAudioRecorder";
 
 export interface MemoEditorProps {
@@ -18,6 +18,8 @@ export interface MemoEditorProps {
    * in edit mode (when `memo` is set).
    */
   defaultCreateTime?: Date;
+  /** Prefill reference relations when creating a new memo (e.g. quote repost). */
+  defaultRelations?: MemoRelation[];
   onConfirm?: (memoName: string) => void;
   onCancel?: () => void;
 }

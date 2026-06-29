@@ -18,7 +18,10 @@ export interface MemoViewContextValue {
   readonly: boolean;
   showBlurredContent: boolean;
   blurred: boolean;
+  showCommentEditor: boolean;
   openEditor: () => void;
+  openCommentEditor: () => void;
+  closeCommentEditor: () => void;
   toggleBlurVisibility: () => void;
   openPreview: (items: string | string[] | PreviewMediaItem[], index?: number) => void;
 }

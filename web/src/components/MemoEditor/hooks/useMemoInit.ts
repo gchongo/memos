@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
-import type { Memo, Visibility } from "@/types/proto/api/v1/memo_service_pb";
+import type { Memo, MemoRelation, Visibility } from "@/types/proto/api/v1/memo_service_pb";
 import { useTranslate } from "@/utils/i18n";
 import { isLosslessRoundTrip } from "../Editor/markdownCodec";
 import { getPreferredEditorMode } from "../editorMode";
@@ -16,6 +16,7 @@ interface UseMemoInitOptions {
   autoFocus?: boolean;
   defaultVisibility?: Visibility;
   defaultCreateTime?: Date;
+  defaultRelations?: MemoRelation[];
 }
 
 export const useMemoInit = ({
@@ -26,6 +27,7 @@ export const useMemoInit = ({
   autoFocus,
   defaultVisibility,
   defaultCreateTime,
+  defaultRelations,
 }: UseMemoInitOptions) => {
   const t = useTranslate();
   const { actions, dispatch } = useEditorContext();
@@ -62,6 +64,9 @@ export const useMemoInit = ({
       if (defaultCreateTime) {
         dispatch(actions.setTimestamps({ createTime: defaultCreateTime, updateTime: defaultCreateTime }));
       }
+      if (defaultRelations?.length) {
+        dispatch(actions.setMetadata({ relations: defaultRelations }));
+      }
     }
 
     if (autoFocus) {
@@ -69,7 +74,7 @@ export const useMemoInit = ({
     }
 
     setIsInitialized(true);
-  }, [memo, cacheKey, username, autoFocus, defaultVisibility, defaultCreateTime, actions, dispatch, editorRef, t]);
+  }, [memo, cacheKey, username, autoFocus, defaultVisibility, defaultCreateTime, defaultRelations, actions, dispatch, editorRef, t]);
 
   return { isInitialized };
 };

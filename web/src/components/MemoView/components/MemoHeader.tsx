@@ -63,14 +63,18 @@ const MemoHeader: React.FC<MemoHeaderProps> = ({
   return (
     <div className="flex w-full flex-row items-start justify-between gap-2">
       <div className={cn("max-w-[calc(100%-2rem)] grow", variant === "x" ? "min-w-0" : "w-auto")}>
-        {showCreator && creator ? (
-          <CreatorDisplay
-            creator={creator}
-            displayTime={displayTime}
-            timeTooltip={timeTooltip}
-            onGotoDetail={handleGotoMemoDetailPage}
-            variant={variant}
-          />
+        {showCreator ? (
+          creator ? (
+            <CreatorDisplay
+              creator={creator}
+              displayTime={displayTime}
+              timeTooltip={timeTooltip}
+              onGotoDetail={handleGotoMemoDetailPage}
+              variant={variant}
+            />
+          ) : (
+            <div className="h-5 w-40 animate-pulse rounded bg-accent/40" />
+          )
         ) : (
           <TimeDisplay displayTime={displayTime} timeTooltip={timeTooltip} onGotoDetail={handleGotoMemoDetailPage} variant={variant} />
         )}

@@ -1,15 +1,37 @@
+import { create } from "@bufbuild/protobuf";
 import { XIcon } from "lucide-react";
+import { useMemo } from "react";
 import MemoEditor from "@/components/MemoEditor";
 import UserAvatar from "@/components/UserAvatar";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useComposeDialog } from "@/contexts/ComposeDialogContext";
 import useCurrentUser from "@/hooks/useCurrentUser";
+import {
+  MemoRelation_MemoSchema,
+  MemoRelation_Type,
+  MemoRelationSchema,
+} from "@/types/proto/api/v1/memo_service_pb";
 import { useTranslate } from "@/utils/i18n";
 
 const PostComposeDialog = () => {
   const t = useTranslate();
   const currentUser = useCurrentUser();
-  const { open, closeCompose } = useComposeDialog();
+  const { open, quoteTarget, closeCompose } = useComposeDialog();
+
+  const defaultRelations = useMemo(() => {
+    if (!quoteTarget) {
+      return undefined;
+    }
+    return [
+      create(MemoRelationSchema, {
+        type: MemoRelation_Type.REFERENCE,
+        relatedMemo: create(MemoRelation_MemoSchema, {
+          name: quoteTarget.name,
+          snippet: quoteTarget.snippet,
+        }),
+      }),
+    ];
+  }, [quoteTarget]);
 
   if (!currentUser) {
     return null;
@@ -36,10 +58,17 @@ const PostComposeDialog = () => {
         <div className="flex gap-3 px-4 py-3">
           <UserAvatar className="mt-1 shrink-0" avatarUrl={currentUser.avatarUrl} />
           <div className="min-w-0 flex-1">
+            {quoteTarget && (
+              <div className="mb-3 rounded-2xl border border-border bg-card px-3 py-2 text-[15px] text-muted-foreground">
+                {quoteTarget.snippet || quoteTarget.content.slice(0, 120)}
+              </div>
+            )}
             <MemoEditor
+              key={quoteTarget?.name ?? "compose-new"}
               variant="feed"
-              cacheKey="compose-dialog"
-              placeholder={t("layout.post-placeholder")}
+              cacheKey={quoteTarget ? `compose-quote-${quoteTarget.name}` : "compose-dialog"}
+              placeholder={quoteTarget ? t("layout.repost-placeholder") : t("layout.post-placeholder")}
+              defaultRelations={defaultRelations}
               autoFocus
               onConfirm={() => closeCompose()}
               onCancel={closeCompose}

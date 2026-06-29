@@ -8,10 +8,11 @@ import {
 } from "lucide-react";
 import { useCallback, useMemo } from "react";
 import toast from "react-hot-toast";
+import { useComposeDialog } from "@/contexts/ComposeDialogContext";
 import { useInstance } from "@/contexts/InstanceContext";
 import { useUpdateMemo } from "@/hooks/useMemoQueries";
+import { useMemoViewCount } from "@/hooks/useMemoViewCount";
 import useCurrentUser from "@/hooks/useCurrentUser";
-import useNavigateTo from "@/hooks/useNavigateTo";
 import { cn } from "@/lib/utils";
 import { State } from "@/types/proto/api/v1/common_pb";
 import { MemoRelation_Type } from "@/types/proto/api/v1/memo_service_pb";
@@ -32,13 +33,14 @@ const formatCount = (count: number): string => {
 interface ActionButtonProps {
   label: string;
   count?: number;
+  alwaysShowCount?: boolean;
   active?: boolean;
   activeClassName?: string;
   onClick?: () => void;
   children: React.ReactNode;
 }
 
-const ActionButton = ({ label, count, active, activeClassName, onClick, children }: ActionButtonProps) => (
+const ActionButton = ({ label, count, alwaysShowCount, active, activeClassName, onClick, children }: ActionButtonProps) => (
   <button
     type="button"
     aria-label={label}
@@ -49,24 +51,25 @@ const ActionButton = ({ label, count, active, activeClassName, onClick, children
     )}
   >
     {children}
-    {count !== undefined && count > 0 && (
-      <span className={cn("text-[13px] leading-none", active && "text-[var(--x-accent)]")}>{formatCount(count)}</span>
+    {(alwaysShowCount || (count !== undefined && count > 0)) && count !== undefined && (
+      <span className={cn("text-[13px] leading-none", active && "text-[var(--x-accent)]")}>{formatCount(count) || "1"}</span>
     )}
   </button>
 );
 
 const MemoActionBar = () => {
   const t = useTranslate();
-  const navigateTo = useNavigateTo();
   const currentUser = useCurrentUser();
-  const { memo } = useMemoViewContext();
+  const { memo, openCommentEditor } = useMemoViewContext();
+  const { openComposeWithQuote } = useComposeDialog();
   const { memoRelatedSetting } = useInstance();
   const { mutateAsync: updateMemo } = useUpdateMemo();
 
   const commentCount = computeCommentAmount(memo);
   const likeCount = memo.reactions.length;
   const repostCount = memo.relations.filter((relation) => relation.type === MemoRelation_Type.REFERENCE).length;
-  const viewCount = memo.attachments.length > 0 ? memo.attachments.length : 0;
+  const engagementFloor = Math.max(1, commentCount + likeCount);
+  const viewCount = useMemoViewCount(memo.name, engagementFloor);
 
   const defaultReaction = useMemo(() => {
     const reactions = memoRelatedSetting.reactions;
@@ -79,8 +82,20 @@ const MemoActionBar = () => {
   const isOwner = memo.creator === currentUser?.name;
 
   const handleComment = useCallback(() => {
-    navigateTo(`/${memo.name}#comments`);
-  }, [memo.name, navigateTo]);
+    if (!currentUser) {
+      toast.error(t("auth.protected-memo-notice"));
+      return;
+    }
+    openCommentEditor();
+  }, [currentUser, openCommentEditor, t]);
+
+  const handleRepost = useCallback(() => {
+    if (!currentUser) {
+      toast.error(t("auth.protected-memo-notice"));
+      return;
+    }
+    openComposeWithQuote(memo);
+  }, [currentUser, memo, openComposeWithQuote, t]);
 
   const handleLike = useCallback(() => {
     if (!currentUser || isArchived) {
@@ -123,7 +138,7 @@ const MemoActionBar = () => {
         <MessageCircleIcon className="h-[18px] w-[18px]" />
       </ActionButton>
 
-      <ActionButton label={t("layout.action-repost")} count={repostCount}>
+      <ActionButton label={t("layout.action-repost")} count={repostCount} onClick={handleRepost}>
         <Repeat2Icon className="h-[18px] w-[18px]" />
       </ActionButton>
 
@@ -137,7 +152,7 @@ const MemoActionBar = () => {
         <HeartIcon className={cn("h-[18px] w-[18px]", liked && "fill-current")} />
       </ActionButton>
 
-      <ActionButton label={t("layout.action-views")} count={viewCount > 0 ? viewCount : undefined}>
+      <ActionButton label={t("layout.action-views")} count={viewCount} alwaysShowCount>
         <BarChart2Icon className="h-[18px] w-[18px]" />
       </ActionButton>
 

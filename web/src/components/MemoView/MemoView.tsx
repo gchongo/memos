@@ -17,14 +17,16 @@ import { MEMO_CARD_BASE_CLASSES } from "./constants";
 import { useImagePreview } from "./hooks";
 import { computeCommentAmount, MemoViewContext } from "./MemoViewContext";
 import type { MemoViewProps } from "./types";
+import { useTranslate } from "@/utils/i18n";
 
 const MemoView: React.FC<MemoViewProps> = (props: MemoViewProps) => {
+  const t = useTranslate();
   const {
     memo: memoData,
     className,
     parentPage: parentPageProp,
     compact,
-    showCreator,
+    showCreator = true,
     showVisibility,
     showPinned,
     showReactions = false,
@@ -33,6 +35,7 @@ const MemoView: React.FC<MemoViewProps> = (props: MemoViewProps) => {
   } = props;
   const cardRef = useRef<HTMLDivElement>(null);
   const [showEditor, setShowEditor] = useState(false);
+  const [showCommentEditor, setShowCommentEditor] = useState(false);
   const [cardWidth, setCardWidth] = useState(0);
 
   const currentUser = useCurrentUser();
@@ -51,6 +54,8 @@ const MemoView: React.FC<MemoViewProps> = (props: MemoViewProps) => {
 
   const openEditor = useCallback(() => setShowEditor(true), []);
   const closeEditor = useCallback(() => setShowEditor(false), []);
+  const openCommentEditor = useCallback(() => setShowCommentEditor(true), []);
+  const closeCommentEditor = useCallback(() => setShowCommentEditor(false), []);
 
   const location = useLocation();
   const isInMemoDetailPage = location.pathname.startsWith(`/${memoData.name}`) || location.pathname.startsWith("/memos/shares/");
@@ -94,7 +99,10 @@ const MemoView: React.FC<MemoViewProps> = (props: MemoViewProps) => {
       readonly,
       showBlurredContent,
       blurred,
+      showCommentEditor,
       openEditor,
+      openCommentEditor,
+      closeCommentEditor,
       toggleBlurVisibility,
       openPreview,
     }),
@@ -108,7 +116,10 @@ const MemoView: React.FC<MemoViewProps> = (props: MemoViewProps) => {
       readonly,
       showBlurredContent,
       blurred,
+      showCommentEditor,
       openEditor,
+      openCommentEditor,
+      closeCommentEditor,
       toggleBlurVisibility,
       openPreview,
     ],
@@ -174,14 +185,23 @@ const MemoView: React.FC<MemoViewProps> = (props: MemoViewProps) => {
 
   return (
     <MemoViewContext.Provider value={contextValue}>
-      {showCommentPreview ? (
-        <div className="w-full border-b border-border">
-          {article}
-          <MemoCommentListView />
-        </div>
-      ) : (
-        article
-      )}
+      <div className={cn("w-full", showCommentPreview ? "border-b border-border" : "")}>
+        {article}
+        {showCommentEditor && currentUser && (
+          <div className="border-b border-border px-4 pb-4 pl-[52px]">
+            <MemoEditor
+              variant="feed"
+              cacheKey={`${memoData.name}-${memoData.updateTime}-inline-comment`}
+              placeholder={t("editor.add-your-comment-here")}
+              parentMemoName={memoData.name}
+              autoFocus
+              onConfirm={closeCommentEditor}
+              onCancel={closeCommentEditor}
+            />
+          </div>
+        )}
+        {showCommentPreview && <MemoCommentListView />}
+      </div>
     </MemoViewContext.Provider>
   );
 };
