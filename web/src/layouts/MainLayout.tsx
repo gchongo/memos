@@ -9,12 +9,12 @@ import useCurrentUser from "@/hooks/useCurrentUser";
 import { useFilteredMemoStats } from "@/hooks/useFilteredMemoStats";
 import useMediaQuery from "@/hooks/useMediaQuery";
 import { cn } from "@/lib/utils";
-import { Routes } from "@/router";
+import { ROUTES } from "@/router/routes";
 
 const ARCHIVED_ROUTE = "/archived";
 const PROFILE_ROUTE = "/u/:username";
 
-const WIDE_CONTENT_ROUTES = new Set<string>([Routes.SETTING, Routes.SHORTCUTS, Routes.ATTACHMENTS]);
+const WIDE_CONTENT_ROUTES = new Set<string>([ROUTES.SETTING, ROUTES.SHORTCUTS, ROUTES.ATTACHMENTS]);
 
 /** Total width of the centered X column group: nav + feed + sidebar. */
 const X_SHELL_MAX = "max-w-[1265px]";
@@ -28,16 +28,16 @@ const MainLayout = () => {
 
   const isProfilePage = Boolean(matchPath(PROFILE_ROUTE, location.pathname));
   const showMemoExplorer =
-    location.pathname === Routes.HOME ||
-    location.pathname === Routes.EXPLORE ||
+    location.pathname === ROUTES.HOME ||
+    location.pathname === ROUTES.EXPLORE ||
     location.pathname === ARCHIVED_ROUTE ||
     isProfilePage;
 
   const contentWidthClass = WIDE_CONTENT_ROUTES.has(location.pathname) ? "max-w-[920px]" : "max-w-[600px]";
 
   const context: MemoExplorerContext = useMemo(() => {
-    if (location.pathname === Routes.HOME) return "home";
-    if (location.pathname === Routes.EXPLORE) return "explore";
+    if (location.pathname === ROUTES.HOME) return "home";
+    if (location.pathname === ROUTES.EXPLORE) return "explore";
     if (matchPath(ARCHIVED_ROUTE, location.pathname)) return "archived";
     if (matchPath(PROFILE_ROUTE, location.pathname)) return "profile";
     return "home";
