@@ -3,6 +3,9 @@
  * Hover uses `group/media` on {@link MEDIA_HOVER_SURFACE_CLASS} so scale/gradient track the media surface, not the outer button chrome.
  */
 
+export const FEED_VISUAL_TILE_BUTTON_CLASS =
+  "relative block overflow-hidden rounded-2xl p-0 text-left outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring/50";
+
 export const VISUAL_TILE_BUTTON_CLASS =
   "relative block overflow-hidden rounded-xl border border-border/70 bg-muted/30 p-0 text-left outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring/50";
 

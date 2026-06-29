@@ -14,6 +14,7 @@ import { getAttachmentMetadata, isAudioAttachment, separateAttachments } from ".
 import {
   COLLAGE_VIDEO_PLAY_BADGE_CLASS,
   COVER_MEDIA_CLASS,
+  FEED_VISUAL_TILE_BUTTON_CLASS,
   MEDIA_HOVER_GRADIENT_CLASS,
   MEDIA_HOVER_SURFACE_CLASS,
   NATURAL_MEDIA_CLASS,
@@ -75,10 +76,11 @@ const VisualTile = ({
   className,
   onPreview,
   overlayLabel,
+  tileClassName = VISUAL_TILE_BUTTON_CLASS,
   children,
-}: PropsWithChildren<{ className?: string; onPreview?: () => void; overlayLabel?: string }>) => {
+}: PropsWithChildren<{ className?: string; onPreview?: () => void; overlayLabel?: string; tileClassName?: string }>) => {
   return (
-    <div className={cn(VISUAL_TILE_BUTTON_CLASS, className)} onClick={onPreview}>
+    <div className={cn(tileClassName, className)} onClick={onPreview}>
       <div className={MEDIA_HOVER_SURFACE_CLASS}>
         {children}
         <div className={MEDIA_HOVER_GRADIENT_CLASS} aria-hidden />
@@ -104,16 +106,18 @@ const CollageVisualItem = ({
   onPreview,
   className,
   overlayLabel,
+  tileClassName,
 }: {
   item: VisualItem;
   onPreview?: () => void;
   className?: string;
   overlayLabel?: string;
+  tileClassName?: string;
 }) => {
   const motionPreviewProps = item.kind === "motion" ? getMotionPreviewProps(item) : undefined;
 
   return (
-    <VisualTile className={cn("block h-full w-full", className)} onPreview={onPreview} overlayLabel={overlayLabel}>
+    <VisualTile className={cn("block h-full w-full", className)} onPreview={onPreview} overlayLabel={overlayLabel} tileClassName={tileClassName}>
       {item.kind === "video" ? (
         <>
           <VideoPoster sourceUrl={item.sourceUrl} posterUrl={item.posterUrl} alt={item.filename} className={COVER_MEDIA_CLASS} />
@@ -140,12 +144,20 @@ const CollageVisualItem = ({
   );
 };
 
-const SingleVisualItem = ({ item, onPreview }: { item: VisualItem; onPreview?: () => void }) => {
+const SingleVisualItem = ({
+  item,
+  onPreview,
+  tileClassName,
+}: {
+  item: VisualItem;
+  onPreview?: () => void;
+  tileClassName?: string;
+}) => {
   const motionPreviewProps = item.kind === "motion" ? getMotionPreviewProps(item) : undefined;
 
   if (item.kind === "image") {
     return (
-      <VisualTile className="inline-block max-w-full" onPreview={onPreview}>
+      <VisualTile className="inline-block max-w-full" onPreview={onPreview} tileClassName={tileClassName}>
         <img src={item.posterUrl} alt={item.filename} className={NATURAL_MEDIA_CLASS} loading="lazy" decoding="async" />
       </VisualTile>
     );
@@ -153,7 +165,7 @@ const SingleVisualItem = ({ item, onPreview }: { item: VisualItem; onPreview?: (
 
   if (item.kind === "motion" && motionPreviewProps) {
     return (
-      <VisualTile className="inline-block max-w-full" onPreview={onPreview}>
+      <VisualTile className="inline-block max-w-full" onPreview={onPreview} tileClassName={tileClassName}>
         <MotionPhotoPreview
           posterUrl={item.posterUrl}
           motionUrl={motionPreviewProps.motionUrl}
@@ -169,7 +181,7 @@ const SingleVisualItem = ({ item, onPreview }: { item: VisualItem; onPreview?: (
   }
 
   return (
-    <VisualTile className={cn("block", SINGLE_VIDEO_CARD_WIDTH_CLASS)} onPreview={onPreview}>
+    <VisualTile className={cn("block", SINGLE_VIDEO_CARD_WIDTH_CLASS)} onPreview={onPreview} tileClassName={tileClassName}>
       <div className="relative aspect-video bg-black/5">
         <VideoPoster sourceUrl={item.sourceUrl} posterUrl={item.posterUrl} alt={item.filename} className={COVER_MEDIA_CLASS} />
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/35 via-black/5 to-transparent" />
@@ -181,7 +193,15 @@ const SingleVisualItem = ({ item, onPreview }: { item: VisualItem; onPreview?: (
   );
 };
 
-const VisualGallery = ({ items, onPreview }: { items: VisualItem[]; onPreview?: (itemId: string) => void }) => {
+const VisualGallery = ({
+  items,
+  onPreview,
+  tileClassName = FEED_VISUAL_TILE_BUTTON_CLASS,
+}: {
+  items: VisualItem[];
+  onPreview?: (itemId: string) => void;
+  tileClassName?: string;
+}) => {
   const layout = resolveVisualGalleryLayout(items);
 
   if (!layout) {
@@ -191,7 +211,7 @@ const VisualGallery = ({ items, onPreview }: { items: VisualItem[]; onPreview?: 
   if (layout.mode === "single") {
     return (
       <div className="w-full">
-        <SingleVisualItem item={layout.item} onPreview={() => onPreview?.(layout.item.id)} />
+        <SingleVisualItem item={layout.item} onPreview={() => onPreview?.(layout.item.id)} tileClassName={tileClassName} />
       </div>
     );
   }
@@ -205,6 +225,7 @@ const VisualGallery = ({ items, onPreview }: { items: VisualItem[]; onPreview?: 
           className={className}
           overlayLabel={overlayLabel}
           onPreview={() => onPreview?.(item.id)}
+          tileClassName={tileClassName}
         />
       ))}
     </div>
@@ -257,21 +278,21 @@ const AttachmentListView = ({ attachments, onImagePreview }: AttachmentListViewP
   };
 
   return (
-    <MetadataSection
-      icon={PaperclipIcon}
-      title="Attachments"
-      count={visualItems.length + audio.length + docs.length}
-      contentClassName="flex flex-col gap-2 p-2"
-    >
-      {hasMedia && (
-        <div className="flex flex-col gap-2">
-          {hasVisual && <VisualGallery items={visualItems} onPreview={handlePreview} />}
-          {hasAudio && <AudioList attachments={audio.filter(isAudioAttachment)} compact />}
-        </div>
-      )}
+    <div className="flex w-full flex-col gap-2">
+      {hasVisual && <VisualGallery items={visualItems} onPreview={handlePreview} />}
+      {hasAudio && <AudioList attachments={audio.filter(isAudioAttachment)} compact />}
       {hasMedia && hasDocs && <Divider />}
-      {hasDocs && <DocsList attachments={docs} />}
-    </MetadataSection>
+      {hasDocs && (
+        <MetadataSection
+          icon={PaperclipIcon}
+          title="Attachments"
+          count={docs.length}
+          contentClassName="flex flex-col gap-2 p-2"
+        >
+          <DocsList attachments={docs} />
+        </MetadataSection>
+      )}
+    </div>
   );
 };
 
