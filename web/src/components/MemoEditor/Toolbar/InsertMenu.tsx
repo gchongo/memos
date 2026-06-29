@@ -192,12 +192,12 @@ const InsertMenu = (props: InsertMenuProps) => {
   );
 
   const feedIconButtonClass =
-    "flex h-[34px] w-[34px] items-center justify-center rounded-full text-[var(--x-accent)] transition-colors hover:bg-[var(--x-accent)]/10 disabled:opacity-40";
+    "flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-full text-[var(--x-accent)] transition-colors hover:bg-[var(--x-accent)]/10 disabled:opacity-40";
 
   return (
     <>
       {variant === "feed" ? (
-        <div className="flex flex-row flex-wrap items-center gap-0.5">
+        <div className="flex shrink-0 flex-row flex-nowrap items-center gap-0.5">
           {menuItems.map((item) => (
             <button
               key={item.key}

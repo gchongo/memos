@@ -2,6 +2,7 @@ import { create } from "@bufbuild/protobuf";
 import { XIcon } from "lucide-react";
 import { useMemo } from "react";
 import MemoEditor from "@/components/MemoEditor";
+import QuotedMemoCard from "@/components/MemoView/components/QuotedMemoCard";
 import UserAvatar from "@/components/UserAvatar";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useComposeDialog } from "@/contexts/ComposeDialogContext";
@@ -59,9 +60,12 @@ const PostComposeDialog = () => {
           <UserAvatar className="mt-1 shrink-0" avatarUrl={currentUser.avatarUrl} />
           <div className="min-w-0 flex-1">
             {quoteTarget && (
-              <div className="mb-3 rounded-2xl border border-border bg-card px-3 py-2 text-[15px] text-muted-foreground">
-                {quoteTarget.snippet || quoteTarget.content.slice(0, 120)}
-              </div>
+              <QuotedMemoCard
+                className="mb-3"
+                memoName={quoteTarget.name}
+                fallbackSnippet={quoteTarget.snippet}
+                fallbackContent={quoteTarget.content}
+              />
             )}
             <MemoEditor
               key={quoteTarget?.name ?? "compose-new"}

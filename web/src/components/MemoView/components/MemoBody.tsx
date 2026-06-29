@@ -1,12 +1,12 @@
-import { AttachmentListView, LocationDisplayView, RelationListView } from "@/components/MemoMetadata";
+import { AttachmentListView, LocationDisplayView } from "@/components/MemoMetadata";
 import { cn } from "@/lib/utils";
-import { MemoRelation_Type } from "@/types/proto/api/v1/memo_service_pb";
 import { useTranslate } from "@/utils/i18n";
 import MemoContent from "../../MemoContent";
 import { MemoReactionListView } from "../../MemoReactionListView";
 import { useMemoHandlers } from "../hooks";
 import { useMemoViewContext } from "../MemoViewContext";
 import type { MemoBodyProps } from "../types";
+import QuotedMemoList from "./QuotedMemoList";
 
 const BlurOverlay: React.FC<{ onClick?: () => void }> = ({ onClick }) => {
   const t = useTranslate();
@@ -24,8 +24,6 @@ const MemoBody: React.FC<MemoBodyProps> = ({ compact, showReactions = true }) =>
 
   const { handleMemoContentClick, handleMemoContentDoubleClick } = useMemoHandlers({ readonly, openEditor, openPreview });
 
-  const referencedMemos = memo.relations.filter((relation) => relation.type === MemoRelation_Type.REFERENCE);
-
   return (
     <>
       <div
@@ -42,7 +40,7 @@ const MemoBody: React.FC<MemoBodyProps> = ({ compact, showReactions = true }) =>
           compact={memo.pinned ? false : compact} // Always show full content when pinned
         />
         <AttachmentListView attachments={memo.attachments} onImagePreview={openPreview} />
-        <RelationListView relations={referencedMemos} currentMemoName={memo.name} parentPage={parentPage} />
+        <QuotedMemoList relations={memo.relations} currentMemoName={memo.name} parentPage={parentPage} />
         {memo.location && <LocationDisplayView location={memo.location} />}
         {showReactions && <MemoReactionListView memo={memo} reactions={memo.reactions} />}
       </div>
