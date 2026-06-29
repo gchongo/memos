@@ -1,4 +1,5 @@
 import ExploreTrendsWidget from "@/components/ExploreTrendsWidget";
+import FollowSuggestionsWidget from "@/components/FollowSuggestionsWidget";
 import SearchBar from "@/components/SearchBar";
 import XWidgetCard from "@/components/XWidgetCard";
 import { PlusIcon } from "lucide-react";
@@ -6,18 +7,19 @@ import { useNavigate } from "react-router-dom";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import useCurrentUser from "@/hooks/useCurrentUser";
 import { cn } from "@/lib/utils";
-import { ROUTES } from "@/router";
+import { ROUTES } from "@/router/routes";
 import type { StatisticsData } from "@/types/statistics";
 import { useTranslate } from "@/utils/i18n";
 import StatisticsView from "../StatisticsView";
 import ShortcutsSection from "./ShortcutsSection";
 import TagsSection from "./TagsSection";
 
-export type MemoExplorerContext = "home" | "explore" | "archived" | "profile";
+export type MemoExplorerContext = "home" | "explore" | "archived" | "profile" | "inbox";
 
 export interface MemoExplorerFeatures {
   search?: boolean;
   exploreTrends?: boolean;
+  whoToFollow?: boolean;
   statistics?: boolean;
   shortcuts?: boolean;
   tags?: boolean;
@@ -36,10 +38,20 @@ const getDefaultFeatures = (context: MemoExplorerContext): MemoExplorerFeatures 
     case "explore":
       return {
         search: true,
-        exploreTrends: false,
-        statistics: true,
+        exploreTrends: true,
+        whoToFollow: true,
+        statistics: false,
         shortcuts: false,
-        tags: true,
+        tags: false,
+      };
+    case "inbox":
+      return {
+        search: true,
+        exploreTrends: true,
+        whoToFollow: true,
+        statistics: false,
+        shortcuts: false,
+        tags: false,
       };
     case "archived":
       return {
@@ -62,9 +74,10 @@ const getDefaultFeatures = (context: MemoExplorerContext): MemoExplorerFeatures 
       return {
         search: true,
         exploreTrends: true,
+        whoToFollow: true,
         statistics: false,
         shortcuts: false,
-        tags: true,
+        tags: false,
       };
   }
 };
@@ -89,6 +102,8 @@ const MemoExplorer = (props: Props) => {
       )}
 
       {features.exploreTrends && <ExploreTrendsWidget />}
+
+      {features.whoToFollow && <FollowSuggestionsWidget />}
 
       {features.statistics && (
         <XWidgetCard title={t("layout.activity")}>

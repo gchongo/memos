@@ -206,13 +206,14 @@ export function useUpdateUserSetting() {
 }
 
 // Hook to list all users
-export function useListUsers() {
+export function useListUsers(options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: userKeys.all,
     queryFn: async () => {
       const { users } = await userServiceClient.listUsers({});
       return users;
     },
+    enabled: options?.enabled ?? true,
   });
 }
 

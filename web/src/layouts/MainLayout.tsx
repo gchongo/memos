@@ -30,6 +30,7 @@ const MainLayout = () => {
   const showMemoExplorer =
     location.pathname === ROUTES.HOME ||
     location.pathname === ROUTES.EXPLORE ||
+    location.pathname === ROUTES.INBOX ||
     location.pathname === ARCHIVED_ROUTE ||
     isProfilePage;
 
@@ -38,6 +39,7 @@ const MainLayout = () => {
   const context: MemoExplorerContext = useMemo(() => {
     if (location.pathname === ROUTES.HOME) return "home";
     if (location.pathname === ROUTES.EXPLORE) return "explore";
+    if (location.pathname === ROUTES.INBOX) return "inbox";
     if (matchPath(ARCHIVED_ROUTE, location.pathname)) return "archived";
     if (matchPath(PROFILE_ROUTE, location.pathname)) return "profile";
     return "home";

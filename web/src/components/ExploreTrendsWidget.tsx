@@ -7,7 +7,7 @@ import { useUser } from "@/hooks/useUserQueries";
 import useCurrentUser from "@/hooks/useCurrentUser";
 import useNavigateTo from "@/hooks/useNavigateTo";
 import { cn } from "@/lib/utils";
-import { Routes } from "@/router";
+import { ROUTES } from "@/router/routes";
 import { State } from "@/types/proto/api/v1/common_pb";
 import type { Memo } from "@/types/proto/api/v1/memo_service_pb";
 import { Visibility } from "@/types/proto/api/v1/memo_service_pb";
@@ -102,7 +102,7 @@ const ExploreTrendsWidget = () => {
         ))}
       </div>
       <Link
-        to={Routes.EXPLORE}
+        to={ROUTES.EXPLORE}
         className={cn(
           "mt-1 inline-block px-2 py-3 text-[15px] text-[var(--x-accent)] transition-opacity hover:opacity-80",
         )}
