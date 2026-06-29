@@ -1,13 +1,11 @@
 import { Code, ConnectError } from "@connectrpc/connect";
 import { ArrowUpLeftFromCircleIcon } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Link, Navigate, useLocation, useParams } from "react-router-dom";
 import MemoCommentSection from "@/components/MemoCommentSection";
 import { MentionResolutionProvider } from "@/components/MemoContent/MentionResolutionContext";
-import { MemoDetailSidebar, MemoDetailSidebarDrawer } from "@/components/MemoDetailSidebar";
 import MemoView from "@/components/MemoView";
 import MobileBottomNav from "@/components/MobileBottomNav";
-import MobileHeader from "@/components/MobileHeader";
 import { memoNamePrefix } from "@/helpers/resource-names";
 import useMediaQuery from "@/hooks/useMediaQuery";
 import useMemoDetailError from "@/hooks/useMemoDetailError";
@@ -18,16 +16,13 @@ import type { Attachment } from "@/types/proto/api/v1/attachment_service_pb";
 
 const MemoDetail = () => {
   const md = useMediaQuery("md");
-  const [shareImageDialogOpen, setShareImageDialogOpen] = useState(false);
   const params = useParams();
   const location = useLocation();
   const { state: locationState, hash } = location;
 
-  // Detect share mode from the route parameter.
   const shareToken = params.token;
   const isShareMode = !!shareToken;
 
-  // Primary memo fetch — share token or direct name.
   const memoNameFromParams = params.uid ? `${memoNamePrefix}${params.uid}` : "";
   const {
     data: memoFromDirect,
@@ -75,7 +70,6 @@ const MemoDetail = () => {
     return null;
   }
 
-  // In share mode, rewrite attachment URLs to include the share token for unauthenticated access.
   const displayMemo = isShareMode
     ? { ...memo, attachments: withShareAttachmentLinks(memo.attachments as Attachment[], shareToken!) }
     : memo;
@@ -84,23 +78,17 @@ const MemoDetail = () => {
   return (
     <div className="flex min-h-svh w-full justify-center max-md:pb-[calc(53px+env(safe-area-inset-bottom,0px))]">
       <section className="@container flex w-full max-w-[600px] min-h-full flex-col md:border-x md:border-border sm:pt-3 md:pt-6 pb-8">
-        {!md && (
-          <MobileHeader>
-            <MemoDetailSidebarDrawer memo={displayMemo} onShareImageOpen={() => setShareImageDialogOpen(true)} />
-          </MobileHeader>
-        )}
         <MentionResolutionProvider contents={mentionResolutionContents}>
-          <div className={cn("flex w-full flex-row items-start justify-start gap-4")}>
-            <div className="w-full md:w-[calc(100%-15rem)]">
+          <div className="w-full">
             {parentMemo && (
               <div className="mb-2 inline-block w-auto px-4">
                 <Link
-                  className="px-3 py-1 border border-border rounded-lg max-w-xs w-auto text-sm flex flex-row justify-start items-center flex-nowrap text-muted-foreground hover:shadow hover:opacity-80"
+                  className="flex w-auto max-w-xs flex-row flex-nowrap items-center justify-start rounded-lg border border-border px-3 py-1 text-sm text-muted-foreground hover:opacity-80 hover:shadow"
                   to={`/${parentMemo.name}`}
                   state={locationState}
                   viewTransition
                 >
-                  <ArrowUpLeftFromCircleIcon className="w-4 h-auto shrink-0 opacity-60 mr-2" />
+                  <ArrowUpLeftFromCircleIcon className="mr-2 h-4 w-auto shrink-0 opacity-60" />
                   <span className="truncate">{parentMemo.content}</span>
                 </Link>
               </div>
@@ -110,11 +98,8 @@ const MemoDetail = () => {
               memo={displayMemo}
               compact={false}
               parentPage={locationState?.from}
-              shareImageDialogOpen={shareImageDialogOpen}
               showCreator
               showVisibility
-              showPinned
-              onShareImageDialogOpenChange={setShareImageDialogOpen}
             />
             <MemoCommentSection
               memo={displayMemo}
@@ -124,12 +109,6 @@ const MemoDetail = () => {
               isFetchingMoreComments={isFetchingNextComments}
               onLoadMoreComments={fetchNextComments}
             />
-          </div>
-          {md && (
-            <div className="sticky top-0 left-0 shrink-0 -mt-6 w-56 h-full">
-              <MemoDetailSidebar className="py-6" memo={displayMemo} onShareImageOpen={() => setShareImageDialogOpen(true)} />
-            </div>
-          )}
           </div>
         </MentionResolutionProvider>
       </section>

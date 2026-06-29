@@ -37,6 +37,7 @@ const MemoView: React.FC<MemoViewProps> = (props: MemoViewProps) => {
   const cardRef = useRef<HTMLDivElement>(null);
   const [showEditor, setShowEditor] = useState(false);
   const [showCommentEditor, setShowCommentEditor] = useState(false);
+  const [internalShareImageOpen, setInternalShareImageOpen] = useState(false);
   const [cardWidth, setCardWidth] = useState(0);
   const commentEditorRef = useRef<HTMLDivElement>(null);
 
@@ -63,6 +64,18 @@ const MemoView: React.FC<MemoViewProps> = (props: MemoViewProps) => {
     });
   }, []);
   const closeCommentEditor = useCallback(() => setShowCommentEditor(false), []);
+  const shareImageOpen = props.shareImageDialogOpen ?? internalShareImageOpen;
+  const setShareImageOpen = useCallback(
+    (open: boolean) => {
+      if (props.onShareImageDialogOpenChange) {
+        props.onShareImageDialogOpenChange(open);
+      } else {
+        setInternalShareImageOpen(open);
+      }
+    },
+    [props.onShareImageDialogOpenChange],
+  );
+  const openShareImage = useCallback(() => setShareImageOpen(true), [setShareImageOpen]);
 
   const navigateTo = useNavigateTo();
   const location = useLocation();
@@ -126,6 +139,7 @@ const MemoView: React.FC<MemoViewProps> = (props: MemoViewProps) => {
       closeCommentEditor,
       toggleBlurVisibility,
       openPreview,
+      openShareImage,
     }),
     [
       memoData,
@@ -143,6 +157,7 @@ const MemoView: React.FC<MemoViewProps> = (props: MemoViewProps) => {
       closeCommentEditor,
       toggleBlurVisibility,
       openPreview,
+      openShareImage,
     ],
   );
 
@@ -198,9 +213,7 @@ const MemoView: React.FC<MemoViewProps> = (props: MemoViewProps) => {
           initialIndex={previewState.index}
         />
 
-        {props.onShareImageDialogOpenChange && (
-          <MemoShareImageDialog open={Boolean(props.shareImageDialogOpen)} onOpenChange={props.onShareImageDialogOpenChange} />
-        )}
+        <MemoShareImageDialog open={shareImageOpen} onOpenChange={setShareImageOpen} />
       </div>
     </article>
   );

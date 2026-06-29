@@ -40,6 +40,7 @@ const Shortcuts = lazyWithReload(() => import("@/pages/Shortcuts"));
 const SignIn = lazyWithReload(() => import("@/pages/SignIn"));
 const SignUp = lazyWithReload(() => import("@/pages/SignUp"));
 const UserProfile = lazyWithReload(() => import("@/pages/UserProfile"));
+const Users = lazyWithReload(() => import("@/pages/Users"));
 
 // Backward compatibility alias.
 export const Routes = ROUTES;
@@ -95,6 +96,7 @@ export const routeConfig: RouteObject[] = [
                   { path: Routes.SHORTCUTS, element: <Shortcuts /> },
                   { path: Routes.ATTACHMENTS, element: <Attachments /> },
                   { path: Routes.INBOX, element: <Inboxes /> },
+                  { path: Routes.USERS, element: <Users /> },
                   { path: Routes.SETTING, element: <Setting /> },
                 ],
               },

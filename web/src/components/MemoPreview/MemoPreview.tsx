@@ -32,9 +32,13 @@ const STUB_CONTEXT: MemoViewContextValue = {
   readonly: true,
   showBlurredContent: false,
   blurred: false,
+  showCommentEditor: false,
   openEditor: () => {},
+  openCommentEditor: () => {},
+  closeCommentEditor: () => {},
   toggleBlurVisibility: () => {},
   openPreview: () => {},
+  openShareImage: () => {},
 };
 
 const AttachmentThumbnails = ({ attachments }: { attachments: Attachment[] }) => {

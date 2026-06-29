@@ -24,6 +24,7 @@ export interface MemoViewContextValue {
   closeCommentEditor: () => void;
   toggleBlurVisibility: () => void;
   openPreview: (items: string | string[] | PreviewMediaItem[], index?: number) => void;
+  openShareImage: () => void;
 }
 
 export const MemoViewContext = createContext<MemoViewContextValue | null>(null);

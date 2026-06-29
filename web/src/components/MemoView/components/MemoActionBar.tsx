@@ -1,16 +1,13 @@
 import {
   BarChart2Icon,
-  BookmarkIcon,
   HeartIcon,
   MessageCircleIcon,
   Repeat2Icon,
-  ShareIcon,
 } from "lucide-react";
 import { useCallback, useMemo } from "react";
 import toast from "react-hot-toast";
 import { useComposeDialog } from "@/contexts/ComposeDialogContext";
 import { useInstance } from "@/contexts/InstanceContext";
-import { useUpdateMemo } from "@/hooks/useMemoQueries";
 import { useMemoViewCount } from "@/hooks/useMemoViewCount";
 import useCurrentUser from "@/hooks/useCurrentUser";
 import { cn } from "@/lib/utils";
@@ -19,6 +16,7 @@ import { MemoRelation_Type } from "@/types/proto/api/v1/memo_service_pb";
 import { useTranslate } from "@/utils/i18n";
 import { useReactionActions } from "../../MemoReactionListView/hooks";
 import { computeCommentAmount, useMemoViewContext } from "../MemoViewContext";
+import MemoSharePopover from "./MemoSharePopover";
 
 const formatCount = (count: number): string => {
   if (count <= 0) {
@@ -66,7 +64,6 @@ const MemoActionBar = () => {
   const { memo, openCommentEditor } = useMemoViewContext();
   const { openComposeWithQuote } = useComposeDialog();
   const { memoRelatedSetting } = useInstance();
-  const { mutateAsync: updateMemo } = useUpdateMemo();
 
   const commentCount = computeCommentAmount(memo);
   const likeCount = memo.reactions.length;
@@ -82,7 +79,6 @@ const MemoActionBar = () => {
   const { hasReacted, handleReactionClick } = useReactionActions({ memo });
   const liked = hasReacted(defaultReaction);
   const isArchived = memo.state === State.ARCHIVED;
-  const isOwner = memo.creator === currentUser?.name;
 
   const handleComment = useCallback(() => {
     if (!currentUser) {
@@ -106,30 +102,6 @@ const MemoActionBar = () => {
     }
     void handleReactionClick(defaultReaction);
   }, [currentUser, defaultReaction, handleReactionClick, isArchived]);
-
-  const handleBookmark = useCallback(async () => {
-    if (!isOwner || isArchived) {
-      return;
-    }
-    try {
-      await updateMemo({
-        update: { name: memo.name, pinned: !memo.pinned },
-        updateMask: ["pinned"],
-      });
-    } catch {
-      toast.error(t("message.failed-to-embed-memo"));
-    }
-  }, [isArchived, isOwner, memo.name, memo.pinned, t, updateMemo]);
-
-  const handleShare = useCallback(async () => {
-    const url = `${window.location.origin}/${memo.name}`;
-    try {
-      await navigator.clipboard.writeText(url);
-      toast.success(t("message.succeed-copy-link"));
-    } catch {
-      toast.error(t("message.failed-to-embed-memo"));
-    }
-  }, [memo.name, t]);
 
   if (isArchived) {
     return null;
@@ -159,20 +131,7 @@ const MemoActionBar = () => {
         <BarChart2Icon className="h-[18px] w-[18px]" />
       </ActionButton>
 
-      {isOwner && (
-        <ActionButton
-          label={t("layout.action-bookmark")}
-          active={memo.pinned}
-          activeClassName="text-[var(--x-accent)] hover:text-[var(--x-accent)]"
-          onClick={() => void handleBookmark()}
-        >
-          <BookmarkIcon className={cn("h-[18px] w-[18px]", memo.pinned && "fill-current")} />
-        </ActionButton>
-      )}
-
-      <ActionButton label={t("layout.action-share")} onClick={() => void handleShare()}>
-        <ShareIcon className="h-[18px] w-[18px]" />
-      </ActionButton>
+      <MemoSharePopover />
     </div>
   );
 };

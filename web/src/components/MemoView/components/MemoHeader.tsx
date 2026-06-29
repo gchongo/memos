@@ -21,7 +21,6 @@ import type { MemoHeaderProps } from "../types";
 const MemoHeader: React.FC<MemoHeaderProps> = ({
   showCreator,
   showVisibility,
-  showPinned,
   showReactions = true,
   showActions = true,
   variant = "x",
@@ -32,13 +31,14 @@ const MemoHeader: React.FC<MemoHeaderProps> = ({
   const { memo, creator, currentUser, parentPage, isArchived, readonly, openEditor } = useMemoViewContext();
   const { createTime, updateTime, displayTime: memoDisplayTime, isDisplayingUpdatedTime, relativeTimeFormat } = useMemoViewDerived();
   const { newMemoName } = useNewMemo();
+  const isOwner = memo.creator === currentUser?.name;
 
   const navigateTo = useNavigateTo();
   const handleGotoMemoDetailPage = useCallback(() => {
     navigateTo(`/${memo.name}`, { state: { from: parentPage } });
   }, [memo.name, parentPage, navigateTo]);
 
-  const { unpinMemo } = useMemoActions(memo);
+  const { toggleBookmark } = useMemoActions(memo);
 
   const timeValue = isArchived ? (
     memoDisplayTime?.toLocaleString(i18n.language)
@@ -107,16 +107,26 @@ const MemoHeader: React.FC<MemoHeaderProps> = ({
           </Tooltip>
         )}
 
-        {showPinned && memo.pinned && (
+        {variant === "x" && isOwner && !isArchived && (
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <span className="cursor-pointer">
-                  <BookmarkIcon className="w-4 h-auto text-primary" onClick={unpinMemo} />
-                </span>
+                <button
+                  type="button"
+                  className="flex items-center justify-center rounded-md p-0.5 transition-opacity hover:opacity-80"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    void toggleBookmark();
+                  }}
+                  aria-label={memo.pinned ? t("common.unpin") : t("layout.action-bookmark")}
+                >
+                  <BookmarkIcon
+                    className={cn("h-[18px] w-[18px]", memo.pinned ? "fill-current text-[var(--x-accent)]" : "text-muted-foreground")}
+                  />
+                </button>
               </TooltipTrigger>
               <TooltipContent>
-                <p>{t("common.unpin")}</p>
+                <p>{memo.pinned ? t("common.unpin") : t("layout.action-bookmark")}</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
