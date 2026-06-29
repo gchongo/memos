@@ -1,4 +1,5 @@
-name: memos
+# Unique project name — avoids clashing with other Memos stacks on the same host.
+name: memos-gchongo
 
 services:
   memos:
@@ -9,10 +10,10 @@ services:
         VERSION: ${MEMOS_VERSION:-dev}
         COMMIT: ${MEMOS_COMMIT:-local}
     image: gchongo/memos:local
-    container_name: memos
+    # No fixed container_name — Compose assigns memos-gchongo-memos-1 automatically.
     restart: unless-stopped
     ports:
-      - "${MEMOS_PORT:-5230}:5230"
+      - "${MEMOS_PORT:-5231}:5230"
     volumes:
       - ./data:/var/opt/memos
     environment:
