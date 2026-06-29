@@ -93,20 +93,15 @@ export const routeConfig: RouteObject[] = [
                 children: [
                   { path: Routes.ARCHIVED, element: <Archived /> },
                   { path: Routes.SHORTCUTS, element: <Shortcuts /> },
+                  { path: Routes.ATTACHMENTS, element: <Attachments /> },
+                  { path: Routes.INBOX, element: <Inboxes /> },
+                  { path: Routes.SETTING, element: <Setting /> },
                 ],
               },
             ],
           },
           { path: "memos/:uid", element: <MemoDetail /> },
           { path: "memos/shares/:token", element: <MemoDetail /> },
-          {
-            element: <RequireAuthRoute />,
-            children: [
-              { path: Routes.ATTACHMENTS, element: <Attachments /> },
-              { path: Routes.INBOX, element: <Inboxes /> },
-              { path: Routes.SETTING, element: <Setting /> },
-            ],
-          },
           { path: "403", element: <PermissionDenied /> },
           { path: "404", element: <NotFound /> },
           { path: "*", element: <NotFound /> },

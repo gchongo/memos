@@ -14,6 +14,8 @@ import { Routes } from "@/router";
 const ARCHIVED_ROUTE = "/archived";
 const PROFILE_ROUTE = "/u/:username";
 
+const WIDE_CONTENT_ROUTES = new Set<string>([Routes.SETTING, Routes.SHORTCUTS, Routes.ATTACHMENTS]);
+
 /** Total width of the centered X column group: nav + feed + sidebar. */
 const X_SHELL_MAX = "max-w-[1265px]";
 
@@ -23,7 +25,15 @@ const MainLayout = () => {
   const location = useLocation();
   const currentUser = useCurrentUser();
   const [profileUserName, setProfileUserName] = useState<string | undefined>();
-  const showMemoExplorer = location.pathname !== Routes.ABOUT;
+
+  const isProfilePage = Boolean(matchPath(PROFILE_ROUTE, location.pathname));
+  const showMemoExplorer =
+    location.pathname === Routes.HOME ||
+    location.pathname === Routes.EXPLORE ||
+    location.pathname === ARCHIVED_ROUTE ||
+    isProfilePage;
+
+  const contentWidthClass = WIDE_CONTENT_ROUTES.has(location.pathname) ? "max-w-[920px]" : "max-w-[600px]";
 
   const context: MemoExplorerContext = useMemo(() => {
     if (location.pathname === Routes.HOME) return "home";
@@ -75,7 +85,7 @@ const MainLayout = () => {
           {!md && <MobileHeader>{showMemoExplorer && <MemoExplorerDrawer {...memoExplorerProps} />}</MobileHeader>}
 
           <div className="flex w-full min-w-0 flex-1 justify-center xl:justify-start">
-            <div className="w-full min-w-0 max-w-[600px] shrink-0 border-x border-border">
+            <div className={cn("w-full min-w-0 shrink-0 border-x border-border", contentWidthClass)}>
               <Outlet />
             </div>
 

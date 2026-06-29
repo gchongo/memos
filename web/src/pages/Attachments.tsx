@@ -14,14 +14,13 @@ import {
   AttachmentUnusedRows,
 } from "@/components/AttachmentLibrary";
 import ConfirmDialog from "@/components/ConfirmDialog";
-import MobileHeader from "@/components/MobileHeader";
+import FeedHeader from "@/components/FeedHeader";
 import PreviewImageDialog from "@/components/PreviewImageDialog";
 import { Button } from "@/components/ui/button";
 import { attachmentServiceClient } from "@/connect";
 import { type AttachmentLibraryStats, type AttachmentLibraryTab, useAttachmentLibrary } from "@/hooks/useAttachmentLibrary";
 import { useBatchDeleteAttachments } from "@/hooks/useAttachmentQueries";
 import useDialog from "@/hooks/useDialog";
-import useMediaQuery from "@/hooks/useMediaQuery";
 import i18n from "@/i18n";
 import { handleError } from "@/lib/error";
 import { ListAttachmentsRequestSchema } from "@/types/proto/api/v1/attachment_service_pb";
@@ -68,7 +67,6 @@ const listUnusedAttachmentNames = async () => {
 
 const Attachments = () => {
   const t = useTranslate();
-  const md = useMediaQuery("md");
   const deleteUnusedAttachmentsDialog = useDialog();
   const [activeTab, setActiveTab] = useState<AttachmentLibraryTab>("media");
   const [previewState, setPreviewState] = useState({ open: false, initialIndex: 0 });
@@ -156,10 +154,10 @@ const Attachments = () => {
   };
 
   return (
-    <section className="@container w-full min-h-full pb-10 sm:pt-3 md:pt-6">
-      {!md && <MobileHeader />}
+    <div className="min-h-full w-full bg-background pb-8 text-foreground">
+      <FeedHeader title={t("common.attachments")} />
 
-      <div className="mx-auto flex w-full max-w-7xl flex-col gap-5 px-4 sm:gap-6 sm:px-6">
+      <div className="flex w-full flex-col gap-5 px-4 py-4 sm:gap-6">
         <AttachmentLibraryToolbar activeTab={activeTab} onTabChange={setActiveTab} stats={stats} />
 
         {stats.unused > 0 && (
@@ -214,7 +212,7 @@ const Attachments = () => {
         items={mediaPreviewItems}
         initialIndex={previewState.initialIndex}
       />
-    </section>
+    </div>
   );
 };
 

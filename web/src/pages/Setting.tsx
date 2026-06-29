@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
-import MobileHeader from "@/components/MobileHeader";
+import FeedHeader from "@/components/FeedHeader";
 import SectionMenuItem from "@/components/Settings/SectionMenuItem";
 import {
   DEFAULT_SETTING_SECTION,
@@ -77,10 +77,10 @@ const Setting = () => {
     ));
 
   return (
-    <section className="@container w-full max-w-5xl min-h-full flex flex-col justify-start items-start sm:pt-3 md:pt-6 pb-8">
-      {!sm && <MobileHeader />}
-      <div className="w-full px-4 sm:px-6">
-        <div className="w-full border border-border flex flex-row justify-start items-start px-4 py-3 rounded-xl bg-background text-muted-foreground">
+    <div className="min-h-full w-full bg-background text-foreground">
+      <FeedHeader title={t("common.settings")} />
+      <div className="w-full px-4 py-4">
+        <div className="flex w-full flex-row items-start justify-start rounded-2xl border border-border bg-card text-muted-foreground">
           {sm && (
             <div className="flex flex-col justify-start items-start w-40 h-auto shrink-0 py-2">
               <span className="text-sm mt-0.5 pl-3 font-mono select-none text-muted-foreground">{t("common.basic")}</span>
@@ -131,7 +131,7 @@ const Setting = () => {
           </div>
         </div>
       </div>
-    </section>
+    </div>
   );
 };
 
