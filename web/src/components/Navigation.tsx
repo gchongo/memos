@@ -30,10 +30,12 @@ interface NavLinkItem {
 interface Props {
   collapsed?: boolean;
   className?: string;
+  /** Hide the large post button (e.g. mobile drawer — compose lives in bottom nav). */
+  hidePostButton?: boolean;
 }
 
 const Navigation = (props: Props) => {
-  const { collapsed, className } = props;
+  const { collapsed, className, hidePostButton } = props;
   const t = useTranslate();
   const currentUser = useCurrentUser();
   const { openCompose } = useComposeDialog();
@@ -149,7 +151,7 @@ const Navigation = (props: Props) => {
           ))}
         </TooltipProvider>
 
-        {currentUser && !collapsed && (
+        {currentUser && !collapsed && !hidePostButton && (
           <button
             type="button"
             onClick={handlePost}

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { matchPath, Outlet, useLocation } from "react-router-dom";
 import type { MemoExplorerContext } from "@/components/MemoExplorer";
 import { MemoExplorer, MemoExplorerDrawer } from "@/components/MemoExplorer";
+import MobileBottomNav from "@/components/MobileBottomNav";
 import MobileHeader from "@/components/MobileHeader";
 import Navigation from "@/components/Navigation";
 import { userServiceClient } from "@/connect";
@@ -75,7 +76,7 @@ const MainLayout = () => {
   const memoExplorerProps = { context, statisticsData: statistics, tagCount: tags };
 
   return (
-    <div className={cn("flex min-h-svh w-full justify-center bg-background px-3 sm:px-6")}>
+    <div className={cn("flex min-h-svh w-full justify-center bg-background max-md:px-0 md:px-6")}>
       <div className={cn("flex w-full", X_SHELL_MAX)}>
         {md && (
           <aside className="sticky top-0 hidden h-svh w-[275px] shrink-0 flex-col px-2 md:flex">
@@ -83,11 +84,11 @@ const MainLayout = () => {
           </aside>
         )}
 
-        <section className="flex min-w-0 flex-1 flex-col">
+        <section className="flex min-w-0 flex-1 flex-col max-md:pb-[calc(53px+env(safe-area-inset-bottom,0px))]">
           {!md && <MobileHeader>{showMemoExplorer && <MemoExplorerDrawer {...memoExplorerProps} />}</MobileHeader>}
 
           <div className="flex w-full min-w-0 flex-1 justify-center xl:justify-start">
-            <div className={cn("w-full min-w-0 shrink-0 border-x border-border", contentWidthClass)}>
+            <div className={cn("w-full min-w-0 shrink-0 md:border-x md:border-border", contentWidthClass)}>
               <Outlet />
             </div>
 
@@ -99,6 +100,7 @@ const MainLayout = () => {
           </div>
         </section>
       </div>
+      {!md && <MobileBottomNav />}
     </div>
   );
 };

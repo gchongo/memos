@@ -49,7 +49,7 @@ const ActionButton = ({ label, count, alwaysShowCount, active, activeClassName, 
       onClick?.();
     }}
     className={cn(
-      "group/action flex min-w-[36px] max-w-[80px] items-center gap-1 rounded-full p-2 text-muted-foreground transition-colors hover:bg-[var(--x-accent)]/10 hover:text-[var(--x-accent)]",
+      "group/action flex min-w-[36px] max-w-[80px] items-center justify-center gap-1 rounded-full p-2 text-muted-foreground transition-colors hover:bg-[var(--x-accent)]/10 hover:text-[var(--x-accent)] max-md:min-w-0 max-md:max-w-none max-md:flex-1",
       active && activeClassName,
     )}
   >
@@ -136,7 +136,7 @@ const MemoActionBar = () => {
   }
 
   return (
-    <div className="mt-1 flex w-full max-w-[425px] items-center justify-between text-muted-foreground">
+    <div className="mt-1 flex w-full items-center justify-between text-muted-foreground max-md:max-w-none md:max-w-[425px]">
       <ActionButton label={t("layout.action-comment")} count={commentCount} onClick={handleComment}>
         <MessageCircleIcon className="h-[18px] w-[18px]" />
       </ActionButton>

@@ -15,7 +15,7 @@ const FeedComposer = ({ cacheKey, defaultCreateTime }: Props) => {
   }
 
   return (
-    <div id="memo-composer" className="flex gap-3 border-b border-border px-4 py-4">
+    <div id="memo-composer" className="flex gap-3 px-4 py-4 max-md:border-b-0 md:border-b md:border-border">
       <UserAvatar className="mt-1 shrink-0" avatarUrl={currentUser.avatarUrl} />
       <div className="min-w-0 flex-1">
         <MemoEditor

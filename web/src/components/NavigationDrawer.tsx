@@ -29,7 +29,7 @@ const NavigationDrawer = () => {
         <SheetHeader>
           <SheetTitle />
         </SheetHeader>
-        <Navigation className="pb-4" />
+        <Navigation className="pb-4" hidePostButton />
       </SheetContent>
     </Sheet>
   );

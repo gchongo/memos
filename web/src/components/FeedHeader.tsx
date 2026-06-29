@@ -18,7 +18,7 @@ const FeedHeader = ({ activeTab = "latest", onTabChange, title }: Props) => {
   ];
 
   return (
-    <header className="sticky top-0 z-10 border-b border-border bg-background/80 backdrop-blur-md">
+    <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-md max-md:border-b-0 md:border-b md:border-border">
       {title && (
         <div className="flex h-[53px] items-center px-4">
           <h1 className="text-xl font-bold text-foreground">{title}</h1>

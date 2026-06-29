@@ -6,6 +6,7 @@ import MemoCommentSection from "@/components/MemoCommentSection";
 import { MentionResolutionProvider } from "@/components/MemoContent/MentionResolutionContext";
 import { MemoDetailSidebar, MemoDetailSidebarDrawer } from "@/components/MemoDetailSidebar";
 import MemoView from "@/components/MemoView";
+import MobileBottomNav from "@/components/MobileBottomNav";
 import MobileHeader from "@/components/MobileHeader";
 import { memoNamePrefix } from "@/helpers/resource-names";
 import useMediaQuery from "@/hooks/useMediaQuery";
@@ -81,17 +82,18 @@ const MemoDetail = () => {
   const mentionResolutionContents = [displayMemo.content, ...comments.map((comment) => comment.content)];
 
   return (
-    <section className="@container w-full max-w-5xl min-h-full flex flex-col justify-start items-center sm:pt-3 md:pt-6 pb-8">
-      {!md && (
-        <MobileHeader>
-          <MemoDetailSidebarDrawer memo={displayMemo} onShareImageOpen={() => setShareImageDialogOpen(true)} />
-        </MobileHeader>
-      )}
-      <MentionResolutionProvider contents={mentionResolutionContents}>
-        <div className={cn("w-full flex flex-row justify-start items-start px-4 sm:px-6 gap-4")}>
-          <div className={cn("w-full md:w-[calc(100%-15rem)]")}>
+    <div className="flex min-h-svh w-full justify-center max-md:pb-[calc(53px+env(safe-area-inset-bottom,0px))]">
+      <section className="@container flex w-full max-w-[600px] min-h-full flex-col md:border-x md:border-border sm:pt-3 md:pt-6 pb-8">
+        {!md && (
+          <MobileHeader>
+            <MemoDetailSidebarDrawer memo={displayMemo} onShareImageOpen={() => setShareImageDialogOpen(true)} />
+          </MobileHeader>
+        )}
+        <MentionResolutionProvider contents={mentionResolutionContents}>
+          <div className={cn("flex w-full flex-row items-start justify-start gap-4")}>
+            <div className="w-full md:w-[calc(100%-15rem)]">
             {parentMemo && (
-              <div className="w-auto inline-block mb-2">
+              <div className="mb-2 inline-block w-auto px-4">
                 <Link
                   className="px-3 py-1 border border-border rounded-lg max-w-xs w-auto text-sm flex flex-row justify-start items-center flex-nowrap text-muted-foreground hover:shadow hover:opacity-80"
                   to={`/${parentMemo.name}`}
@@ -128,9 +130,11 @@ const MemoDetail = () => {
               <MemoDetailSidebar className="py-6" memo={displayMemo} onShareImageOpen={() => setShareImageDialogOpen(true)} />
             </div>
           )}
-        </div>
-      </MentionResolutionProvider>
-    </section>
+          </div>
+        </MentionResolutionProvider>
+      </section>
+      {!md && <MobileBottomNav />}
+    </div>
   );
 };
 
