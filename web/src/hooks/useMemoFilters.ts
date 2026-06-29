@@ -29,10 +29,12 @@ export interface UseMemoFiltersOptions {
   includeShortcuts?: boolean;
   includePinned?: boolean;
   visibilities?: Visibility[];
+  /** When true, skip active search/tag filters from MemoFilterContext (e.g. explore sidebar). */
+  ignoreContextFilters?: boolean;
 }
 
 export const useMemoFilters = (options: UseMemoFiltersOptions = {}): string | undefined => {
-  const { creatorName, includeShortcuts = false, includePinned = false, visibilities } = options;
+  const { creatorName, includeShortcuts = false, includePinned = false, visibilities, ignoreContextFilters = false } = options;
 
   const { shortcuts } = useAuth();
   const { filters, shortcut: currentShortcut } = useMemoFilterContext();
@@ -61,28 +63,30 @@ export const useMemoFilters = (options: UseMemoFiltersOptions = {}): string | un
     }
 
     // Add active filters from context
-    for (const filter of filters) {
-      if (filter.factor === "contentSearch") {
-        conditions.push(`content.contains(${escapeFilterValue(filter.value)})`);
-      } else if (filter.factor === "tagSearch") {
-        conditions.push(`tag in [${escapeFilterValue(filter.value)}]`);
-      } else if (filter.factor === "pinned") {
-        if (includePinned) {
-          conditions.push(`pinned`);
-        }
-      } else if (filter.factor === "property.hasLink") {
-        conditions.push(`has_link`);
-      } else if (filter.factor === "property.hasTaskList") {
-        conditions.push(`has_task_list`);
-      } else if (filter.factor === "property.hasCode") {
-        conditions.push(`has_code`);
-      } else if (filter.factor === "displayTime") {
-        const filterDate = new Date(filter.value);
-        const filterUtcTimestamp = filterDate.getTime() + filterDate.getTimezoneOffset() * 60 * 1000;
-        const startTimestamp = Math.floor(filterUtcTimestamp / 1000);
-        const endTimestamp = startTimestamp + 60 * 60 * 24;
+    if (!ignoreContextFilters) {
+      for (const filter of filters) {
+        if (filter.factor === "contentSearch") {
+          conditions.push(`content.contains(${escapeFilterValue(filter.value)})`);
+        } else if (filter.factor === "tagSearch") {
+          conditions.push(`tag in [${escapeFilterValue(filter.value)}]`);
+        } else if (filter.factor === "pinned") {
+          if (includePinned) {
+            conditions.push(`pinned`);
+          }
+        } else if (filter.factor === "property.hasLink") {
+          conditions.push(`has_link`);
+        } else if (filter.factor === "property.hasTaskList") {
+          conditions.push(`has_task_list`);
+        } else if (filter.factor === "property.hasCode") {
+          conditions.push(`has_code`);
+        } else if (filter.factor === "displayTime") {
+          const filterDate = new Date(filter.value);
+          const filterUtcTimestamp = filterDate.getTime() + filterDate.getTimezoneOffset() * 60 * 1000;
+          const startTimestamp = Math.floor(filterUtcTimestamp / 1000);
+          const endTimestamp = startTimestamp + 60 * 60 * 24;
 
-        conditions.push(`created_ts >= timestamp(${startTimestamp}) && created_ts < timestamp(${endTimestamp})`);
+          conditions.push(`created_ts >= timestamp(${startTimestamp}) && created_ts < timestamp(${endTimestamp})`);
+        }
       }
     }
 
@@ -93,5 +97,5 @@ export const useMemoFilters = (options: UseMemoFiltersOptions = {}): string | un
     }
 
     return conditions.length > 0 ? conditions.join(" && ") : undefined;
-  }, [creatorName, includeShortcuts, includePinned, visibilities, selectedShortcut, filters]);
+  }, [creatorName, includeShortcuts, includePinned, visibilities, ignoreContextFilters, selectedShortcut, filters]);
 };
