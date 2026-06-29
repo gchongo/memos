@@ -75,7 +75,7 @@ const FollowSuggestionsWidget = () => {
       style={{ width: EXPLORE_SIDEBAR_WIDTH }}
     >
       <div className="-mx-2 -mt-1 min-w-0 overflow-hidden">
-        {isLoading && (
+        {isLoading && visibleSuggestions.length === 0 && suggestions.length === 0 && (
           <div className="space-y-3 px-2 py-2">
             {Array.from({ length: 3 }).map((_, index) => (
               <div key={index} className="flex items-center gap-3">

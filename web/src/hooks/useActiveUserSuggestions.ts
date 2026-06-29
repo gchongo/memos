@@ -21,7 +21,7 @@ export function useActiveUserSuggestions(limit = 3, options?: { enabled?: boolea
     ignoreContextFilters: true,
   });
 
-  const { data, isLoading: memosLoading } = useMemos({
+  const { data, isPending: memosPending } = useMemos({
     state: State.NORMAL,
     orderBy: "display_time desc",
     filter,
@@ -46,7 +46,7 @@ export function useActiveUserSuggestions(limit = 3, options?: { enabled?: boolea
   const creatorNames = useMemo(() => rankedCreators.map(([name]) => name), [rankedCreators]);
   const { data: userMap, isLoading: usersLoading } = useUsersByNames(creatorNames);
 
-  const needsUserListFallback = enabled && !memosLoading && rankedCreators.length < limit;
+  const needsUserListFallback = enabled && !memosPending && rankedCreators.length < limit;
   const { data: allUsers = [], isLoading: listUsersLoading } = useListUsers({
     enabled: needsUserListFallback,
   });
@@ -82,8 +82,13 @@ export function useActiveUserSuggestions(limit = 3, options?: { enabled?: boolea
     return result;
   }, [allUsers, currentUser?.name, limit, rankedCreators, userMap]);
 
+  const isLoading =
+    enabled &&
+    suggestions.length === 0 &&
+    (memosPending || (creatorNames.length > 0 && usersLoading) || (needsUserListFallback && listUsersLoading));
+
   return {
     suggestions,
-    isLoading: enabled && (memosLoading || usersLoading || (needsUserListFallback && listUsersLoading)),
+    isLoading,
   };
 }

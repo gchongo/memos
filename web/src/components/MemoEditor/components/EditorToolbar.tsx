@@ -51,19 +51,31 @@ export const EditorToolbar: FC<EditorToolbarProps> = ({
           <VisibilitySelector compact value={visibility} onChange={handleVisibilityChange} />
         </div>
 
-        <button
-          type="button"
-          onClick={onSave}
-          disabled={!valid || isSaving}
-          className={cn(
-            "ml-3 shrink-0 rounded-full px-4 py-1.5 text-[15px] font-bold transition-colors",
-            valid && !isSaving
-              ? "bg-primary text-primary-foreground hover:opacity-90"
-              : "cursor-default bg-[#787880] text-foreground/50",
+        <div className="flex shrink-0 flex-row items-center gap-2">
+          {onCancel && (
+            <button
+              type="button"
+              onClick={onCancel}
+              disabled={isSaving}
+              className="shrink-0 rounded-full px-3 py-1.5 text-[15px] font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+            >
+              {t("common.cancel")}
+            </button>
           )}
-        >
-          {isSaving ? t("editor.saving") : t("layout.post")}
-        </button>
+          <button
+            type="button"
+            onClick={onSave}
+            disabled={!valid || isSaving}
+            className={cn(
+              "shrink-0 rounded-full px-4 py-1.5 text-[15px] font-bold transition-colors",
+              valid && !isSaving
+                ? "bg-primary text-primary-foreground hover:opacity-90"
+                : "cursor-default bg-[#787880] text-foreground/50",
+            )}
+          >
+            {isSaving ? t("editor.saving") : t("layout.post")}
+          </button>
+        </div>
       </div>
     );
   }

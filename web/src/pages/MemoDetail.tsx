@@ -102,7 +102,6 @@ const MemoDetail = () => {
               showVisibility
             />
             <MemoCommentSection
-              memo={displayMemo}
               comments={comments}
               parentPage={locationState?.from}
               hasMoreComments={hasNextComments}

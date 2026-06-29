@@ -205,20 +205,22 @@ export function useUpdateMemo() {
       });
       return memo;
     },
-    onMutate: async ({ update }) => {
+    onMutate: async ({ update, updateMask }) => {
       if (!update.name) {
         return { previousMemo: undefined };
       }
 
-      // Cancel outgoing refetches to prevent race conditions
-      await queryClient.cancelQueries({ queryKey: memoKeys.all });
+      const isPinOnly = updateMask.length === 1 && updateMask[0] === "pinned";
 
-      // Snapshot previous value for rollback on error
+      // Pin toggles are optimistic-only; canceling all memo queries causes sidebar widgets to flash.
+      if (!isPinOnly) {
+        await queryClient.cancelQueries({ queryKey: memoKeys.all });
+      }
+
       const previousMemo =
         queryClient.getQueryData<Memo>(memoKeys.detail(update.name)) || findMemoInCollectionQueries(queryClient, update.name);
       const memoPatch: MemoPatch = { ...update, name: update.name };
 
-      // Optimistically update the cache
       if (previousMemo) {
         queryClient.setQueryData(memoKeys.detail(update.name), { ...previousMemo, ...memoPatch });
       }
@@ -235,17 +237,18 @@ export function useUpdateMemo() {
         queryClient.invalidateQueries({ queryKey: memoKeys.all });
       }
     },
-    onSuccess: (updatedMemo) => {
-      // Update cache with server response
+    onSuccess: (updatedMemo, { updateMask }) => {
       queryClient.setQueryData(memoKeys.detail(updatedMemo.name), updatedMemo);
       patchMemoInCollectionQueries(queryClient, updatedMemo);
-      // Invalidate lists to refresh
-      queryClient.invalidateQueries({ queryKey: memoKeys.lists() });
-      if (updatedMemo.parent) {
-        queryClient.invalidateQueries({ queryKey: memoKeys.comments(updatedMemo.parent) });
+
+      const isPinOnly = updateMask.length === 1 && updateMask[0] === "pinned";
+      if (!isPinOnly) {
+        queryClient.invalidateQueries({ queryKey: memoKeys.lists() });
+        if (updatedMemo.parent) {
+          queryClient.invalidateQueries({ queryKey: memoKeys.comments(updatedMemo.parent) });
+        }
+        queryClient.invalidateQueries({ queryKey: userKeys.stats() });
       }
-      // Invalidate user stats
-      queryClient.invalidateQueries({ queryKey: userKeys.stats() });
     },
   });
 }

@@ -79,10 +79,10 @@ const Setting = () => {
   return (
     <div className="min-h-full w-full bg-background text-foreground">
       <FeedHeader title={t("common.settings")} />
-      <div className="w-full px-4 py-4">
-        <div className="flex w-full flex-row items-start justify-start rounded-2xl border border-border bg-card text-muted-foreground">
+      <div className="w-full px-4 py-4 sm:px-6 sm:py-6">
+        <div className="flex w-full flex-row items-start justify-start overflow-hidden rounded-2xl border border-border bg-card text-muted-foreground">
           {sm && (
-            <div className="flex flex-col justify-start items-start w-40 h-auto shrink-0 py-2">
+            <div className="flex h-auto w-44 shrink-0 flex-col items-start justify-start border-r border-border/50 py-3 pl-1 pr-2">
               <span className="text-sm mt-0.5 pl-3 font-mono select-none text-muted-foreground">{t("common.basic")}</span>
               <div className="w-full flex flex-col justify-start items-start mt-1">{renderSectionMenuItems(sectionGroups.basic)}</div>
               {isHost && (
@@ -110,9 +110,9 @@ const Setting = () => {
               )}
             </div>
           )}
-          <div className="w-full grow sm:pl-4 overflow-x-auto">
+          <div className="w-full min-w-0 grow overflow-x-auto p-4 sm:p-6">
             {!sm && (
-              <div className="w-auto inline-block my-2">
+              <div className="mb-4 inline-block w-auto">
                 <Select value={selectedSection} onValueChange={(value) => handleSectionSelectorItemClick(value as SettingSectionKey)}>
                   <SelectTrigger className="w-[180px]">
                     <SelectValue placeholder={t("setting.select-section")} />
