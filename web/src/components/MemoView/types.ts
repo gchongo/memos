@@ -6,6 +6,10 @@ export interface MemoViewProps {
   showCreator?: boolean;
   showVisibility?: boolean;
   showPinned?: boolean;
+  /** Hide reaction picker and reaction list (e.g. compact sidebar embed). */
+  showReactions?: boolean;
+  /** Hide the action menu in the header (e.g. compact sidebar embed). */
+  showActions?: boolean;
   className?: string;
   parentPage?: string;
   shareImageDialogOpen?: boolean;
@@ -16,9 +20,12 @@ export interface MemoHeaderProps {
   showCreator?: boolean;
   showVisibility?: boolean;
   showPinned?: boolean;
+  showReactions?: boolean;
+  showActions?: boolean;
   variant?: "default" | "x";
 }
 
 export interface MemoBodyProps {
   compact?: boolean;
+  showReactions?: boolean;
 }

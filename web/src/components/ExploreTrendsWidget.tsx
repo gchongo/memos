@@ -6,9 +6,13 @@ import { useView } from "@/contexts/ViewContext";
 import { useMemoFilters, useMemoSorting } from "@/hooks";
 import { useMemos } from "@/hooks/useMemoQueries";
 import useCurrentUser from "@/hooks/useCurrentUser";
+import { cn } from "@/lib/utils";
 import { State } from "@/types/proto/api/v1/common_pb";
 import { Visibility } from "@/types/proto/api/v1/memo_service_pb";
 import { useTranslate } from "@/utils/i18n";
+
+/** Matches the right sidebar column width in MainLayout (350px aside minus pl-6). */
+export const EXPLORE_SIDEBAR_WIDTH = 326;
 
 const SIDEBAR_MEMO_COUNT = 8;
 
@@ -40,8 +44,12 @@ const ExploreTrendsWidget = () => {
   const memos = useMemo(() => listSort(data?.memos ?? []), [data?.memos, listSort]);
 
   return (
-    <XWidgetCard title={t("layout.whats-happening")} className="py-0">
-      <div className="-mx-4">
+    <XWidgetCard
+      title={t("layout.whats-happening")}
+      className={cn("box-border w-full max-w-full shrink-0 overflow-hidden py-0")}
+      style={{ width: EXPLORE_SIDEBAR_WIDTH }}
+    >
+      <div className="-mx-4 min-w-0 overflow-hidden">
         {isLoading && (
           <div className="space-y-0">
             {Array.from({ length: 3 }).map((_, index) => (
@@ -51,7 +59,17 @@ const ExploreTrendsWidget = () => {
         )}
         {!isLoading && memos.length === 0 && <Placeholder variant="empty" message={t("message.no-data")} />}
         {memos.map((memo) => (
-          <MemoView key={memo.name} memo={memo} showCreator showVisibility compact={compactMode} parentPage="/explore" />
+          <MemoView
+            key={memo.name}
+            memo={memo}
+            showCreator
+            showVisibility
+            showReactions={false}
+            showActions={false}
+            compact={compactMode}
+            parentPage="/explore"
+            className="min-w-0 overflow-hidden"
+          />
         ))}
       </div>
     </XWidgetCard>

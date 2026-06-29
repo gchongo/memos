@@ -6,10 +6,11 @@ interface Props {
   children: ReactNode;
   className?: string;
   action?: ReactNode;
+  style?: React.CSSProperties;
 }
 
-const XWidgetCard = ({ title, children, className, action }: Props) => (
-  <div className={cn("mb-4 overflow-hidden rounded-2xl bg-card", className)}>
+const XWidgetCard = ({ title, children, className, action, style }: Props) => (
+  <div className={cn("mb-4 overflow-hidden rounded-2xl bg-card", className)} style={style}>
     {(title || action) && (
       <div className="flex items-center justify-between px-4 pt-3">
         {title && <h2 className="text-xl font-extrabold text-foreground">{title}</h2>}

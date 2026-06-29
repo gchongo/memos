@@ -18,7 +18,14 @@ import { useMemoActions } from "../hooks";
 import { useMemoViewContext, useMemoViewDerived } from "../MemoViewContext";
 import type { MemoHeaderProps } from "../types";
 
-const MemoHeader: React.FC<MemoHeaderProps> = ({ showCreator, showVisibility, showPinned, variant = "x" }) => {
+const MemoHeader: React.FC<MemoHeaderProps> = ({
+  showCreator,
+  showVisibility,
+  showPinned,
+  showReactions = true,
+  showActions = true,
+  variant = "x",
+}) => {
   const t = useTranslate();
   const [reactionSelectorOpen, setReactionSelectorOpen] = useState(false);
 
@@ -74,8 +81,8 @@ const MemoHeader: React.FC<MemoHeaderProps> = ({ showCreator, showVisibility, sh
         )}
       </div>
 
-      <div className="flex flex-row justify-end items-center select-none shrink-0 gap-2">
-        {currentUser && !isArchived && (
+      <div className="flex shrink-0 flex-row items-center justify-end gap-2 select-none">
+        {showReactions && currentUser && !isArchived && (
           <ReactionSelector
             className={cn("border-none w-auto h-auto", reactionSelectorOpen && "block!", "block sm:hidden sm:group-hover:block")}
             memo={memo}
@@ -111,7 +118,7 @@ const MemoHeader: React.FC<MemoHeaderProps> = ({ showCreator, showVisibility, sh
           </TooltipProvider>
         )}
 
-        <MemoActionMenu memo={memo} readonly={readonly} onEdit={openEditor} />
+        {showActions && <MemoActionMenu memo={memo} readonly={readonly} onEdit={openEditor} />}
       </div>
     </div>
   );

@@ -92,7 +92,7 @@ const MainLayout = () => {
             </div>
 
             {xl && showMemoExplorer && (
-              <aside className="sticky top-0 hidden h-svh w-[350px] shrink-0 overflow-y-auto pl-6 pt-2 xl:block">
+              <aside className="sticky top-0 hidden h-svh w-[350px] min-w-[350px] max-w-[350px] shrink-0 overflow-x-hidden overflow-y-auto pl-6 pt-2 xl:block">
                 <MemoExplorer {...memoExplorerProps} />
               </aside>
             )}
