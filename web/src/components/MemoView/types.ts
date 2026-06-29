@@ -6,10 +6,12 @@ export interface MemoViewProps {
   showCreator?: boolean;
   showVisibility?: boolean;
   showPinned?: boolean;
-  /** Hide reaction picker and reaction list (e.g. compact sidebar embed). */
+  /** Hide reaction picker, action menu, and X action bar (e.g. compact sidebar embed). */
   showReactions?: boolean;
   /** Hide the action menu in the header (e.g. compact sidebar embed). */
   showActions?: boolean;
+  /** Show X-style comment/like/share action bar under the memo body. */
+  showActionBar?: boolean;
   className?: string;
   parentPage?: string;
   shareImageDialogOpen?: boolean;

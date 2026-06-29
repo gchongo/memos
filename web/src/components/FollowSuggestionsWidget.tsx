@@ -2,7 +2,8 @@ import { Link } from "react-router-dom";
 import XWidgetCard from "@/components/XWidgetCard";
 import UserAvatar from "@/components/UserAvatar";
 import { Button } from "@/components/ui/button";
-import { useListUsers } from "@/hooks/useUserQueries";
+import { useActiveUserSuggestions } from "@/hooks/useActiveUserSuggestions";
+import { useFollowedUsers } from "@/hooks/useFollowedUsers";
 import useCurrentUser from "@/hooks/useCurrentUser";
 import useNavigateTo from "@/hooks/useNavigateTo";
 import { cn } from "@/lib/utils";
@@ -14,12 +15,15 @@ const MAX_SUGGESTIONS = 3;
 
 interface SuggestionRowProps {
   user: User;
+  memoCount: number;
 }
 
-const SuggestionRow = ({ user }: SuggestionRowProps) => {
+const SuggestionRow = ({ user, memoCount }: SuggestionRowProps) => {
   const t = useTranslate();
   const navigateTo = useNavigateTo();
+  const { isFollowing, toggleFollow } = useFollowedUsers();
   const profilePath = `/u/${user.username}`;
+  const following = isFollowing(user.username);
 
   return (
     <div className="flex items-center gap-3 rounded-lg px-2 py-3 transition-colors hover:bg-accent/50">
@@ -28,15 +32,24 @@ const SuggestionRow = ({ user }: SuggestionRowProps) => {
       </button>
       <button type="button" className="min-w-0 flex-1 text-left" onClick={() => navigateTo(profilePath)}>
         <div className="truncate text-[15px] font-bold leading-5 text-foreground">{user.displayName || user.username}</div>
-        <div className="truncate text-[15px] leading-5 text-muted-foreground">@{user.username}</div>
+        <div className="truncate text-[15px] leading-5 text-muted-foreground">
+          @{user.username}
+          {memoCount > 0 && ` · ${t("layout.active-memo-count", { count: memoCount })}`}
+        </div>
       </button>
       <Button
         type="button"
         size="sm"
-        className="h-8 shrink-0 rounded-full bg-foreground px-4 text-[14px] font-bold text-background hover:bg-foreground/90"
-        onClick={() => navigateTo(profilePath)}
+        variant={following ? "outline" : "default"}
+        className={cn(
+          "h-8 shrink-0 rounded-full px-4 text-[14px] font-bold",
+          following
+            ? "border-border bg-transparent text-foreground hover:bg-accent"
+            : "bg-foreground text-background hover:bg-foreground/90",
+        )}
+        onClick={() => toggleFollow(user.username)}
       >
-        {t("layout.follow")}
+        {following ? t("layout.following") : t("layout.follow")}
       </Button>
     </div>
   );
@@ -45,9 +58,10 @@ const SuggestionRow = ({ user }: SuggestionRowProps) => {
 const FollowSuggestionsWidget = () => {
   const t = useTranslate();
   const currentUser = useCurrentUser();
-  const { data: users = [], isLoading } = useListUsers({ enabled: !!currentUser });
+  const { suggestions, isLoading } = useActiveUserSuggestions(MAX_SUGGESTIONS, { enabled: !!currentUser });
+  const { isFollowing } = useFollowedUsers();
 
-  const suggestions = users.filter((user) => user.name !== currentUser?.name && user.username).slice(0, MAX_SUGGESTIONS);
+  const visibleSuggestions = suggestions.filter((item) => !isFollowing(item.user.username));
 
   if (!currentUser) {
     return null;
@@ -69,14 +83,14 @@ const FollowSuggestionsWidget = () => {
             ))}
           </div>
         )}
-        {!isLoading && suggestions.length === 0 && (
-          <p className="px-2 py-2 text-[15px] text-muted-foreground">{t("message.no-data")}</p>
+        {!isLoading && visibleSuggestions.length === 0 && (
+          <p className="px-2 py-2 text-[15px] text-muted-foreground">{t("layout.no-follow-suggestions")}</p>
         )}
-        {suggestions.map((user) => (
-          <SuggestionRow key={user.name} user={user} />
+        {visibleSuggestions.map(({ user, memoCount }) => (
+          <SuggestionRow key={user.name} user={user} memoCount={memoCount} />
         ))}
       </div>
-      {users.length > MAX_SUGGESTIONS && (
+      {!isLoading && suggestions.length > 0 && (
         <Link
           to={ROUTES.EXPLORE}
           className={cn("mt-1 inline-block px-2 py-3 text-[15px] text-[var(--x-accent)] transition-opacity hover:opacity-80")}

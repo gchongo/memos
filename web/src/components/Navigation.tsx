@@ -11,10 +11,10 @@ import {
 import { NavLink, useLocation } from "react-router-dom";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import useCurrentUser from "@/hooks/useCurrentUser";
-import useNavigateTo from "@/hooks/useNavigateTo";
 import { useNotifications } from "@/hooks/useUserQueries";
 import { cn } from "@/lib/utils";
-import { Routes } from "@/router";
+import { ROUTES } from "@/router/routes";
+import { useComposeDialog } from "@/contexts/ComposeDialogContext";
 import { UserNotification_Status } from "@/types/proto/api/v1/user_service_pb";
 import { useTranslate } from "@/utils/i18n";
 import MemosLogo from "./MemosLogo";
@@ -36,32 +36,32 @@ const Navigation = (props: Props) => {
   const { collapsed, className } = props;
   const t = useTranslate();
   const currentUser = useCurrentUser();
-  const navigateTo = useNavigateTo();
+  const { openCompose } = useComposeDialog();
   const location = useLocation();
   const { data: notifications = [] } = useNotifications();
 
   const homeNavLink: NavLinkItem = {
     id: "header-memos",
-    path: Routes.HOME,
+    path: ROUTES.HOME,
     title: t("common.home"),
-    icon: <HomeIcon className="h-[26px] w-[26px] shrink-0" strokeWidth={location.pathname === Routes.HOME ? 2.5 : 2} />,
+    icon: <HomeIcon className="h-[26px] w-[26px] shrink-0" strokeWidth={location.pathname === ROUTES.HOME ? 2.5 : 2} />,
   };
   const exploreNavLink: NavLinkItem = {
     id: "header-explore",
-    path: Routes.EXPLORE,
+    path: ROUTES.EXPLORE,
     title: t("common.explore"),
     icon: <EarthIcon className="h-[26px] w-[26px] shrink-0" />,
   };
   const attachmentsNavLink: NavLinkItem = {
     id: "header-attachments",
-    path: Routes.ATTACHMENTS,
+    path: ROUTES.ATTACHMENTS,
     title: t("common.attachments"),
     icon: <PaperclipIcon className="h-[26px] w-[26px] shrink-0" />,
   };
   const unreadCount = notifications.filter((n) => n.status === UserNotification_Status.UNREAD).length;
   const inboxNavLink: NavLinkItem = {
     id: "header-inbox",
-    path: Routes.INBOX,
+    path: ROUTES.INBOX,
     title: t("common.inbox"),
     icon: (
       <div className="relative">
@@ -76,25 +76,25 @@ const Navigation = (props: Props) => {
   };
   const bookmarksNavLink: NavLinkItem = {
     id: "header-shortcuts",
-    path: Routes.SHORTCUTS,
+    path: ROUTES.SHORTCUTS,
     title: t("common.shortcuts"),
     icon: <BookmarkIcon className="h-[26px] w-[26px] shrink-0" />,
   };
   const settingsNavLink: NavLinkItem = {
     id: "header-settings",
-    path: Routes.SETTING,
+    path: ROUTES.SETTING,
     title: t("common.settings"),
     icon: <SettingsIcon className="h-[26px] w-[26px] shrink-0" />,
   };
   const aboutNavLink: NavLinkItem = {
     id: "header-about",
-    path: Routes.ABOUT,
+    path: ROUTES.ABOUT,
     title: t("common.about"),
     icon: <InfoIcon className="h-[26px] w-[26px] shrink-0" />,
   };
   const signInNavLink: NavLinkItem = {
     id: "header-auth",
-    path: Routes.AUTH,
+    path: ROUTES.AUTH,
     title: t("common.sign-in"),
     icon: <UserCircleIcon className="h-[26px] w-[26px] shrink-0" />,
   };
@@ -105,18 +105,13 @@ const Navigation = (props: Props) => {
   const inboxAriaLabel = unreadCount > 0 ? `${t("common.inbox")}, ${unreadCount} unread` : t("common.inbox");
 
   const handlePost = () => {
-    navigateTo(Routes.HOME);
-    window.setTimeout(() => {
-      document.getElementById("memo-composer")?.scrollIntoView({ behavior: "smooth", block: "center" });
-      const editor = document.querySelector<HTMLElement>("#memo-composer [contenteditable='true'], #memo-composer textarea");
-      editor?.focus();
-    }, 150);
+    openCompose();
   };
 
   return (
     <header className={cn("flex h-full w-full flex-col justify-between overflow-auto py-1", className)}>
       <div className="flex w-full flex-col items-start gap-1 overflow-auto overflow-x-hidden">
-        <NavLink className="mb-1 cursor-default rounded-full p-3 transition-colors hover:bg-accent" to={currentUser ? Routes.HOME : Routes.EXPLORE}>
+        <NavLink className="mb-1 cursor-default rounded-full p-3 transition-colors hover:bg-accent" to={currentUser ? ROUTES.HOME : ROUTES.EXPLORE}>
           <MemosLogo collapsed={collapsed ?? false} />
         </NavLink>
         <TooltipProvider>
@@ -130,7 +125,7 @@ const Navigation = (props: Props) => {
               }
               key={navLink.id}
               to={navLink.path}
-              end={navLink.path === Routes.HOME}
+              end={navLink.path === ROUTES.HOME}
               id={navLink.id}
               aria-label={navLink.id === "header-inbox" ? inboxAriaLabel : undefined}
               viewTransition

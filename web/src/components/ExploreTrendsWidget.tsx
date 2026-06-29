@@ -66,6 +66,7 @@ const ExploreTrendsWidget = () => {
             showVisibility
             showReactions={false}
             showActions={false}
+            showActionBar={false}
             compact={compactMode}
             parentPage="/explore"
             className="min-w-0 overflow-hidden"

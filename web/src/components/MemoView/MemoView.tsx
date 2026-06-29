@@ -12,6 +12,7 @@ import MemoEditor from "../MemoEditor";
 import PreviewImageDialog from "../PreviewImageDialog";
 import UserAvatar from "../UserAvatar";
 import { MemoBody, MemoCommentListView, MemoHeader } from "./components";
+import MemoActionBar from "./components/MemoActionBar";
 import { MEMO_CARD_BASE_CLASSES } from "./constants";
 import { useImagePreview } from "./hooks";
 import { computeCommentAmount, MemoViewContext } from "./MemoViewContext";
@@ -26,8 +27,9 @@ const MemoView: React.FC<MemoViewProps> = (props: MemoViewProps) => {
     showCreator,
     showVisibility,
     showPinned,
-    showReactions = true,
+    showReactions = false,
     showActions = true,
+    showActionBar = true,
   } = props;
   const cardRef = useRef<HTMLDivElement>(null);
   const [showEditor, setShowEditor] = useState(false);
@@ -153,6 +155,8 @@ const MemoView: React.FC<MemoViewProps> = (props: MemoViewProps) => {
         />
 
         <MemoBody compact={compact} showReactions={showReactions} />
+
+        {showActionBar && <MemoActionBar />}
 
         <PreviewImageDialog
           open={previewState.open}

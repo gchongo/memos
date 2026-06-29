@@ -4,7 +4,6 @@ import MemoView from "@/components/MemoView";
 import PagedMemoList from "@/components/PagedMemoList";
 import { useMemoFilterContext } from "@/contexts/MemoFilterContext";
 import { useInstance } from "@/contexts/InstanceContext";
-import { NewMemoProvider } from "@/contexts/NewMemoContext";
 import { useView } from "@/contexts/ViewContext";
 import { useMemoFilters, useMemoSorting } from "@/hooks";
 import useCurrentUser from "@/hooks/useCurrentUser";
@@ -40,8 +39,7 @@ const Home = () => {
   return (
     <div className="min-h-full w-full bg-background text-foreground">
       <FeedHeader activeTab={feedTab} onTabChange={setFeedTab} />
-      <NewMemoProvider>
-        <PagedMemoList
+      <PagedMemoList
           renderer={(memo: Memo) => (
             <MemoView key={`${memo.name}-${memo.updateTime}`} memo={memo} showVisibility showPinned compact={compactMode} />
           )}
@@ -50,8 +48,7 @@ const Home = () => {
           filter={memoFilter}
           enabled={isInitialized}
           showMemoEditor
-        />
-      </NewMemoProvider>
+      />
     </div>
   );
 };
