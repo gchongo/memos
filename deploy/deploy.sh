@@ -39,7 +39,7 @@ export MEMOS_COMMIT="$(git rev-parse --short HEAD)"
 export MEMOS_VERSION="$(git describe --tags --always 2>/dev/null || echo dev)"
 
 echo ">> Building and starting Memos (commit: $MEMOS_COMMIT)"
-docker compose up -d --build
+docker compose -f compose.memos.yaml -p memos up -d --build
 
 echo ""
 echo "Memos deployed."
@@ -48,6 +48,6 @@ echo "  Data      : $INSTALL_DIR/data"
 echo "  URL       : http://<your-server-ip>:${MEMOS_PORT:-5230}"
 echo ""
 echo "Useful commands:"
-echo "  docker compose -f $INSTALL_DIR/docker-compose.yml logs -f"
-echo "  docker compose -f $INSTALL_DIR/docker-compose.yml restart"
-echo "  docker compose -f $INSTALL_DIR/docker-compose.yml down"
+echo "  docker compose -f $INSTALL_DIR/compose.memos.yaml -p memos logs -f"
+echo "  docker compose -f $INSTALL_DIR/compose.memos.yaml -p memos restart"
+echo "  docker compose -f $INSTALL_DIR/compose.memos.yaml -p memos down"

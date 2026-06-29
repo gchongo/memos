@@ -17,6 +17,3 @@ services:
       - ./data:/var/opt/memos
     environment:
       TZ: ${TZ:-Asia/Shanghai}
-      # Uncomment to use PostgreSQL or MySQL instead of SQLite:
-      # MEMOS_DRIVER: postgres
-      # MEMOS_DSN: postgresql://user:password@postgres:5432/memos?sslmode=disable
