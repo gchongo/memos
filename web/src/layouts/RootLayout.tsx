@@ -1,5 +1,8 @@
 import { useEffect, useRef } from "react";
 import { Outlet, useLocation, useSearchParams } from "react-router-dom";
+import PostComposeDialog from "@/components/PostComposeDialog";
+import { ComposeDialogProvider } from "@/contexts/ComposeDialogContext";
+import { NewMemoProvider } from "@/contexts/NewMemoContext";
 import { useInstance } from "@/contexts/InstanceContext";
 import { useMemoFilterContext } from "@/contexts/MemoFilterContext";
 import { cn } from "@/lib/utils";
@@ -42,10 +45,15 @@ const RootLayout = () => {
   }, [pathname, searchParams, removeFilter]);
 
   return (
-    <div className={cn("flex min-h-svh w-full flex-col bg-background")}>
-      {profile.demo && <DemoBanner />}
-      <Outlet />
-    </div>
+    <ComposeDialogProvider>
+      <NewMemoProvider>
+        <div className={cn("flex min-h-svh w-full flex-col bg-background")}>
+          {profile.demo && <DemoBanner />}
+          <Outlet />
+        </div>
+        <PostComposeDialog />
+      </NewMemoProvider>
+    </ComposeDialogProvider>
   );
 };
 
