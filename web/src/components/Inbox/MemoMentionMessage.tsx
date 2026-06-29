@@ -1,13 +1,12 @@
-import { create } from "@bufbuild/protobuf";
-import { FieldMaskSchema, timestampDate } from "@bufbuild/protobuf/wkt";
-import { AtSignIcon, CheckIcon, MessageSquareIcon, TrashIcon, XIcon } from "lucide-react";
-import toast from "react-hot-toast";
+import { timestampDate } from "@bufbuild/protobuf/wkt";
+import { AtSignIcon, CheckIcon, MessageSquareIcon, TrashIcon } from "lucide-react";
 import UserAvatar from "@/components/UserAvatar";
-import { userServiceClient } from "@/connect";
 import useNavigateTo from "@/hooks/useNavigateTo";
 import { cn } from "@/lib/utils";
 import { UserNotification, UserNotification_Status } from "@/types/proto/api/v1/user_service_pb";
 import { useTranslate } from "@/utils/i18n";
+import InboxUnavailableMessage from "./InboxUnavailableMessage";
+import { useInboxNotificationActions } from "./useInboxNotificationActions";
 
 interface Props {
   notification: UserNotification;
@@ -19,45 +18,15 @@ function MemoMentionMessage({ notification }: Props) {
   const mentionPayload = notification.payload?.case === "memoMention" ? notification.payload.value : undefined;
   const sender = notification.senderUser;
 
-  const handleArchiveMessage = async (silence = false) => {
-    await userServiceClient.updateUserNotification({
-      notification: {
-        name: notification.name,
-        status: UserNotification_Status.ARCHIVED,
-      },
-      updateMask: create(FieldMaskSchema, { paths: ["status"] }),
-    });
-    if (!silence) {
-      toast.success(t("message.archived-successfully"));
-    }
-  };
-
-  const handleDeleteMessage = async () => {
-    await userServiceClient.deleteUserNotification({
-      name: notification.name,
-    });
-    toast.success(t("message.deleted-successfully"));
-  };
+  const { handleArchiveMessage, handleDeleteMessage } = useInboxNotificationActions(notification);
 
   if (!mentionPayload) {
     return (
-      <div className="w-full px-5 py-4 border-b border-border/60 last:border-b-0 bg-destructive/[0.04] group">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-destructive/15 flex items-center justify-center shrink-0 ring-1 ring-destructive/20">
-              <XIcon className="w-5 h-5 text-destructive" strokeWidth={2} />
-            </div>
-            <span className="text-sm text-destructive/80 font-medium">{t("inbox.failed-to-load")}</span>
-          </div>
-          <button
-            onClick={handleDeleteMessage}
-            className="p-1.5 hover:bg-destructive/15 rounded-lg transition-all duration-150 opacity-0 group-hover:opacity-100"
-            title={t("common.delete")}
-          >
-            <TrashIcon className="w-4 h-4 text-destructive/70 hover:text-destructive transition-colors" strokeWidth={2} />
-          </button>
-        </div>
-      </div>
+      <InboxUnavailableMessage
+        notification={notification}
+        icon={AtSignIcon}
+        summary={t("inbox.mention-unavailable-summary")}
+      />
     );
   }
 

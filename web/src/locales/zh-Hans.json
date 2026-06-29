@@ -242,7 +242,10 @@
     "wysiwyg-editor": "所见即所得编辑器"
   },
   "inbox": {
+    "comment-unavailable-summary": "评论了您的帖子",
+    "content-unavailable": "相关内容已删除或您暂无访问权限，可删除此通知。",
     "failed-to-load": "加载失败",
+    "mention-unavailable-summary": "提到了您",
     "memo-comment": "{{user}} 评论了您的“{{memo}}”。",
     "no-archived": "无已归档通知",
     "no-unread": "无未读通知",
