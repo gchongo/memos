@@ -38,6 +38,7 @@ const MemoView: React.FC<MemoViewProps> = (props: MemoViewProps) => {
   const [showEditor, setShowEditor] = useState(false);
   const [showCommentEditor, setShowCommentEditor] = useState(false);
   const [cardWidth, setCardWidth] = useState(0);
+  const commentEditorRef = useRef<HTMLDivElement>(null);
 
   const currentUser = useCurrentUser();
   const { userTagsSetting } = useAuth();
@@ -55,7 +56,12 @@ const MemoView: React.FC<MemoViewProps> = (props: MemoViewProps) => {
 
   const openEditor = useCallback(() => setShowEditor(true), []);
   const closeEditor = useCallback(() => setShowEditor(false), []);
-  const openCommentEditor = useCallback(() => setShowCommentEditor(true), []);
+  const openCommentEditor = useCallback(() => {
+    setShowCommentEditor(true);
+    window.requestAnimationFrame(() => {
+      commentEditorRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    });
+  }, []);
   const closeCommentEditor = useCallback(() => setShowCommentEditor(false), []);
 
   const navigateTo = useNavigateTo();
@@ -203,8 +209,8 @@ const MemoView: React.FC<MemoViewProps> = (props: MemoViewProps) => {
     <MemoViewContext.Provider value={contextValue}>
       <div className="w-full">
         {article}
-        {showCommentEditor && currentUser && isInMemoDetailPage && (
-          <div className="border-b border-border px-4 pb-4 pl-[52px]">
+        {showCommentEditor && currentUser && (
+          <div ref={commentEditorRef} className="border-b border-border px-4 pb-4 pl-[52px]">
             <MemoEditor
               variant="feed"
               cacheKey={`${memoData.name}-${memoData.updateTime}-inline-comment`}
