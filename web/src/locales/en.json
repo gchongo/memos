@@ -27,7 +27,10 @@
     "pinned-tab": "Pinned",
     "post": "Post",
     "post-placeholder": "What's happening?",
-    "search-placeholder": "Search"
+    "search-placeholder": "Search",
+    "whats-happening": "What's happening",
+    "show-more": "Show more",
+    "trending-in": "Explore"
   },
   "attachment-library": {
     "actions": {

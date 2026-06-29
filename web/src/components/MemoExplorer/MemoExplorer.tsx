@@ -1,3 +1,4 @@
+import ExploreTrendsWidget from "@/components/ExploreTrendsWidget";
 import SearchBar from "@/components/SearchBar";
 import XWidgetCard from "@/components/XWidgetCard";
 import { PlusIcon } from "lucide-react";
@@ -16,6 +17,7 @@ export type MemoExplorerContext = "home" | "explore" | "archived" | "profile";
 
 export interface MemoExplorerFeatures {
   search?: boolean;
+  exploreTrends?: boolean;
   statistics?: boolean;
   shortcuts?: boolean;
   tags?: boolean;
@@ -34,6 +36,7 @@ const getDefaultFeatures = (context: MemoExplorerContext): MemoExplorerFeatures 
     case "explore":
       return {
         search: true,
+        exploreTrends: false,
         statistics: true,
         shortcuts: false,
         tags: true,
@@ -41,6 +44,7 @@ const getDefaultFeatures = (context: MemoExplorerContext): MemoExplorerFeatures 
     case "archived":
       return {
         search: true,
+        exploreTrends: false,
         statistics: true,
         shortcuts: false,
         tags: true,
@@ -48,6 +52,7 @@ const getDefaultFeatures = (context: MemoExplorerContext): MemoExplorerFeatures 
     case "profile":
       return {
         search: true,
+        exploreTrends: false,
         statistics: true,
         shortcuts: false,
         tags: true,
@@ -56,8 +61,9 @@ const getDefaultFeatures = (context: MemoExplorerContext): MemoExplorerFeatures 
     default:
       return {
         search: true,
-        statistics: true,
-        shortcuts: true,
+        exploreTrends: true,
+        statistics: false,
+        shortcuts: false,
         tags: true,
       };
   }
@@ -75,8 +81,14 @@ const MemoExplorer = (props: Props) => {
   };
 
   return (
-    <aside className={cn("relative flex h-full w-full flex-col items-start justify-start overflow-auto text-sidebar-foreground", className)}>
-      {features.search && <SearchBar />}
+    <aside className={cn("relative flex h-full w-full flex-col items-start justify-start text-sidebar-foreground", className)}>
+      {features.search && (
+        <div className="sticky top-0 z-10 w-full bg-background pb-3 pt-1">
+          <SearchBar />
+        </div>
+      )}
+
+      {features.exploreTrends && <ExploreTrendsWidget />}
 
       {features.statistics && (
         <XWidgetCard title={t("layout.activity")}>
