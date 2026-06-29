@@ -1,4 +1,5 @@
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef } from "react";
+import { cn } from "@/lib/utils";
 import Editor from "../Editor";
 import { useBlobUrls, useDragAndDrop } from "../hooks";
 import PlainEditor from "../PlainEditor";
