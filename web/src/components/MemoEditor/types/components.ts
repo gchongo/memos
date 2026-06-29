@@ -5,6 +5,7 @@ export interface MemoEditorProps {
   className?: string;
   cacheKey?: string;
   placeholder?: string;
+  variant?: "default" | "feed";
   /** Existing memo to edit. When provided, the editor initializes from it without fetching. */
   memo?: Memo;
   parentMemoName?: string;
@@ -23,6 +24,7 @@ export interface MemoEditorProps {
 
 export interface EditorContentProps {
   placeholder?: string;
+  contentClassName?: string;
 }
 
 export interface EditorToolbarProps {
@@ -30,6 +32,7 @@ export interface EditorToolbarProps {
   onCancel?: () => void;
   memoName?: string;
   onAudioRecorderClick: () => void;
+  variant?: "default" | "feed";
 }
 
 export interface EditorMetadataProps {
@@ -65,10 +68,12 @@ export interface InsertMenuProps {
   onToggleFocusMode?: () => void;
   memoName?: string;
   onAudioRecorderClick?: () => void;
+  variant?: "default" | "feed";
 }
 
 export interface VisibilitySelectorProps {
   value: Visibility;
   onChange: (visibility: Visibility) => void;
   onOpenChange?: (open: boolean) => void;
+  compact?: boolean;
 }

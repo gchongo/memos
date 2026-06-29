@@ -1,10 +1,10 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { ArrowUpIcon } from "lucide-react";
 import { type ReactElement, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import FeedComposer from "@/components/FeedComposer";
 import { MentionResolutionProvider } from "@/components/MemoContent/MentionResolutionContext";
 import { deriveDefaultCreateTimeFromFilters } from "@/components/MemoEditor/utils/deriveDefaultCreateTime";
 import { Button } from "@/components/ui/button";
-import UserAvatar from "@/components/UserAvatar";
 import { userServiceClient } from "@/connect";
 import { useMemoFilterContext } from "@/contexts/MemoFilterContext";
 import { useNewMemo } from "@/contexts/NewMemoContext";
@@ -17,7 +17,6 @@ import { userKeys } from "@/hooks/useUserQueries";
 import { State } from "@/types/proto/api/v1/common_pb";
 import type { Memo } from "@/types/proto/api/v1/memo_service_pb";
 import { useTranslate } from "@/utils/i18n";
-import MemoEditor from "../MemoEditor";
 import MemoFilters from "../MemoFilters";
 import Placeholder from "../Placeholder";
 import Skeleton from "../Skeleton";
@@ -172,17 +171,7 @@ const PagedMemoList = (props: Props) => {
         ) : (
           <>
             {showMemoEditor && currentUser ? (
-              <div id="memo-composer" className="flex gap-3 border-b border-border px-4 py-3">
-                <UserAvatar className="shrink-0" avatarUrl={currentUser.avatarUrl} />
-                <div className="min-w-0 flex-1">
-                  <MemoEditor
-                    className="gap-1 border-0 bg-transparent p-0 pt-0 shadow-none"
-                    cacheKey="home-memo-editor"
-                    placeholder={t("layout.post-placeholder")}
-                    defaultCreateTime={defaultCreateTime}
-                  />
-                </div>
-              </div>
+              <FeedComposer cacheKey="home-memo-editor" defaultCreateTime={defaultCreateTime} />
             ) : null}
             <MemoFilters />
             {sortedMemoList.map((memo) => props.renderer(memo))}

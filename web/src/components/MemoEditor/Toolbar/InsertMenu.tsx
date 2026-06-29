@@ -38,6 +38,7 @@ import type { InsertMenuProps } from "../types";
 import type { LocalFile } from "../types/attachment";
 
 const InsertMenu = (props: InsertMenuProps) => {
+  const { variant = "default" } = props;
   const t = useTranslate();
   const { actions, dispatch } = useEditorContext();
   const relations = useEditorSelector((s) => s.metadata.relations);
@@ -190,48 +191,86 @@ const InsertMenu = (props: InsertMenuProps) => {
     [handleFileUploadClick, handleLocationClick, handleMediaUploadClick, handleOpenLinkDialog, props, t],
   );
 
+  const feedIconButtonClass =
+    "flex h-[34px] w-[34px] items-center justify-center rounded-full text-[var(--x-accent)] transition-colors hover:bg-[var(--x-accent)]/10 disabled:opacity-40";
+
   return (
     <>
-      <DropdownMenu modal={false}>
-        <DropdownMenuTrigger asChild>
-          <Button variant="secondary" size="icon" disabled={isUploading}>
-            {isUploading ? <LoaderIcon className="size-4 animate-spin" /> : <PlusIcon className="size-4" />}
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="start">
-          {menuItems.slice(0, 3).map((item) => (
-            <DropdownMenuItem key={item.key} onClick={item.onClick}>
-              <item.icon className="w-4 h-4" />
-              {item.label}
-            </DropdownMenuItem>
+      {variant === "feed" ? (
+        <div className="flex flex-row flex-wrap items-center gap-0.5">
+          {menuItems.map((item) => (
+            <button
+              key={item.key}
+              type="button"
+              className={feedIconButtonClass}
+              disabled={isUploading}
+              aria-label={item.label}
+              onClick={item.onClick}
+            >
+              {isUploading && item.key === "upload-media" ? (
+                <LoaderIcon className="size-[18px] animate-spin" />
+              ) : (
+                <item.icon className="size-[18px]" strokeWidth={1.75} />
+              )}
+            </button>
           ))}
-          <DropdownMenuSeparator />
-          {menuItems.slice(3).map((item) => (
-            <DropdownMenuItem key={item.key} onClick={item.onClick}>
-              <item.icon className="w-4 h-4" />
-              {item.label}
-            </DropdownMenuItem>
-          ))}
-          <DropdownMenuSeparator />
-          {/* View submenu with Focus Mode + editor display mode */}
-          <DropdownMenuSub open={moreSubmenuOpen} onOpenChange={setMoreSubmenuOpen}>
-            <DropdownMenuSubTrigger onPointerEnter={handleTriggerEnter} onPointerLeave={handleTriggerLeave}>
-              <MoreHorizontalIcon className="w-4 h-4" />
-              {t("common.more")}
-            </DropdownMenuSubTrigger>
-            <DropdownMenuSubContent onPointerEnter={handleContentEnter} onPointerLeave={handleContentLeave}>
+          <DropdownMenu modal={false}>
+            <DropdownMenuTrigger asChild>
+              <button type="button" className={feedIconButtonClass} aria-label={t("common.more")}>
+                <MoreHorizontalIcon className="size-[18px]" strokeWidth={1.75} />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start">
               <DropdownMenuItem onClick={handleToggleFocusMode}>
-                <Maximize2Icon className="w-4 h-4" />
+                <Maximize2Icon className="h-4 w-4" />
                 {t("editor.focus-mode")}
               </DropdownMenuItem>
-              {/* Editor display mode: checked = rich text (WYSIWYG), unchecked = raw Markdown */}
               <DropdownMenuCheckboxItem checked={editorMode === "wysiwyg"} onCheckedChange={handleEditorModeChange}>
                 {t("editor.wysiwyg-editor")}
               </DropdownMenuCheckboxItem>
-            </DropdownMenuSubContent>
-          </DropdownMenuSub>
-        </DropdownMenuContent>
-      </DropdownMenu>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      ) : (
+        <DropdownMenu modal={false}>
+          <DropdownMenuTrigger asChild>
+            <Button variant="secondary" size="icon" disabled={isUploading}>
+              {isUploading ? <LoaderIcon className="size-4 animate-spin" /> : <PlusIcon className="size-4" />}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start">
+            {menuItems.slice(0, 3).map((item) => (
+              <DropdownMenuItem key={item.key} onClick={item.onClick}>
+                <item.icon className="w-4 h-4" />
+                {item.label}
+              </DropdownMenuItem>
+            ))}
+            <DropdownMenuSeparator />
+            {menuItems.slice(3).map((item) => (
+              <DropdownMenuItem key={item.key} onClick={item.onClick}>
+                <item.icon className="w-4 h-4" />
+                {item.label}
+              </DropdownMenuItem>
+            ))}
+            <DropdownMenuSeparator />
+            <DropdownMenuSub open={moreSubmenuOpen} onOpenChange={setMoreSubmenuOpen}>
+              <DropdownMenuSubTrigger onPointerEnter={handleTriggerEnter} onPointerLeave={handleTriggerLeave}>
+                <MoreHorizontalIcon className="w-4 h-4" />
+                {t("common.more")}
+              </DropdownMenuSubTrigger>
+              <DropdownMenuSubContent onPointerEnter={handleContentEnter} onPointerLeave={handleContentLeave}>
+                <DropdownMenuItem onClick={handleToggleFocusMode}>
+                  <Maximize2Icon className="w-4 h-4" />
+                  {t("editor.focus-mode")}
+                </DropdownMenuItem>
+                <DropdownMenuCheckboxItem checked={editorMode === "wysiwyg"} onCheckedChange={handleEditorModeChange}>
+                  {t("editor.wysiwyg-editor")}
+                </DropdownMenuCheckboxItem>
+              </DropdownMenuSubContent>
+            </DropdownMenuSub>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )}
 
       {/* Hidden file input */}
       <input

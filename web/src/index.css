@@ -88,3 +88,25 @@
   background: transparent;
   padding: 0;
 }
+
+/* X-style home feed composer */
+.feed-composer-editor .memo-editor-content .memo-wysiwyg,
+.feed-composer-editor .memo-editor-content textarea {
+  min-height: 3.25rem;
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+}
+
+.feed-composer-editor .memo-editor-content .memo-wysiwyg p.is-editor-empty:first-child::before {
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+  opacity: 0.55;
+  color: var(--muted-foreground);
+}
+
+.feed-composer-editor .memo-editor-content textarea::placeholder {
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+  color: var(--muted-foreground);
+  opacity: 0.55;
+}

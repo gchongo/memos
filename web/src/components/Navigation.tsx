@@ -43,7 +43,7 @@ const Navigation = (props: Props) => {
   const homeNavLink: NavLinkItem = {
     id: "header-memos",
     path: Routes.HOME,
-    title: t("common.memos"),
+    title: t("common.home"),
     icon: <HomeIcon className="h-[26px] w-[26px] shrink-0" strokeWidth={location.pathname === Routes.HOME ? 2.5 : 2} />,
   };
   const exploreNavLink: NavLinkItem = {

@@ -44,6 +44,7 @@ const MemoEditorImpl: React.FC<MemoEditorProps> = ({
   autoFocus,
   placeholder,
   defaultCreateTime,
+  variant = "default",
   onConfirm,
   onCancel,
 }) => {
@@ -305,26 +306,23 @@ const MemoEditorImpl: React.FC<MemoEditorProps> = ({
     }
   }
 
+  const isFeed = variant === "feed";
+
   return (
     <>
       <FocusModeOverlay isActive={isFocusMode} onToggle={handleToggleFocusMode} />
 
-      {/*
-        Layout structure:
-        - Uses justify-between to push content to top and bottom
-        - In focus mode: becomes fixed with specific spacing, editor grows to fill space
-        - In normal mode: stays relative with max-height constraint
-      */}
       <div
         className={cn(
-          "group relative w-full flex flex-col justify-between items-start bg-card px-4 pt-3 pb-1 rounded-lg border border-border gap-2",
+          "group relative flex w-full flex-col items-start justify-between gap-2",
+          isFeed
+            ? "feed-composer"
+            : "rounded-lg border border-border bg-card px-4 pt-3 pb-1",
           FOCUS_MODE_STYLES.transition,
           isFocusMode && cn(FOCUS_MODE_STYLES.container.base, FOCUS_MODE_STYLES.container.spacing),
           className,
         )}
       >
-        {/* Focus-mode header. WYSIWYG gets the formatting toolbar (exit lives in
-            it); raw mode falls back to the floating exit button. */}
         {isFocusMode &&
           (editorMode === "wysiwyg" ? (
             <FormattingToolbar controllerRef={editorRef} onExit={handleToggleFocusMode} className={FOCUS_MODE_STYLES.formattingHeader} />
@@ -332,14 +330,17 @@ const MemoEditorImpl: React.FC<MemoEditorProps> = ({
             <FocusModeExitButton isActive onToggle={handleToggleFocusMode} title={t("editor.exit-focus-mode")} />
           ))}
 
-        {(memoName || (!memo && hasTimestamp)) && (
+        {!isFeed && (memoName || (!memo && hasTimestamp)) && (
           <div className="w-full -mb-1">
             <TimestampPopover />
           </div>
         )}
 
-        {/* Editor content grows to fill available space in focus mode */}
-        <EditorContent ref={editorRef} placeholder={placeholder} />
+        <EditorContent
+          ref={editorRef}
+          placeholder={placeholder}
+          contentClassName={isFeed ? "feed-composer-editor" : undefined}
+        />
 
         {isAudioRecorderOpen && (audioRecorder.isBusy || isTranscribingAudio) && (
           <AudioRecorderPanel
@@ -353,10 +354,15 @@ const MemoEditorImpl: React.FC<MemoEditorProps> = ({
           />
         )}
 
-        {/* Metadata and toolbar grouped together at bottom */}
-        <div className="w-full flex flex-col gap-2">
+        <div className={cn("flex w-full flex-col", isFeed ? "gap-0" : "gap-2")}>
           <EditorMetadata memoName={memoName} />
-          <EditorToolbar onSave={handleSave} onCancel={onCancel} memoName={memoName} onAudioRecorderClick={handleAudioRecorderClick} />
+          <EditorToolbar
+            variant={variant}
+            onSave={handleSave}
+            onCancel={onCancel}
+            memoName={memoName}
+            onAudioRecorderClick={handleAudioRecorderClick}
+          />
         </div>
       </div>
     </>

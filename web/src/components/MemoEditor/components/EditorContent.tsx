@@ -13,7 +13,7 @@ import type { EditorController } from "../types/editorController";
  * handoff: both editors serialize into state.content on every change, so the
  * incoming editor simply initializes from it.
  */
-export const EditorContent = forwardRef<EditorController, EditorContentProps>(({ placeholder }, ref) => {
+export const EditorContent = forwardRef<EditorController, EditorContentProps>(({ placeholder, contentClassName }, ref) => {
   const { actions, dispatch } = useEditorContext();
   const { createBlobUrl } = useBlobUrls();
   const content = useEditorSelector((s) => s.content);
@@ -101,7 +101,7 @@ export const EditorContent = forwardRef<EditorController, EditorContentProps>(({
   };
 
   return (
-    <div className="w-full flex flex-col flex-1" {...dragHandlers}>
+    <div className={cn("flex w-full flex-1 flex-col", contentClassName)} {...dragHandlers}>
       {mode === "wysiwyg" ? (
         <Editor
           ref={wysiwygRef}

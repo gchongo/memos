@@ -13,7 +13,7 @@ const FeedHeader = ({ activeTab = "latest", onTabChange, title }: Props) => {
   const t = useTranslate();
 
   const tabs: { id: FeedTab; label: string }[] = [
-    { id: "latest", label: t("layout.for-you") },
+    { id: "latest", label: t("common.home") },
     { id: "pinned", label: t("layout.pinned-tab") },
   ];
 
