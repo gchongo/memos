@@ -4,6 +4,16 @@ import { UserSetting_Key } from "@/types/proto/api/v1/user_service_pb";
 
 export const instanceSettingNamePrefix = "instance/settings/";
 export const userNamePrefix = "users/";
+export const userStatsNameSuffix = "/stats";
+
+/** Converts a UserStats resource name (`users/{username}/stats`) to a User name (`users/{username}`). */
+export const userNameFromStatsResourceName = (statsName: string): string => {
+  if (statsName.endsWith(userStatsNameSuffix)) {
+    return statsName.slice(0, -userStatsNameSuffix.length);
+  }
+  return statsName;
+};
+
 export const memoNamePrefix = "memos/";
 export const identityProviderNamePrefix = "identity-providers/";
 

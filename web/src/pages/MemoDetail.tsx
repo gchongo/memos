@@ -1,21 +1,21 @@
 import { Code, ConnectError } from "@connectrpc/connect";
-import { ArrowUpLeftFromCircleIcon } from "lucide-react";
+import { ArrowLeftIcon, ArrowUpLeftFromCircleIcon } from "lucide-react";
 import { useEffect } from "react";
 import { Link, Navigate, useLocation, useParams } from "react-router-dom";
 import MemoCommentSection from "@/components/MemoCommentSection";
 import { MentionResolutionProvider } from "@/components/MemoContent/MentionResolutionContext";
 import MemoView from "@/components/MemoView";
-import MobileBottomNav from "@/components/MobileBottomNav";
 import { memoNamePrefix } from "@/helpers/resource-names";
-import useMediaQuery from "@/hooks/useMediaQuery";
 import useMemoDetailError from "@/hooks/useMemoDetailError";
+import useNavigateTo from "@/hooks/useNavigateTo";
 import { useInfiniteMemoComments, useMemo } from "@/hooks/useMemoQueries";
 import { useSharedMemo, withShareAttachmentLinks } from "@/hooks/useMemoShareQueries";
-import { cn } from "@/lib/utils";
+import { useTranslate } from "@/utils/i18n";
 import type { Attachment } from "@/types/proto/api/v1/attachment_service_pb";
 
 const MemoDetail = () => {
-  const md = useMediaQuery("md");
+  const t = useTranslate();
+  const navigateTo = useNavigateTo();
   const params = useParams();
   const location = useLocation();
   const { state: locationState, hash } = location;
@@ -74,44 +74,54 @@ const MemoDetail = () => {
     ? { ...memo, attachments: withShareAttachmentLinks(memo.attachments as Attachment[], shareToken!) }
     : memo;
   const mentionResolutionContents = [displayMemo.content, ...comments.map((comment) => comment.content)];
+  const backTarget = typeof locationState?.from === "string" ? locationState.from : "/";
 
   return (
-    <div className="flex min-h-svh w-full justify-center max-md:pb-[calc(53px+env(safe-area-inset-bottom,0px))]">
-      <section className="@container flex w-full max-w-[600px] min-h-full flex-col md:border-x md:border-border sm:pt-3 md:pt-6 pb-8">
-        <MentionResolutionProvider contents={mentionResolutionContents}>
-          <div className="w-full">
-            {parentMemo && (
-              <div className="mb-2 inline-block w-auto px-4">
-                <Link
-                  className="flex w-auto max-w-xs flex-row flex-nowrap items-center justify-start rounded-lg border border-border px-3 py-1 text-sm text-muted-foreground hover:opacity-80 hover:shadow"
-                  to={`/${parentMemo.name}`}
-                  state={locationState}
-                  viewTransition
-                >
-                  <ArrowUpLeftFromCircleIcon className="mr-2 h-4 w-auto shrink-0 opacity-60" />
-                  <span className="truncate">{parentMemo.content}</span>
-                </Link>
-              </div>
-            )}
-            <MemoView
-              key={`${displayMemo.name}-${displayMemo.updateTime}`}
-              memo={displayMemo}
-              compact={false}
-              parentPage={locationState?.from}
-              showCreator
-              showVisibility
-            />
-            <MemoCommentSection
-              comments={comments}
-              parentPage={locationState?.from}
-              hasMoreComments={hasNextComments}
-              isFetchingMoreComments={isFetchingNextComments}
-              onLoadMoreComments={fetchNextComments}
-            />
-          </div>
-        </MentionResolutionProvider>
-      </section>
-      {!md && <MobileBottomNav />}
+    <div className="min-h-full w-full bg-background text-foreground">
+      <header className="sticky top-0 z-10 flex items-center gap-6 border-b border-border bg-background/80 px-4 py-3 backdrop-blur-md">
+        <button
+          type="button"
+          aria-label={t("common.back")}
+          onClick={() => navigateTo(backTarget)}
+          className="rounded-full p-2 transition-colors hover:bg-accent"
+        >
+          <ArrowLeftIcon className="h-5 w-5" />
+        </button>
+        <h1 className="text-xl font-bold">{t("memo.detail-title")}</h1>
+      </header>
+
+      <MentionResolutionProvider contents={mentionResolutionContents}>
+        <div className="w-full">
+          {parentMemo && (
+            <div className="mb-2 inline-block w-auto px-4 pt-3">
+              <Link
+                className="flex w-auto max-w-xs flex-row flex-nowrap items-center justify-start rounded-lg border border-border px-3 py-1 text-sm text-muted-foreground hover:opacity-80 hover:shadow"
+                to={`/${parentMemo.name}`}
+                state={locationState}
+                viewTransition
+              >
+                <ArrowUpLeftFromCircleIcon className="mr-2 h-4 w-auto shrink-0 opacity-60" />
+                <span className="truncate">{parentMemo.content}</span>
+              </Link>
+            </div>
+          )}
+          <MemoView
+            key={`${displayMemo.name}-${displayMemo.updateTime}`}
+            memo={displayMemo}
+            compact={false}
+            parentPage={locationState?.from}
+            showCreator
+            showVisibility
+          />
+          <MemoCommentSection
+            comments={comments}
+            parentPage={locationState?.from}
+            hasMoreComments={hasNextComments}
+            isFetchingNextComments={isFetchingNextComments}
+            onLoadMoreComments={fetchNextComments}
+          />
+        </div>
+      </MentionResolutionProvider>
     </div>
   );
 };

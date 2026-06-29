@@ -89,6 +89,8 @@ export const routeConfig: RouteObject[] = [
               { path: Routes.ABOUT, element: <About /> },
               { path: Routes.EXPLORE, element: <Explore /> },
               { path: "u/:username", element: <UserProfile /> },
+              { path: "memos/:uid", element: <MemoDetail /> },
+              { path: "memos/shares/:token", element: <MemoDetail /> },
               {
                 element: <RequireAuthRoute />,
                 children: [
@@ -102,8 +104,6 @@ export const routeConfig: RouteObject[] = [
               },
             ],
           },
-          { path: "memos/:uid", element: <MemoDetail /> },
-          { path: "memos/shares/:token", element: <MemoDetail /> },
           { path: "403", element: <PermissionDenied /> },
           { path: "404", element: <NotFound /> },
           { path: "*", element: <NotFound /> },

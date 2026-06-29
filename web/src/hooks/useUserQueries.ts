@@ -34,13 +34,15 @@ export const userKeys = {
 };
 
 export function useUser(name: string, options?: { enabled?: boolean }) {
+  const canFetch = Boolean(name) && name.startsWith("users/") && !name.endsWith("/stats");
+
   return useQuery({
     queryKey: userKeys.detail(name),
     queryFn: async () => {
       const user = await userServiceClient.getUser({ name });
       return user;
     },
-    enabled: options?.enabled ?? true,
+    enabled: options?.enabled ?? canFetch,
     staleTime: 1000 * 60 * 5, // 5 minutes - user profiles don't change often
   });
 }

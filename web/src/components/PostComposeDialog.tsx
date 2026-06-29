@@ -4,7 +4,8 @@ import { useMemo } from "react";
 import MemoEditor from "@/components/MemoEditor";
 import QuotedMemoCard from "@/components/MemoView/components/QuotedMemoCard";
 import UserAvatar from "@/components/UserAvatar";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { VisuallyHidden } from "@/components/ui/visually-hidden";
 import { useComposeDialog } from "@/contexts/ComposeDialogContext";
 import useCurrentUser from "@/hooks/useCurrentUser";
 import {
@@ -44,7 +45,11 @@ const PostComposeDialog = () => {
         size="2xl"
         showCloseButton={false}
         className="top-[5%] max-h-[85vh] w-[calc(100%-2rem)] max-w-[600px] translate-y-0 gap-0 rounded-2xl border-border bg-background p-0"
+        aria-describedby={undefined}
       >
+        <VisuallyHidden>
+          <DialogTitle>{quoteTarget ? t("layout.repost-placeholder") : t("layout.post")}</DialogTitle>
+        </VisuallyHidden>
         <div className="flex items-center justify-between border-b border-border px-4 py-3">
           <button
             type="button"

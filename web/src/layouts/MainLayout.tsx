@@ -20,6 +20,9 @@ const WIDE_CONTENT_ROUTES = new Set<string>([ROUTES.SETTING, ROUTES.SHORTCUTS, R
 /** Total width of the centered X column group: nav + feed + sidebar. */
 const X_SHELL_MAX = "max-w-[1265px]";
 
+const MEMO_DETAIL_ROUTE = "/memos/:uid";
+const MEMO_SHARE_ROUTE = "/memos/shares/:token";
+
 const MainLayout = () => {
   const md = useMediaQuery("md");
   const xl = useMediaQuery("xl");
@@ -28,16 +31,19 @@ const MainLayout = () => {
   const [profileUserName, setProfileUserName] = useState<string | undefined>();
 
   const isProfilePage = Boolean(matchPath(PROFILE_ROUTE, location.pathname));
+  const isMemoDetailPage = Boolean(matchPath(MEMO_DETAIL_ROUTE, location.pathname));
   const showMemoExplorer =
     location.pathname === ROUTES.HOME ||
     location.pathname === ROUTES.EXPLORE ||
     location.pathname === ROUTES.INBOX ||
     location.pathname === ARCHIVED_ROUTE ||
-    isProfilePage;
+    isProfilePage ||
+    isMemoDetailPage;
 
   const contentWidthClass = WIDE_CONTENT_ROUTES.has(location.pathname) ? "max-w-[920px]" : "max-w-[600px]";
 
   const context: MemoExplorerContext = useMemo(() => {
+    if (matchPath(MEMO_DETAIL_ROUTE, location.pathname)) return "explore";
     if (location.pathname === ROUTES.HOME) return "home";
     if (location.pathname === ROUTES.EXPLORE) return "explore";
     if (location.pathname === ROUTES.INBOX) return "inbox";

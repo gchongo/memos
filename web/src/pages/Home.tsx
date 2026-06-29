@@ -32,7 +32,7 @@ const Home = () => {
   });
 
   const { listSort, orderBy } = useMemoSorting({
-    pinnedFirst: feedTab === "latest",
+    pinnedFirst: false,
     state: State.NORMAL,
   });
 

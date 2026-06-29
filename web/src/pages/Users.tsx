@@ -2,8 +2,8 @@ import { Link } from "react-router-dom";
 import FeedHeader from "@/components/FeedHeader";
 import UserAvatar from "@/components/UserAvatar";
 import { Button } from "@/components/ui/button";
+import { useDiscoverableUsers } from "@/hooks/useDiscoverableUsers";
 import { useFollowedUsers } from "@/hooks/useFollowedUsers";
-import { useListUsers } from "@/hooks/useUserQueries";
 import useCurrentUser from "@/hooks/useCurrentUser";
 import { cn } from "@/lib/utils";
 import type { User } from "@/types/proto/api/v1/user_service_pb";
@@ -11,9 +11,10 @@ import { useTranslate } from "@/utils/i18n";
 
 interface UserRowProps {
   user: User;
+  memoCount: number;
 }
 
-const UserRow = ({ user }: UserRowProps) => {
+const UserRow = ({ user, memoCount }: UserRowProps) => {
   const t = useTranslate();
   const { isFollowing, toggleFollow } = useFollowedUsers();
   const profilePath = `/u/${user.username}`;
@@ -26,7 +27,10 @@ const UserRow = ({ user }: UserRowProps) => {
       </Link>
       <Link to={profilePath} viewTransition className="min-w-0 flex-1">
         <div className="truncate text-[15px] font-bold leading-5 text-foreground">{user.displayName || user.username}</div>
-        <div className="truncate text-[15px] leading-5 text-muted-foreground">@{user.username}</div>
+        <div className="truncate text-[15px] leading-5 text-muted-foreground">
+          @{user.username}
+          {memoCount > 0 && ` · ${t("layout.active-memo-count", { count: memoCount })}`}
+        </div>
       </Link>
       <Button
         type="button"
@@ -49,9 +53,7 @@ const UserRow = ({ user }: UserRowProps) => {
 const Users = () => {
   const t = useTranslate();
   const currentUser = useCurrentUser();
-  const { data: users = [], isLoading } = useListUsers();
-
-  const visibleUsers = users.filter((user) => user.username && user.name !== currentUser?.name);
+  const { users, activityByUserName, isLoading } = useDiscoverableUsers({ enabled: !!currentUser });
 
   return (
     <div className="min-h-full w-full bg-background text-foreground">
@@ -69,11 +71,11 @@ const Users = () => {
           ))}
         </div>
       )}
-      {!isLoading && visibleUsers.length === 0 && (
+      {!isLoading && users.length === 0 && (
         <p className="px-4 py-8 text-center text-[15px] text-muted-foreground">{t("layout.no-follow-suggestions")}</p>
       )}
-      {visibleUsers.map((user) => (
-        <UserRow key={user.name} user={user} />
+      {users.map((user) => (
+        <UserRow key={user.name} user={user} memoCount={activityByUserName.get(user.name) ?? 0} />
       ))}
     </div>
   );

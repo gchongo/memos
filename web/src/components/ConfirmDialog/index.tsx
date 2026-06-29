@@ -40,7 +40,7 @@ export default function ConfirmDialog({
 
   return (
     <Dialog open={open} onOpenChange={(o: boolean) => !loading && onOpenChange(o)}>
-      <DialogContent size="sm">
+      <DialogContent size="sm" {...(!description ? { "aria-describedby": undefined } : {})}>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           {description ? <DialogDescription>{description}</DialogDescription> : null}
