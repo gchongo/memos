@@ -44,6 +44,7 @@ const PostComposeDialog = () => {
       <DialogContent
         size="2xl"
         showCloseButton={false}
+        overlayClassName="bg-black/10"
         className="top-[5%] max-h-[85vh] w-[calc(100%-2rem)] max-w-[600px] translate-y-0 gap-0 rounded-2xl border-border bg-background p-0"
         aria-describedby={undefined}
       >
