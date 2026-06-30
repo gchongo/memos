@@ -99,7 +99,7 @@ const MemoExplorer = (props: Props) => {
   };
 
   return (
-    <aside className={cn("relative flex h-full w-full min-w-0 flex-col items-start justify-start overflow-hidden text-sidebar-foreground", className)}>
+    <aside className={cn("relative flex w-full min-w-0 flex-col items-start justify-start text-sidebar-foreground", className)}>
       {features.search && (
         <div className="sticky top-0 z-10 w-full bg-background pb-3 pt-1">
           <SearchBar />
