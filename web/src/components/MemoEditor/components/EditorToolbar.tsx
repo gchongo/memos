@@ -16,6 +16,7 @@ export const EditorToolbar: FC<EditorToolbarProps> = ({
   controllerRef,
   variant = "default",
   hideCancel = false,
+  compact = false,
 }) => {
   const t = useTranslate();
   const { actions, dispatch } = useEditorContext();
@@ -39,7 +40,12 @@ export const EditorToolbar: FC<EditorToolbarProps> = ({
 
   if (variant === "feed") {
     return (
-      <div className="mt-3 flex w-full items-center justify-between gap-2 border-t border-border pt-3">
+      <div
+        className={cn(
+          "flex w-full items-center justify-between gap-2 border-t border-border",
+          compact ? "py-2" : "mt-3 pt-3",
+        )}
+      >
         <div className="flex min-w-0 flex-1 flex-row items-center gap-0.5 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <InsertMenu
             variant="feed"

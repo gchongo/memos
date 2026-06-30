@@ -43,6 +43,7 @@ export interface EditorToolbarProps {
   controllerRef?: RefObject<EditorController | null>;
   variant?: "default" | "feed";
   hideCancel?: boolean;
+  compact?: boolean;
 }
 
 export interface EditorMetadataProps {

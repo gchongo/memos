@@ -7,7 +7,7 @@ import { useNewMemo } from "@/contexts/NewMemoContext";
 import useCurrentUser from "@/hooks/useCurrentUser";
 import { useAutoFocusEditor } from "@/hooks/useAutoFocusEditor";
 import { memoKeys } from "@/hooks/useMemoQueries";
-import { useVisualViewportBottomInset } from "@/hooks/useVisualViewportBottomInset";
+import { useVisualViewportLayout } from "@/hooks/useVisualViewportBottomInset";
 import { userKeys } from "@/hooks/useUserQueries";
 import { handleError } from "@/lib/error";
 import { cn } from "@/lib/utils";
@@ -56,6 +56,8 @@ const MemoEditorImpl: React.FC<MemoEditorProps> = ({
   const queryClient = useQueryClient();
   const currentUser = useCurrentUser();
   const editorRef = useRef<EditorController>(null);
+  const composeToolbarRef = useRef<HTMLDivElement>(null);
+  const [composeToolbarHeight, setComposeToolbarHeight] = useState(FULLSCREEN_COMPOSE_TOOLBAR_HEIGHT);
   const { actions, dispatch, getState } = useEditorContext();
   // Subscribe only to the low-frequency slices this component renders from, so
   // typing (which changes content) does not re-render the editor shell and its
@@ -72,8 +74,7 @@ const MemoEditorImpl: React.FC<MemoEditorProps> = ({
   const memoName = memo?.name;
   const isFeed = variant === "feed";
   const isFullscreenCompose = composeLayout === "fullscreen";
-  const keyboardInset = useVisualViewportBottomInset(isFullscreenCompose);
-  const toolbarBottomOffset = keyboardInset;
+  const viewportLayout = useVisualViewportLayout(isFullscreenCompose);
 
   const canTranscribe = useMemo(() => {
     const providerId = aiSetting.transcription?.providerId ?? "";
@@ -98,6 +99,23 @@ const MemoEditorImpl: React.FC<MemoEditorProps> = ({
 
   useAutoFocusEditor(editorRef, Boolean(autoFocus && isFullscreenCompose), isInitialized);
   const isDraftCacheEnabled = !memo;
+
+  useEffect(() => {
+    if (!isFullscreenCompose || !composeToolbarRef.current) {
+      return;
+    }
+
+    const toolbarElement = composeToolbarRef.current;
+    const updateHeight = () => {
+      setComposeToolbarHeight(toolbarElement.offsetHeight || FULLSCREEN_COMPOSE_TOOLBAR_HEIGHT);
+    };
+
+    updateHeight();
+    const observer = new ResizeObserver(updateHeight);
+    observer.observe(toolbarElement);
+
+    return () => observer.disconnect();
+  }, [isFullscreenCompose]);
 
   // Auto-save content to localStorage (subscribes to the store internally).
   const { discardDraft } = useAutoSave(currentUser?.name ?? "", cacheKey, isInitialized && isDraftCacheEnabled);
@@ -370,26 +388,32 @@ const MemoEditorImpl: React.FC<MemoEditorProps> = ({
         </div>
 
         {isFullscreenCompose && (
-          <div
-            aria-hidden
-            className="w-full shrink-0"
-            style={{ height: FULLSCREEN_COMPOSE_TOOLBAR_HEIGHT + Math.max(keyboardInset, 0) }}
-          />
+          <div aria-hidden className="w-full shrink-0" style={{ height: composeToolbarHeight }} />
         )}
 
         <div
+          ref={composeToolbarRef}
           className={cn(
             "flex w-full flex-col",
             isFeed ? "gap-0" : "gap-2",
             isFullscreenCompose &&
-              "fixed inset-x-0 z-50 border-t border-border bg-background px-4 pb-[max(env(safe-area-inset-bottom,0px),8px)]",
+              "fixed inset-x-0 z-50 border-t border-border bg-background px-4",
+            isFullscreenCompose &&
+              (viewportLayout.keyboardOpen ? "pb-0" : "pb-[env(safe-area-inset-bottom,0px)]"),
           )}
-          style={isFullscreenCompose ? { bottom: toolbarBottomOffset } : undefined}
+          style={
+            isFullscreenCompose
+              ? viewportLayout.keyboardOpen
+                ? { top: viewportLayout.visibleBottom - composeToolbarHeight, bottom: "auto" }
+                : { bottom: 0, top: "auto" }
+              : undefined
+          }
         >
           {!isFullscreenCompose && <EditorMetadata memoName={memoName} />}
           <EditorToolbar
             variant={variant}
             hideCancel={isFullscreenCompose}
+            compact={isFullscreenCompose}
             onSave={handleSave}
             onCancel={onCancel}
             memoName={memoName}
