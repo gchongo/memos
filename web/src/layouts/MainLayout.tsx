@@ -76,7 +76,7 @@ const MainLayout = () => {
   }, [location.pathname, context]);
 
   const statsUserName = useMemo(() => {
-    if (context === "home") return currentUser?.name;
+    if (context === "home" || context === "inbox") return currentUser?.name;
     if (context === "profile") return profileUserName;
     return undefined;
   }, [context, currentUser, profileUserName]);

@@ -1,6 +1,7 @@
 import ExploreTrendsWidget from "@/components/ExploreTrendsWidget";
 import FollowSuggestionsWidget from "@/components/FollowSuggestionsWidget";
 import SearchBar from "@/components/SearchBar";
+import TagsCloudWidget from "@/components/TagsCloudWidget";
 import XWidgetCard from "@/components/XWidgetCard";
 import { PlusIcon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -20,6 +21,7 @@ export interface MemoExplorerFeatures {
   search?: boolean;
   exploreTrends?: boolean;
   whoToFollow?: boolean;
+  tagCloud?: boolean;
   statistics?: boolean;
   shortcuts?: boolean;
   tags?: boolean;
@@ -40,6 +42,7 @@ const getDefaultFeatures = (context: MemoExplorerContext): MemoExplorerFeatures 
         search: true,
         exploreTrends: true,
         whoToFollow: true,
+        tagCloud: true,
         statistics: false,
         shortcuts: false,
         tags: false,
@@ -49,6 +52,7 @@ const getDefaultFeatures = (context: MemoExplorerContext): MemoExplorerFeatures 
         search: true,
         exploreTrends: true,
         whoToFollow: true,
+        tagCloud: true,
         statistics: false,
         shortcuts: false,
         tags: false,
@@ -75,6 +79,7 @@ const getDefaultFeatures = (context: MemoExplorerContext): MemoExplorerFeatures 
         search: true,
         exploreTrends: true,
         whoToFollow: true,
+        tagCloud: true,
         statistics: false,
         shortcuts: false,
         tags: false,
@@ -104,6 +109,8 @@ const MemoExplorer = (props: Props) => {
       {features.exploreTrends && <ExploreTrendsWidget />}
 
       {features.whoToFollow && <FollowSuggestionsWidget />}
+
+      {features.tagCloud && <TagsCloudWidget tagCount={tagCount} readonly={context === "explore"} />}
 
       {features.statistics && (
         <XWidgetCard title={t("layout.activity")}>
