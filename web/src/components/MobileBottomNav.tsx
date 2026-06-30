@@ -10,7 +10,9 @@ import { useTranslate } from "@/utils/i18n";
 import UserAvatar from "./UserAvatar";
 
 /** Visible bar height excluding the device safe-area inset. Keep in sync with MainLayout bottom padding. */
-export const MOBILE_BOTTOM_NAV_HEIGHT = 64;
+export const MOBILE_BOTTOM_NAV_HEIGHT = 76;
+/** Extra padding below the bar, above the home indicator / iOS system gestures. */
+export const MOBILE_BOTTOM_NAV_EXTRA_INSET = 12;
 
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>
   cn(
@@ -40,7 +42,7 @@ const MobileBottomNav = ({ visible = true }: MobileBottomNavProps) => {
 
   if (!currentUser) {
     return (
-      <nav aria-label={t("layout.mobile-nav")} className={shellClassName}>
+      <nav aria-label={t("layout.mobile-nav")} className={shellClassName} style={{ ["--mobile-bottom-nav-extra-inset" as string]: `${MOBILE_BOTTOM_NAV_EXTRA_INSET}px` }}>
         <div className={barClassName} style={{ height: MOBILE_BOTTOM_NAV_HEIGHT }}>
           <NavLink className={navLinkClass} to={ROUTES.EXPLORE} end viewTransition>
             <EarthIcon className="h-7 w-7" strokeWidth={2} />
@@ -52,13 +54,13 @@ const MobileBottomNav = ({ visible = true }: MobileBottomNavProps) => {
             <span className="text-xs font-medium">{t("common.sign-in")}</span>
           </NavLink>
         </div>
-        <div aria-hidden className="h-[env(safe-area-inset-bottom,0px)]" />
+        <div aria-hidden className="h-[calc(env(safe-area-inset-bottom,0px)+var(--mobile-bottom-nav-extra-inset))]" />
       </nav>
     );
   }
 
   return (
-    <nav aria-label={t("layout.mobile-nav")} className={shellClassName}>
+    <nav aria-label={t("layout.mobile-nav")} className={shellClassName} style={{ ["--mobile-bottom-nav-extra-inset" as string]: `${MOBILE_BOTTOM_NAV_EXTRA_INSET}px` }}>
       <div className={barClassName} style={{ height: MOBILE_BOTTOM_NAV_HEIGHT }}>
         <NavLink className={navLinkClass} to={ROUTES.HOME} end viewTransition>
           <HomeIcon className="h-7 w-7" strokeWidth={2} />
@@ -95,7 +97,7 @@ const MobileBottomNav = ({ visible = true }: MobileBottomNavProps) => {
           <UserAvatar className="h-8 w-8" avatarUrl={currentUser.avatarUrl} />
         </NavLink>
       </div>
-      <div aria-hidden className="h-[env(safe-area-inset-bottom,0px)]" />
+      <div aria-hidden className="h-[calc(env(safe-area-inset-bottom,0px)+var(--mobile-bottom-nav-extra-inset))]" />
     </nav>
   );
 };
