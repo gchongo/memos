@@ -46,6 +46,7 @@ const MemoEditorImpl: React.FC<MemoEditorProps> = ({
   defaultCreateTime,
   defaultRelations,
   variant = "default",
+  composeLayout = "default",
   onConfirm,
   onCancel,
 }) => {
@@ -309,6 +310,7 @@ const MemoEditorImpl: React.FC<MemoEditorProps> = ({
   }
 
   const isFeed = variant === "feed";
+  const isFullscreenCompose = composeLayout === "fullscreen";
 
   return (
     <>
@@ -318,7 +320,7 @@ const MemoEditorImpl: React.FC<MemoEditorProps> = ({
         className={cn(
           "group relative flex w-full flex-col items-start justify-between gap-2",
           isFeed
-            ? "feed-composer"
+            ? cn("feed-composer", isFullscreenCompose && "flex min-h-0 flex-1 flex-col")
             : "rounded-lg border border-border bg-card px-4 pt-3 pb-1",
           FOCUS_MODE_STYLES.transition,
           isFocusMode && cn(FOCUS_MODE_STYLES.container.base, FOCUS_MODE_STYLES.container.spacing),
@@ -341,7 +343,7 @@ const MemoEditorImpl: React.FC<MemoEditorProps> = ({
         <EditorContent
           ref={editorRef}
           placeholder={placeholder}
-          contentClassName={isFeed ? "feed-composer-editor" : undefined}
+          contentClassName={cn(isFeed && "feed-composer-editor", isFullscreenCompose && "min-h-0 flex-1 overflow-y-auto")}
         />
 
         {isAudioRecorderOpen && (audioRecorder.isBusy || isTranscribingAudio) && (
@@ -356,10 +358,17 @@ const MemoEditorImpl: React.FC<MemoEditorProps> = ({
           />
         )}
 
-        <div className={cn("flex w-full flex-col", isFeed ? "gap-0" : "gap-2")}>
+        <div
+          className={cn(
+            "flex w-full flex-col",
+            isFeed ? "gap-0" : "gap-2",
+            isFullscreenCompose && "sticky bottom-0 z-10 shrink-0 bg-background pb-[max(env(safe-area-inset-bottom,0px),8px)]",
+          )}
+        >
           <EditorMetadata memoName={memoName} />
           <EditorToolbar
             variant={variant}
+            hideCancel={isFullscreenCompose}
             onSave={handleSave}
             onCancel={onCancel}
             memoName={memoName}

@@ -1,6 +1,6 @@
 import { create } from "@bufbuild/protobuf";
 import { XIcon } from "lucide-react";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import MemoEditor from "@/components/MemoEditor";
 import QuotedMemoCard from "@/components/MemoView/components/QuotedMemoCard";
 import UserAvatar from "@/components/UserAvatar";
@@ -8,6 +8,8 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { VisuallyHidden } from "@/components/ui/visually-hidden";
 import { useComposeDialog } from "@/contexts/ComposeDialogContext";
 import useCurrentUser from "@/hooks/useCurrentUser";
+import useMediaQuery from "@/hooks/useMediaQuery";
+import { cn } from "@/lib/utils";
 import {
   MemoRelation_MemoSchema,
   MemoRelation_Type,
@@ -19,6 +21,7 @@ const PostComposeDialog = () => {
   const t = useTranslate();
   const currentUser = useCurrentUser();
   const { open, quoteTarget, closeCompose } = useComposeDialog();
+  const isMobile = !useMediaQuery("md");
 
   const defaultRelations = useMemo(() => {
     if (!quoteTarget) {
@@ -35,54 +38,95 @@ const PostComposeDialog = () => {
     ];
   }, [quoteTarget]);
 
+  useEffect(() => {
+    if (!open || !isMobile) {
+      return;
+    }
+    const timer = window.setTimeout(() => {
+      const editor = document.querySelector<HTMLElement>("[data-compose-editor] [contenteditable='true'], [data-compose-editor] textarea");
+      editor?.focus();
+    }, 350);
+    return () => window.clearTimeout(timer);
+  }, [open, isMobile, quoteTarget?.name]);
+
   if (!currentUser) {
     return null;
   }
+
+  const editorKey = quoteTarget?.name ?? "compose-new";
 
   return (
     <Dialog open={open} onOpenChange={(nextOpen) => !nextOpen && closeCompose()}>
       <DialogContent
         size="2xl"
         showCloseButton={false}
-        overlayClassName="bg-black/10"
-        className="top-[5%] max-h-[85vh] w-[calc(100%-2rem)] max-w-[600px] translate-y-0 gap-0 rounded-2xl border-border bg-background p-0"
+        overlayClassName={cn(isMobile ? "bg-background" : "bg-black/10")}
+        contentClassName={cn(isMobile && "h-full min-h-0 gap-0 overflow-hidden")}
+        className={cn(
+          "gap-0 p-0",
+          isMobile
+            ? "top-0 left-0 h-[100dvh] max-h-[100dvh] w-full max-w-none translate-x-0 translate-y-0 rounded-none border-0 shadow-none"
+            : "top-[5%] max-h-[85vh] w-[calc(100%-2rem)] max-w-[600px] translate-y-0 rounded-2xl border-border",
+        )}
         aria-describedby={undefined}
       >
         <VisuallyHidden>
           <DialogTitle>{quoteTarget ? t("layout.repost-placeholder") : t("layout.post")}</DialogTitle>
         </VisuallyHidden>
-        <div className="flex items-center justify-between border-b border-border px-4 py-3">
-          <button
-            type="button"
-            className="rounded-full p-2 transition-colors hover:bg-accent"
-            onClick={closeCompose}
-            aria-label={t("common.close")}
-          >
-            <XIcon className="h-5 w-5" />
-          </button>
-        </div>
 
-        <div className="flex gap-3 px-4 py-3">
-          <UserAvatar className="mt-1 shrink-0" avatarUrl={currentUser.avatarUrl} />
-          <div className="min-w-0 flex-1">
-            {quoteTarget && (
-              <QuotedMemoCard
-                className="mb-3"
-                memoName={quoteTarget.name}
-                fallbackSnippet={quoteTarget.snippet}
-                fallbackContent={quoteTarget.content}
-              />
+        <div className={cn("flex flex-col", isMobile && "h-full min-h-0")}>
+          <div className="flex shrink-0 items-center justify-between border-b border-border px-4 py-3">
+            {isMobile ? (
+              <button
+                type="button"
+                className="rounded-full px-2 py-1.5 text-[15px] font-medium text-foreground transition-colors hover:bg-accent"
+                onClick={closeCompose}
+              >
+                {t("common.cancel")}
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="rounded-full p-2 transition-colors hover:bg-accent"
+                onClick={closeCompose}
+                aria-label={t("common.close")}
+              >
+                <XIcon className="h-5 w-5" />
+              </button>
             )}
-            <MemoEditor
-              key={quoteTarget?.name ?? "compose-new"}
-              variant="feed"
-              cacheKey={quoteTarget ? `compose-quote-${quoteTarget.name}` : "compose-dialog"}
-              placeholder={quoteTarget ? t("layout.repost-placeholder") : t("layout.post-placeholder")}
-              defaultRelations={defaultRelations}
-              autoFocus
-              onConfirm={() => closeCompose()}
-              onCancel={closeCompose}
-            />
+          </div>
+
+          <div
+            data-compose-editor
+            className={cn(
+              "flex gap-3 px-4 py-3",
+              isMobile && "min-h-0 flex-1 flex-col overflow-hidden",
+            )}
+          >
+            <div className={cn("flex gap-3", isMobile && "min-h-0 flex-1")}>
+              <UserAvatar className="mt-1 shrink-0" avatarUrl={currentUser.avatarUrl} />
+              <div className={cn("min-w-0 flex-1", isMobile && "flex min-h-0 flex-1 flex-col")}>
+                {quoteTarget && (
+                  <QuotedMemoCard
+                    className="mb-3"
+                    memoName={quoteTarget.name}
+                    fallbackSnippet={quoteTarget.snippet}
+                    fallbackContent={quoteTarget.content}
+                  />
+                )}
+                <MemoEditor
+                  key={editorKey}
+                  variant="feed"
+                  composeLayout={isMobile ? "fullscreen" : "default"}
+                  cacheKey={quoteTarget ? `compose-quote-${quoteTarget.name}` : "compose-dialog"}
+                  placeholder={quoteTarget ? t("layout.repost-placeholder") : t("layout.post-placeholder")}
+                  defaultRelations={defaultRelations}
+                  autoFocus
+                  onConfirm={() => closeCompose()}
+                  onCancel={closeCompose}
+                />
+              </div>
+            </div>
           </div>
         </div>
       </DialogContent>

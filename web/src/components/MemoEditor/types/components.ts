@@ -8,6 +8,8 @@ export interface MemoEditorProps {
   cacheKey?: string;
   placeholder?: string;
   variant?: "default" | "feed";
+  /** Full-screen mobile compose: editor grows, toolbar sticks above the keyboard. */
+  composeLayout?: "default" | "fullscreen";
   /** Existing memo to edit. When provided, the editor initializes from it without fetching. */
   memo?: Memo;
   parentMemoName?: string;
@@ -38,6 +40,7 @@ export interface EditorToolbarProps {
   onAudioRecorderClick: () => void;
   controllerRef?: RefObject<EditorController | null>;
   variant?: "default" | "feed";
+  hideCancel?: boolean;
 }
 
 export interface EditorMetadataProps {

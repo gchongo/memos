@@ -55,8 +55,9 @@ const DialogContent = React.forwardRef<
     VariantProps<typeof dialogContentVariants> & {
       showCloseButton?: boolean;
       overlayClassName?: string;
+      contentClassName?: string;
     }
->(({ className, children, showCloseButton = true, size, overlayClassName, ...props }, ref) => (
+>(({ className, children, showCloseButton = true, size, overlayClassName, contentClassName, ...props }, ref) => (
   <DialogPortal>
     <DialogOverlay className={overlayClassName} />
     <DialogPrimitive.Content
@@ -71,7 +72,7 @@ const DialogContent = React.forwardRef<
       }}
       {...props}
     >
-      <div className="overflow-y-auto overflow-x-hidden flex-1 flex flex-col gap-4">{children}</div>
+      <div className={cn("overflow-y-auto overflow-x-hidden flex-1 flex flex-col gap-4", contentClassName)}>{children}</div>
       {showCloseButton && (
         <DialogPrimitive.Close className="ring-offset-background data-[state=open]:bg-accent data-[state=open]:text-muted-foreground absolute top-4 right-4 rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4">
           <XIcon />

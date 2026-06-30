@@ -110,3 +110,8 @@
   color: var(--muted-foreground);
   opacity: 0.55;
 }
+
+.feed-composer.flex.min-h-0 .feed-composer-editor .memo-editor-content .memo-wysiwyg,
+.feed-composer.flex.min-h-0 .feed-composer-editor .memo-editor-content textarea {
+  min-height: 5rem;
+}

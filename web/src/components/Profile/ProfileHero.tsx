@@ -114,15 +114,19 @@ const ProfileHero = ({
       <div className="group relative w-full overflow-hidden" style={{ height: PROFILE_COVER_HEIGHT }}>
         {user.coverUrl ? (
           <img src={user.coverUrl} alt="" aria-hidden className="absolute inset-0 h-full w-full object-cover" />
-        ) : user.avatarUrl ? (
-          <img
-            src={user.avatarUrl}
-            alt=""
-            aria-hidden
-            className="absolute inset-0 h-full w-full scale-110 object-cover opacity-40 blur-2xl"
-          />
-        ) : null}
-        <div className="absolute inset-0 bg-muted" style={coverStyle} />
+        ) : (
+          <>
+            {user.avatarUrl ? (
+              <img
+                src={user.avatarUrl}
+                alt=""
+                aria-hidden
+                className="absolute inset-0 h-full w-full scale-110 object-cover opacity-40 blur-2xl"
+              />
+            ) : null}
+            <div className="absolute inset-0 bg-muted" style={coverStyle} />
+          </>
+        )}
 
         {isOwnProfile && (
           <>

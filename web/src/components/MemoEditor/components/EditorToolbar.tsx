@@ -15,6 +15,7 @@ export const EditorToolbar: FC<EditorToolbarProps> = ({
   onAudioRecorderClick,
   controllerRef,
   variant = "default",
+  hideCancel = false,
 }) => {
   const t = useTranslate();
   const { actions, dispatch } = useEditorContext();
@@ -54,7 +55,7 @@ export const EditorToolbar: FC<EditorToolbarProps> = ({
         </div>
 
         <div className="flex shrink-0 flex-row items-center gap-2">
-          {onCancel && (
+          {onCancel && !hideCancel && (
             <button
               type="button"
               onClick={onCancel}

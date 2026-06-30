@@ -1,7 +1,9 @@
 import { BellIcon, EarthIcon, HomeIcon, PlusIcon, UserCircleIcon } from "lucide-react";
-import { NavLink } from "react-router-dom";
+import { type MouseEvent, useCallback } from "react";
+import { NavLink, useLocation } from "react-router-dom";
 import { useComposeDialog } from "@/contexts/ComposeDialogContext";
 import useCurrentUser from "@/hooks/useCurrentUser";
+import { useMobileNavRefresh } from "@/hooks/useMobileNavRefresh";
 import { useNotifications } from "@/hooks/useUserQueries";
 import { cn } from "@/lib/utils";
 import { ROUTES } from "@/router/routes";
@@ -24,12 +26,32 @@ interface MobileBottomNavProps {
 
 const MobileBottomNav = ({ visible = true }: MobileBottomNavProps) => {
   const t = useTranslate();
+  const location = useLocation();
   const currentUser = useCurrentUser();
   const { openCompose } = useComposeDialog();
+  const { refreshHome, refreshExplore, refreshInbox, refreshProfile } = useMobileNavRefresh();
   const { data: notifications = [] } = useNotifications();
   const unreadCount = notifications.filter((n) => n.status === UserNotification_Status.UNREAD).length;
 
   const profilePath = currentUser ? `/u/${encodeURIComponent(currentUser.username)}` : ROUTES.AUTH;
+
+  const handleActiveNavClick = useCallback(
+    (event: MouseEvent<HTMLAnchorElement>, isActive: boolean, onRefresh: () => void) => {
+      if (!isActive) {
+        return;
+      }
+      event.preventDefault();
+      onRefresh();
+    },
+    [],
+  );
+
+  const handleExploreClick = useCallback(
+    (event: MouseEvent<HTMLAnchorElement>, isActive: boolean) => {
+      handleActiveNavClick(event, isActive, refreshExplore);
+    },
+    [handleActiveNavClick, refreshExplore],
+  );
 
   const shellClassName = cn(
     "fixed inset-x-0 bottom-0 z-50 flex flex-col bg-background/90 backdrop-blur-md transition-transform duration-300 ease-in-out will-change-transform md:hidden",
@@ -39,13 +61,27 @@ const MobileBottomNav = ({ visible = true }: MobileBottomNavProps) => {
   const barClassName = "flex items-stretch justify-around px-2";
 
   if (!currentUser) {
+    const isExploreActive = location.pathname === ROUTES.EXPLORE;
+    const isAboutActive = location.pathname === ROUTES.ABOUT;
+
     return (
       <nav aria-label={t("layout.mobile-nav")} className={shellClassName}>
         <div className={barClassName} style={{ height: MOBILE_BOTTOM_NAV_HEIGHT }}>
-          <NavLink className={navLinkClass} to={ROUTES.EXPLORE} end viewTransition>
+          <NavLink
+            className={navLinkClass}
+            to={ROUTES.EXPLORE}
+            end
+            viewTransition
+            onClick={(event) => handleExploreClick(event, isExploreActive)}
+          >
             <EarthIcon className="h-7 w-7" strokeWidth={2} />
           </NavLink>
-          <NavLink className={navLinkClass} to={ROUTES.ABOUT} viewTransition>
+          <NavLink
+            className={navLinkClass}
+            to={ROUTES.ABOUT}
+            viewTransition
+            onClick={(event) => handleActiveNavClick(event, isAboutActive, () => window.scrollTo({ top: 0, behavior: "smooth" }))}
+          >
             <UserCircleIcon className="h-7 w-7" strokeWidth={2} />
           </NavLink>
           <NavLink className={navLinkClass} to={ROUTES.AUTH} viewTransition>
@@ -57,13 +93,29 @@ const MobileBottomNav = ({ visible = true }: MobileBottomNavProps) => {
     );
   }
 
+  const isHomeActive = location.pathname === ROUTES.HOME;
+  const isExploreActive = location.pathname === ROUTES.EXPLORE;
+  const isInboxActive = location.pathname === ROUTES.INBOX;
+  const isProfileActive = location.pathname === profilePath;
+
   return (
     <nav aria-label={t("layout.mobile-nav")} className={shellClassName}>
       <div className={barClassName} style={{ height: MOBILE_BOTTOM_NAV_HEIGHT }}>
-        <NavLink className={navLinkClass} to={ROUTES.HOME} end viewTransition>
+        <NavLink
+          className={navLinkClass}
+          to={ROUTES.HOME}
+          end
+          viewTransition
+          onClick={(event) => handleActiveNavClick(event, isHomeActive, refreshHome)}
+        >
           <HomeIcon className="h-7 w-7" strokeWidth={2} />
         </NavLink>
-        <NavLink className={navLinkClass} to={ROUTES.EXPLORE} viewTransition>
+        <NavLink
+          className={navLinkClass}
+          to={ROUTES.EXPLORE}
+          viewTransition
+          onClick={(event) => handleExploreClick(event, isExploreActive)}
+        >
           <EarthIcon className="h-7 w-7" strokeWidth={2} />
         </NavLink>
         <button
@@ -81,6 +133,7 @@ const MobileBottomNav = ({ visible = true }: MobileBottomNavProps) => {
           to={ROUTES.INBOX}
           viewTransition
           aria-label={unreadCount > 0 ? `${t("common.inbox")}, ${unreadCount}` : t("common.inbox")}
+          onClick={(event) => handleActiveNavClick(event, isInboxActive, refreshInbox)}
         >
           <div className="relative">
             <BellIcon className="h-7 w-7" strokeWidth={2} />
@@ -91,7 +144,14 @@ const MobileBottomNav = ({ visible = true }: MobileBottomNavProps) => {
             )}
           </div>
         </NavLink>
-        <NavLink className={navLinkClass} to={profilePath} viewTransition>
+        <NavLink
+          className={navLinkClass}
+          to={profilePath}
+          viewTransition
+          onClick={(event) =>
+            handleActiveNavClick(event, isProfileActive, () => refreshProfile(currentUser.username))
+          }
+        >
           <UserAvatar className="h-8 w-8" avatarUrl={currentUser.avatarUrl} />
         </NavLink>
       </div>
