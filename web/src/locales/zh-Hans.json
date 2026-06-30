@@ -302,7 +302,7 @@
     "visibility": {
       "disabled": "已禁用公开备忘录",
       "private": "私有",
-      "protected": "工作区",
+      "protected": "成员",
       "public": "公开"
     },
     "outline": "概要",
