@@ -62,10 +62,12 @@ export const headingClass = (level: HeadingLevel): string => headingClasses[leve
  * without the viewer's click/hover affordances.
  */
 export const tagStyles = {
-  /** Shape, padding, and typography — always applied. */
-  base: "inline-flex items-center align-baseline px-1.5 py-0.5 text-[0.9em] leading-none font-normal rounded-full border",
-  /** Default theme color, used when no custom tag color is set. */
-  defaultColor: "border-primary text-primary bg-primary/15",
+  /** Pill shape, padding, and typography — always applied. */
+  base: "inline-flex max-w-full items-center align-baseline rounded-full px-2.5 py-1 text-[13px] leading-none font-medium",
+  /** Default theme pill — solid muted surface, high-contrast label. */
+  defaultColor: "bg-accent text-foreground",
+  /** Selected / active filter state in tag lists. */
+  activeColor: "bg-[var(--x-accent)] text-white",
 } as const;
 
 /**

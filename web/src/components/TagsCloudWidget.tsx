@@ -8,6 +8,7 @@ import { Switch } from "@/components/ui/switch";
 import { type MemoFilter, useMemoFilterContext } from "@/contexts/MemoFilterContext";
 import { useLocalStorage } from "@/hooks";
 import { cn } from "@/lib/utils";
+import { tagStyles } from "@/lib/markdownStyles";
 import { useTranslate } from "@/utils/i18n";
 
 interface TagsCloudWidgetProps {
@@ -93,12 +94,13 @@ const TagsCloudWidget = ({ tagCount, readonly = false }: TagsCloudWidgetProps) =
                   type="button"
                   onClick={() => handleTagClick(tag)}
                   className={cn(
-                    "inline-flex max-w-full items-baseline text-left text-[15px] leading-5 transition-opacity hover:opacity-80",
-                    isActive ? "font-bold text-[var(--x-accent)]" : "text-muted-foreground",
+                    tagStyles.base,
+                    "max-w-full transition-opacity hover:opacity-85",
+                    isActive ? tagStyles.activeColor : tagStyles.defaultColor,
                   )}
                 >
                   <span className="truncate">#{tag}</span>
-                  {amount > 1 && <span className="ml-0.5 shrink-0 opacity-60">({amount})</span>}
+                  {amount > 1 && <span className="ml-1 shrink-0 opacity-70">({amount})</span>}
                 </button>
               );
             })}

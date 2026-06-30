@@ -32,9 +32,8 @@ export const Tag: React.FC<TagProps> = ({ "data-tag": dataTag, children, classNa
   const bgHex = colorToHex(metadata?.backgroundColor);
   const tagStyle: React.CSSProperties | undefined = bgHex
     ? {
-        borderColor: bgHex,
-        color: `color-mix(in srgb, ${bgHex} 60%, black)`,
-        backgroundColor: `color-mix(in srgb, ${bgHex} 15%, transparent)`,
+        backgroundColor: bgHex,
+        color: "#fff",
         ...style,
       }
     : style;
@@ -67,7 +66,7 @@ export const Tag: React.FC<TagProps> = ({ "data-tag": dataTag, children, classNa
 
   return (
     <span
-      className={cn(tagStyles.base, "cursor-pointer transition-opacity hover:opacity-75", !bgHex && tagStyles.defaultColor, className)}
+      className={cn(tagStyles.base, "cursor-pointer transition-opacity hover:opacity-85", !bgHex && tagStyles.defaultColor, className)}
       style={tagStyle}
       data-tag={tag}
       {...props}

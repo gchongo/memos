@@ -11,15 +11,6 @@ import UserAvatar from "./UserAvatar";
 
 /** Visible bar height excluding the device safe-area inset. Keep in sync with MainLayout bottom padding. */
 export const MOBILE_BOTTOM_NAV_HEIGHT = 64;
-/** Minimum padding below the icon row when the device reports no safe-area inset. */
-export const MOBILE_BOTTOM_NAV_MIN_SAFE_BOTTOM = 8;
-
-export const mobileBottomNavStyleVars = {
-  ["--mobile-bottom-nav-height" as string]: `${MOBILE_BOTTOM_NAV_HEIGHT}px`,
-  ["--mobile-bottom-nav-min-safe-bottom" as string]: `${MOBILE_BOTTOM_NAV_MIN_SAFE_BOTTOM}px`,
-} as const;
-
-const bottomInsetClass = "h-[max(env(safe-area-inset-bottom,0px),var(--mobile-bottom-nav-min-safe-bottom))]";
 
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>
   cn(
@@ -49,7 +40,7 @@ const MobileBottomNav = ({ visible = true }: MobileBottomNavProps) => {
 
   if (!currentUser) {
     return (
-      <nav aria-label={t("layout.mobile-nav")} className={shellClassName} style={mobileBottomNavStyleVars}>
+      <nav aria-label={t("layout.mobile-nav")} className={shellClassName}>
         <div className={barClassName} style={{ height: MOBILE_BOTTOM_NAV_HEIGHT }}>
           <NavLink className={navLinkClass} to={ROUTES.EXPLORE} end viewTransition>
             <EarthIcon className="h-7 w-7" strokeWidth={2} />
@@ -61,13 +52,13 @@ const MobileBottomNav = ({ visible = true }: MobileBottomNavProps) => {
             <span className="text-xs font-medium">{t("common.sign-in")}</span>
           </NavLink>
         </div>
-        <div aria-hidden className={bottomInsetClass} />
+        <div aria-hidden className="h-[env(safe-area-inset-bottom,0px)]" />
       </nav>
     );
   }
 
   return (
-    <nav aria-label={t("layout.mobile-nav")} className={shellClassName} style={mobileBottomNavStyleVars}>
+    <nav aria-label={t("layout.mobile-nav")} className={shellClassName}>
       <div className={barClassName} style={{ height: MOBILE_BOTTOM_NAV_HEIGHT }}>
         <NavLink className={navLinkClass} to={ROUTES.HOME} end viewTransition>
           <HomeIcon className="h-7 w-7" strokeWidth={2} />
@@ -104,7 +95,7 @@ const MobileBottomNav = ({ visible = true }: MobileBottomNavProps) => {
           <UserAvatar className="h-8 w-8" avatarUrl={currentUser.avatarUrl} />
         </NavLink>
       </div>
-      <div aria-hidden className={bottomInsetClass} />
+      <div aria-hidden className="h-[env(safe-area-inset-bottom,0px)]" />
     </nav>
   );
 };
