@@ -44,7 +44,11 @@
     "action-share": "Share",
     "show-more": "Show more",
     "all-users": "All users",
-    "trending-in": "Explore"
+    "trending-in": "Explore",
+    "edit-profile": "Edit profile",
+    "profile-tab-posts": "Posts",
+    "profile-post-count": "{{count}} posts",
+    "profile-joined": "Joined {{date}}"
   },
   "shortcutsPage": {
     "description": "Create reusable memo filters with fields, operators, time helpers, and tag matching.",

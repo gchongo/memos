@@ -44,7 +44,11 @@
     "action-share": "分享",
     "show-more": "显示更多",
     "all-users": "所有用户",
-    "trending-in": "发现"
+    "trending-in": "发现",
+    "edit-profile": "编辑个人资料",
+    "profile-tab-posts": "帖子",
+    "profile-post-count": "{{count}} 帖子",
+    "profile-joined": "{{date}} 加入"
   },
   "shortcutsPage": {
     "description": "创建可复用的备忘录筛选器，支持字段、运算符、时间函数和标签匹配。",
