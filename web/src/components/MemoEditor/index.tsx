@@ -5,7 +5,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useInstance } from "@/contexts/InstanceContext";
 import { useNewMemo } from "@/contexts/NewMemoContext";
 import useCurrentUser from "@/hooks/useCurrentUser";
+import { useAutoFocusEditor } from "@/hooks/useAutoFocusEditor";
 import { memoKeys } from "@/hooks/useMemoQueries";
+import { useVisualViewportBottomInset } from "@/hooks/useVisualViewportBottomInset";
 import { userKeys } from "@/hooks/useUserQueries";
 import { handleError } from "@/lib/error";
 import { cn } from "@/lib/utils";
@@ -22,7 +24,7 @@ import {
   FormattingToolbar,
   TimestampPopover,
 } from "./components";
-import { FOCUS_MODE_STYLES } from "./constants";
+import { FOCUS_MODE_STYLES, FULLSCREEN_COMPOSE_TOOLBAR_HEIGHT } from "./constants";
 import { useAudioRecorder, useAutoSave, useFocusMode, useKeyboard, useMemoInit } from "./hooks";
 import { errorService, memoService, transcriptionService, validationService } from "./services";
 import { EditorProvider, useEditorContext, useEditorSelector } from "./state";
@@ -68,6 +70,11 @@ const MemoEditorImpl: React.FC<MemoEditorProps> = ({
   const [isTranscribingAudio, setIsTranscribingAudio] = useState(false);
 
   const memoName = memo?.name;
+  const isFeed = variant === "feed";
+  const isFullscreenCompose = composeLayout === "fullscreen";
+  const keyboardInset = useVisualViewportBottomInset(isFullscreenCompose);
+  const toolbarBottomOffset = keyboardInset;
+
   const canTranscribe = useMemo(() => {
     const providerId = aiSetting.transcription?.providerId ?? "";
     if (!providerId) return false;
@@ -83,11 +90,13 @@ const MemoEditorImpl: React.FC<MemoEditorProps> = ({
     memo,
     cacheKey,
     username: currentUser?.name ?? "",
-    autoFocus,
+    autoFocus: autoFocus && !isFullscreenCompose,
     defaultVisibility,
     defaultCreateTime,
     defaultRelations,
   });
+
+  useAutoFocusEditor(editorRef, Boolean(autoFocus && isFullscreenCompose), isInitialized);
   const isDraftCacheEnabled = !memo;
 
   // Auto-save content to localStorage (subscribes to the store internally).
@@ -309,9 +318,6 @@ const MemoEditorImpl: React.FC<MemoEditorProps> = ({
     }
   }
 
-  const isFeed = variant === "feed";
-  const isFullscreenCompose = composeLayout === "fullscreen";
-
   return (
     <>
       <FocusModeOverlay isActive={isFocusMode} onToggle={handleToggleFocusMode} />
@@ -340,21 +346,34 @@ const MemoEditorImpl: React.FC<MemoEditorProps> = ({
           </div>
         )}
 
-        <EditorContent
-          ref={editorRef}
-          placeholder={placeholder}
-          contentClassName={cn(isFeed && "feed-composer-editor", isFullscreenCompose && "min-h-0 flex-1 overflow-y-auto")}
-        />
+        <div className={cn("flex w-full flex-col", isFullscreenCompose && "min-h-0 flex-1 overflow-y-auto")}>
+          <EditorContent
+            ref={editorRef}
+            placeholder={placeholder}
+            fillAvailable={isFullscreenCompose}
+            contentClassName={cn(isFeed && "feed-composer-editor", isFullscreenCompose && "min-h-0 flex-1")}
+          />
 
-        {isAudioRecorderOpen && (audioRecorder.isBusy || isTranscribingAudio) && (
-          <AudioRecorderPanel
-            audioRecorder={{ status: audioRecorder.status, elapsedSeconds: audioRecorder.elapsedSeconds }}
-            mediaStream={audioRecorder.recordingStream}
-            onStop={audioRecorder.stopRecording}
-            onCancel={handleCancelAudioRecording}
-            onTranscribe={handleTranscribeAudioRecording}
-            canTranscribe={canTranscribe}
-            isTranscribing={isTranscribingAudio}
+          {isAudioRecorderOpen && (audioRecorder.isBusy || isTranscribingAudio) && (
+            <AudioRecorderPanel
+              audioRecorder={{ status: audioRecorder.status, elapsedSeconds: audioRecorder.elapsedSeconds }}
+              mediaStream={audioRecorder.recordingStream}
+              onStop={audioRecorder.stopRecording}
+              onCancel={handleCancelAudioRecording}
+              onTranscribe={handleTranscribeAudioRecording}
+              canTranscribe={canTranscribe}
+              isTranscribing={isTranscribingAudio}
+            />
+          )}
+
+          {isFullscreenCompose && <EditorMetadata memoName={memoName} />}
+        </div>
+
+        {isFullscreenCompose && (
+          <div
+            aria-hidden
+            className="w-full shrink-0"
+            style={{ height: FULLSCREEN_COMPOSE_TOOLBAR_HEIGHT + Math.max(keyboardInset, 0) }}
           />
         )}
 
@@ -362,10 +381,12 @@ const MemoEditorImpl: React.FC<MemoEditorProps> = ({
           className={cn(
             "flex w-full flex-col",
             isFeed ? "gap-0" : "gap-2",
-            isFullscreenCompose && "sticky bottom-0 z-10 shrink-0 bg-background pb-[max(env(safe-area-inset-bottom,0px),8px)]",
+            isFullscreenCompose &&
+              "fixed inset-x-0 z-50 border-t border-border bg-background px-4 pb-[max(env(safe-area-inset-bottom,0px),8px)]",
           )}
+          style={isFullscreenCompose ? { bottom: toolbarBottomOffset } : undefined}
         >
-          <EditorMetadata memoName={memoName} />
+          {!isFullscreenCompose && <EditorMetadata memoName={memoName} />}
           <EditorToolbar
             variant={variant}
             hideCancel={isFullscreenCompose}

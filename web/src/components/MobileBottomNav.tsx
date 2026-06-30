@@ -1,5 +1,5 @@
 import { BellIcon, EarthIcon, HomeIcon, PlusIcon, UserCircleIcon } from "lucide-react";
-import { type MouseEvent, useCallback } from "react";
+import { type MouseEvent, useCallback, useRef } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useComposeDialog } from "@/contexts/ComposeDialogContext";
 import useCurrentUser from "@/hooks/useCurrentUser";
@@ -31,6 +31,7 @@ const MobileBottomNav = ({ visible = true }: MobileBottomNavProps) => {
   const { openCompose } = useComposeDialog();
   const { refreshHome, refreshExplore, refreshInbox, refreshProfile } = useMobileNavRefresh();
   const { data: notifications = [] } = useNotifications();
+  const composeFocusBridgeRef = useRef<HTMLInputElement>(null);
   const unreadCount = notifications.filter((n) => n.status === UserNotification_Status.UNREAD).length;
 
   const profilePath = currentUser ? `/u/${encodeURIComponent(currentUser.username)}` : ROUTES.AUTH;
@@ -52,6 +53,11 @@ const MobileBottomNav = ({ visible = true }: MobileBottomNavProps) => {
     },
     [handleActiveNavClick, refreshExplore],
   );
+
+  const handleComposeClick = useCallback(() => {
+    composeFocusBridgeRef.current?.focus({ preventScroll: true });
+    openCompose();
+  }, [openCompose]);
 
   const shellClassName = cn(
     "fixed inset-x-0 bottom-0 z-50 flex flex-col bg-background/90 backdrop-blur-md transition-transform duration-300 ease-in-out will-change-transform md:hidden",
@@ -100,6 +106,16 @@ const MobileBottomNav = ({ visible = true }: MobileBottomNavProps) => {
 
   return (
     <nav aria-label={t("layout.mobile-nav")} className={shellClassName}>
+      <input
+        ref={composeFocusBridgeRef}
+        type="text"
+        inputMode="text"
+        autoComplete="off"
+        tabIndex={-1}
+        aria-hidden
+        className="pointer-events-none fixed h-px w-px opacity-0"
+        data-compose-focus-bridge
+      />
       <div className={barClassName} style={{ height: MOBILE_BOTTOM_NAV_HEIGHT }}>
         <NavLink
           className={navLinkClass}
@@ -121,7 +137,7 @@ const MobileBottomNav = ({ visible = true }: MobileBottomNavProps) => {
         <button
           type="button"
           aria-label={t("layout.post")}
-          onClick={openCompose}
+          onClick={handleComposeClick}
           className="flex min-h-[44px] min-w-[44px] flex-1 flex-col items-center justify-center py-2 text-muted-foreground transition-colors hover:text-foreground"
         >
           <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground">

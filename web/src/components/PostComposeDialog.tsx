@@ -1,6 +1,6 @@
 import { create } from "@bufbuild/protobuf";
 import { XIcon } from "lucide-react";
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import MemoEditor from "@/components/MemoEditor";
 import QuotedMemoCard from "@/components/MemoView/components/QuotedMemoCard";
 import UserAvatar from "@/components/UserAvatar";
@@ -37,17 +37,6 @@ const PostComposeDialog = () => {
       }),
     ];
   }, [quoteTarget]);
-
-  useEffect(() => {
-    if (!open || !isMobile) {
-      return;
-    }
-    const timer = window.setTimeout(() => {
-      const editor = document.querySelector<HTMLElement>("[data-compose-editor] [contenteditable='true'], [data-compose-editor] textarea");
-      editor?.focus();
-    }, 350);
-    return () => window.clearTimeout(timer);
-  }, [open, isMobile, quoteTarget?.name]);
 
   if (!currentUser) {
     return null;
@@ -103,7 +92,7 @@ const PostComposeDialog = () => {
               isMobile && "min-h-0 flex-1 flex-col overflow-hidden",
             )}
           >
-            <div className={cn("flex gap-3", isMobile && "min-h-0 flex-1")}>
+            <div className={cn("flex min-w-0 flex-1 gap-3", isMobile && "min-h-0")}>
               <UserAvatar className="mt-1 shrink-0" avatarUrl={currentUser.avatarUrl} />
               <div className={cn("min-w-0 flex-1", isMobile && "flex min-h-0 flex-1 flex-col")}>
                 {quoteTarget && (

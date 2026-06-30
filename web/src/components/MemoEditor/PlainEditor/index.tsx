@@ -11,6 +11,7 @@ interface PlainEditorProps {
   onContentChange: (content: string) => void;
   onPaste: (event: React.ClipboardEvent) => void;
   isFocusMode?: boolean;
+  fillAvailable?: boolean;
 }
 
 // Low-level string-surgery handle over the textarea. Internal to this file —
@@ -27,7 +28,7 @@ interface TextareaActions {
 }
 
 const PlainEditor = forwardRef(function PlainEditor(props: PlainEditorProps, ref: React.ForwardedRef<EditorController>) {
-  const { className, initialContent, placeholder, onPaste, onContentChange: handleContentChangeCallback, isFocusMode } = props;
+  const { className, initialContent, placeholder, onPaste, onContentChange: handleContentChangeCallback, isFocusMode, fillAvailable } = props;
   const editorRef = useRef<HTMLTextAreaElement>(null);
 
   const updateEditorHeight = useCallback(() => {
@@ -176,17 +177,21 @@ const PlainEditor = forwardRef(function PlainEditor(props: PlainEditorProps, ref
   return (
     <div
       className={cn(
-        "flex flex-col justify-start items-start relative w-full bg-inherit",
-        // Focus mode: flex-1 to grow and fill space; Normal: h-auto with max-height
-        isFocusMode ? "flex-1" : `h-auto ${EDITOR_HEIGHT.normal}`,
+        "relative flex w-full flex-col items-start justify-start bg-inherit",
+        fillAvailable ? "min-h-0 flex-1" : "h-auto",
+        isFocusMode ? "flex-1" : !fillAvailable && EDITOR_HEIGHT.normal,
         className,
       )}
+      onClick={(event) => {
+        if (event.target === event.currentTarget) {
+          editorRef.current?.focus();
+        }
+      }}
     >
       <textarea
         className={cn(
           "w-full text-base resize-none overflow-x-hidden overflow-y-auto bg-transparent outline-none placeholder:opacity-70 whitespace-pre-wrap wrap-break-word",
-          // Focus mode: flex-1 h-0 to grow within flex container; Normal: h-full to fill wrapper
-          isFocusMode ? "flex-1 h-0" : "h-full",
+          fillAvailable ? "min-h-full flex-1" : isFocusMode ? "flex-1 h-0" : "h-full",
         )}
         rows={1}
         placeholder={placeholder}

@@ -113,5 +113,17 @@
 
 .feed-composer.flex.min-h-0 .feed-composer-editor .memo-editor-content .memo-wysiwyg,
 .feed-composer.flex.min-h-0 .feed-composer-editor .memo-editor-content textarea {
-  min-height: 5rem;
+  min-height: 100%;
+}
+
+.feed-composer.flex.min-h-0 .feed-composer-editor .memo-editor-content {
+  min-height: 12rem;
+  flex: 1 1 auto;
+}
+
+.feed-composer.flex.min-h-0 .feed-composer-editor .memo-editor-content .tiptap {
+  min-height: 100%;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
 }

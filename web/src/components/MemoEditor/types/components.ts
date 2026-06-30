@@ -31,6 +31,8 @@ export interface MemoEditorProps {
 export interface EditorContentProps {
   placeholder?: string;
   contentClassName?: string;
+  /** Expand the editor surface to fill remaining vertical space (mobile compose). */
+  fillAvailable?: boolean;
 }
 
 export interface EditorToolbarProps {

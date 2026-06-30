@@ -14,7 +14,7 @@ import type { EditorController } from "../types/editorController";
  * handoff: both editors serialize into state.content on every change, so the
  * incoming editor simply initializes from it.
  */
-export const EditorContent = forwardRef<EditorController, EditorContentProps>(({ placeholder, contentClassName }, ref) => {
+export const EditorContent = forwardRef<EditorController, EditorContentProps>(({ placeholder, contentClassName, fillAvailable }, ref) => {
   const { actions, dispatch } = useEditorContext();
   const { createBlobUrl } = useBlobUrls();
   const content = useEditorSelector((s) => s.content);
@@ -103,7 +103,7 @@ export const EditorContent = forwardRef<EditorController, EditorContentProps>(({
   };
 
   return (
-    <div className={cn("flex w-full flex-1 flex-col", contentClassName)} {...dragHandlers}>
+    <div className={cn("flex w-full flex-1 flex-col", fillAvailable && "min-h-0 flex-1", contentClassName)} {...dragHandlers}>
       {mode === "wysiwyg" ? (
         <Editor
           ref={wysiwygRef}
@@ -111,6 +111,7 @@ export const EditorContent = forwardRef<EditorController, EditorContentProps>(({
           initialContent={content}
           placeholder={placeholder || ""}
           isFocusMode={isFocusMode}
+          fillAvailable={fillAvailable}
           onContentChange={handleContentChange}
           onPaste={handlePaste}
         />
@@ -121,6 +122,7 @@ export const EditorContent = forwardRef<EditorController, EditorContentProps>(({
           initialContent={content}
           placeholder={placeholder || ""}
           isFocusMode={isFocusMode}
+          fillAvailable={fillAvailable}
           onContentChange={handleContentChange}
           onPaste={handlePaste}
         />

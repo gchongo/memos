@@ -63,6 +63,7 @@ export interface EditorProps {
   initialContent: string;
   placeholder: string;
   isFocusMode?: boolean;
+  fillAvailable?: boolean;
   onContentChange: (content: string) => void;
   onPaste: (event: React.ClipboardEvent) => void;
 }
@@ -84,7 +85,7 @@ function serializeMarkdown(editor: { getMarkdown: () => string } | null): string
  * and auto-grow are native ProseMirror/contenteditable behavior.
  */
 const Editor = forwardRef<EditorController, EditorProps>(function Editor(props, ref) {
-  const { className, initialContent, placeholder, isFocusMode, onContentChange, onPaste } = props;
+  const { className, initialContent, placeholder, isFocusMode, fillAvailable, onContentChange, onPaste } = props;
 
   // Last markdown emitted through onContentChange, so the sync effect can
   // recognize the parent echoing our own value back without re-serializing.
@@ -133,7 +134,10 @@ const Editor = forwardRef<EditorController, EditorProps>(function Editor(props, 
   const editorProps = useMemo<ProseMirrorEditorProps>(
     () => ({
       attributes: {
-        class: "memo-wysiwyg outline-none w-full text-base break-words min-h-6",
+        class: cn(
+          "memo-wysiwyg outline-none w-full text-base break-words",
+          fillAvailable ? "min-h-full flex-1" : "min-h-6",
+        ),
       },
       handlePaste: (_view, event) => {
         const hasFiles = Array.from(event.clipboardData?.items ?? []).some((item) => item.kind === "file");
@@ -145,7 +149,7 @@ const Editor = forwardRef<EditorController, EditorProps>(function Editor(props, 
         return false;
       },
     }),
-    [],
+    [fillAvailable],
   );
 
   const editor = useEditor({
@@ -202,7 +206,7 @@ const Editor = forwardRef<EditorController, EditorProps>(function Editor(props, 
   useImperativeHandle(
     ref,
     (): EditorController => ({
-      focus: () => editor?.commands.focus(),
+      focus: () => editor?.commands.focus("end"),
       hasFocus: () => editor?.isFocused ?? false,
       // Contract: whitespace-only counts as empty. The editor's structural
       // `editor.isEmpty` would call a paragraph of spaces non-empty.
@@ -252,13 +256,12 @@ const Editor = forwardRef<EditorController, EditorProps>(function Editor(props, 
   return (
     <div
       className={cn(
-        "flex flex-col justify-start items-start relative w-full bg-inherit overflow-y-auto overflow-x-hidden",
-        isFocusMode ? "flex-1" : `h-auto ${EDITOR_HEIGHT.normal}`,
+        "relative flex w-full flex-col items-start justify-start overflow-x-hidden overflow-y-auto bg-inherit",
+        fillAvailable ? "min-h-0 flex-1" : "h-auto",
+        isFocusMode ? "flex-1" : !fillAvailable && EDITOR_HEIGHT.normal,
         className,
       )}
       onClick={(event) => {
-        // In focus mode the wrapper extends below the content; a click on the
-        // empty area should land the caret at the end instead of doing nothing.
         if (event.target === event.currentTarget) {
           editor?.commands.focus("end");
         }

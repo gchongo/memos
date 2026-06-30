@@ -17,3 +17,6 @@ export const EDITOR_HEIGHT = {
   // Max height for normal mode - focus mode uses flex-1 to grow dynamically
   normal: "max-h-[50vh]",
 } as const;
+
+/** Approximate height of the mobile full-screen compose toolbar row. */
+export const FULLSCREEN_COMPOSE_TOOLBAR_HEIGHT = 56;
