@@ -28,6 +28,9 @@ const (
 	UserService_DeleteUser_FullMethodName                  = "/memos.api.v1.UserService/DeleteUser"
 	UserService_ListAllUserStats_FullMethodName            = "/memos.api.v1.UserService/ListAllUserStats"
 	UserService_GetUserStats_FullMethodName                = "/memos.api.v1.UserService/GetUserStats"
+	UserService_FollowUser_FullMethodName                  = "/memos.api.v1.UserService/FollowUser"
+	UserService_UnfollowUser_FullMethodName                = "/memos.api.v1.UserService/UnfollowUser"
+	UserService_ListFollowing_FullMethodName               = "/memos.api.v1.UserService/ListFollowing"
 	UserService_GetUserSetting_FullMethodName              = "/memos.api.v1.UserService/GetUserSetting"
 	UserService_UpdateUserSetting_FullMethodName           = "/memos.api.v1.UserService/UpdateUserSetting"
 	UserService_ListUserSettings_FullMethodName            = "/memos.api.v1.UserService/ListUserSettings"
@@ -69,6 +72,12 @@ type UserServiceClient interface {
 	ListAllUserStats(ctx context.Context, in *ListAllUserStatsRequest, opts ...grpc.CallOption) (*ListAllUserStatsResponse, error)
 	// GetUserStats returns statistics for a specific user.
 	GetUserStats(ctx context.Context, in *GetUserStatsRequest, opts ...grpc.CallOption) (*UserStats, error)
+	// FollowUser creates a follow relationship from the current user to the target user.
+	FollowUser(ctx context.Context, in *FollowUserRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	// UnfollowUser removes a follow relationship from the current user to the target user.
+	UnfollowUser(ctx context.Context, in *UnfollowUserRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	// ListFollowing lists usernames that a user follows.
+	ListFollowing(ctx context.Context, in *ListFollowingRequest, opts ...grpc.CallOption) (*ListFollowingResponse, error)
 	// GetUserSetting returns the user setting.
 	GetUserSetting(ctx context.Context, in *GetUserSettingRequest, opts ...grpc.CallOption) (*UserSetting, error)
 	// UpdateUserSetting updates the user setting.
@@ -193,6 +202,36 @@ func (c *userServiceClient) GetUserStats(ctx context.Context, in *GetUserStatsRe
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(UserStats)
 	err := c.cc.Invoke(ctx, UserService_GetUserStats_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userServiceClient) FollowUser(ctx context.Context, in *FollowUserRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, UserService_FollowUser_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userServiceClient) UnfollowUser(ctx context.Context, in *UnfollowUserRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, UserService_UnfollowUser_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userServiceClient) ListFollowing(ctx context.Context, in *ListFollowingRequest, opts ...grpc.CallOption) (*ListFollowingResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListFollowingResponse)
+	err := c.cc.Invoke(ctx, UserService_ListFollowing_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -400,6 +439,12 @@ type UserServiceServer interface {
 	ListAllUserStats(context.Context, *ListAllUserStatsRequest) (*ListAllUserStatsResponse, error)
 	// GetUserStats returns statistics for a specific user.
 	GetUserStats(context.Context, *GetUserStatsRequest) (*UserStats, error)
+	// FollowUser creates a follow relationship from the current user to the target user.
+	FollowUser(context.Context, *FollowUserRequest) (*emptypb.Empty, error)
+	// UnfollowUser removes a follow relationship from the current user to the target user.
+	UnfollowUser(context.Context, *UnfollowUserRequest) (*emptypb.Empty, error)
+	// ListFollowing lists usernames that a user follows.
+	ListFollowing(context.Context, *ListFollowingRequest) (*ListFollowingResponse, error)
 	// GetUserSetting returns the user setting.
 	GetUserSetting(context.Context, *GetUserSettingRequest) (*UserSetting, error)
 	// UpdateUserSetting updates the user setting.
@@ -473,6 +518,15 @@ func (UnimplementedUserServiceServer) ListAllUserStats(context.Context, *ListAll
 }
 func (UnimplementedUserServiceServer) GetUserStats(context.Context, *GetUserStatsRequest) (*UserStats, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetUserStats not implemented")
+}
+func (UnimplementedUserServiceServer) FollowUser(context.Context, *FollowUserRequest) (*emptypb.Empty, error) {
+	return nil, status.Error(codes.Unimplemented, "method FollowUser not implemented")
+}
+func (UnimplementedUserServiceServer) UnfollowUser(context.Context, *UnfollowUserRequest) (*emptypb.Empty, error) {
+	return nil, status.Error(codes.Unimplemented, "method UnfollowUser not implemented")
+}
+func (UnimplementedUserServiceServer) ListFollowing(context.Context, *ListFollowingRequest) (*ListFollowingResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListFollowing not implemented")
 }
 func (UnimplementedUserServiceServer) GetUserSetting(context.Context, *GetUserSettingRequest) (*UserSetting, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetUserSetting not implemented")
@@ -689,6 +743,60 @@ func _UserService_GetUserStats_Handler(srv interface{}, ctx context.Context, dec
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(UserServiceServer).GetUserStats(ctx, req.(*GetUserStatsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UserService_FollowUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FollowUserRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).FollowUser(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserService_FollowUser_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).FollowUser(ctx, req.(*FollowUserRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UserService_UnfollowUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UnfollowUserRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).UnfollowUser(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserService_UnfollowUser_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).UnfollowUser(ctx, req.(*UnfollowUserRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UserService_ListFollowing_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListFollowingRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).ListFollowing(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserService_ListFollowing_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).ListFollowing(ctx, req.(*ListFollowingRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1055,6 +1163,18 @@ var UserService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetUserStats",
 			Handler:    _UserService_GetUserStats_Handler,
+		},
+		{
+			MethodName: "FollowUser",
+			Handler:    _UserService_FollowUser_Handler,
+		},
+		{
+			MethodName: "UnfollowUser",
+			Handler:    _UserService_UnfollowUser_Handler,
+		},
+		{
+			MethodName: "ListFollowing",
+			Handler:    _UserService_ListFollowing_Handler,
 		},
 		{
 			MethodName: "GetUserSetting",

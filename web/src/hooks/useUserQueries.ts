@@ -25,6 +25,7 @@ export const userKeys = {
   detail: (name: string) => [...userKeys.details(), name] as const,
   stats: () => [...userKeys.all, "stats"] as const,
   userStats: (name: string) => [...userKeys.stats(), name] as const,
+  following: (name: string) => [...userKeys.all, "following", name] as const,
   allUserStats: (request: Partial<ListAllUserStatsQuery>) => [...userKeys.stats(), "all", request] as const,
   currentUser: () => [...userKeys.all, "current"] as const,
   shortcuts: () => [...userKeys.all, "shortcuts"] as const,

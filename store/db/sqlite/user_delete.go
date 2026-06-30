@@ -120,6 +120,9 @@ func deleteUserTargetsTx(ctx context.Context, tx *sql.Tx, userID int32, targets 
 	if err := deleteMemosTx(ctx, tx, memoIDs); err != nil {
 		return err
 	}
+	if err := deleteUserFollowsTx(ctx, tx, userID); err != nil {
+		return err
+	}
 	if err := deleteUserRowTx(ctx, tx, userID); err != nil {
 		return err
 	}
@@ -432,6 +435,11 @@ func deleteUserIdentitiesTx(ctx context.Context, tx *sql.Tx, userID int32) error
 
 func deleteUserSettingsTx(ctx context.Context, tx *sql.Tx, userID int32) error {
 	_, err := tx.ExecContext(ctx, `DELETE FROM user_setting WHERE user_id = `+deleteUserPlaceholder(1), userID)
+	return err
+}
+
+func deleteUserFollowsTx(ctx context.Context, tx *sql.Tx, userID int32) error {
+	_, err := tx.ExecContext(ctx, `DELETE FROM user_follow WHERE follower_id = `+deleteUserPlaceholder(1)+` OR followee_id = `+deleteUserPlaceholder(2), userID, userID)
 	return err
 }
 

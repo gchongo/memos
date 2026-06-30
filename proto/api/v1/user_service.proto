@@ -70,6 +70,30 @@ service UserService {
     option (google.api.method_signature) = "name";
   }
 
+  // FollowUser creates a follow relationship from the current user to the target user.
+  rpc FollowUser(FollowUserRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/api/v1/{name=users/*}:follow"
+      body: "*"
+    };
+    option (google.api.method_signature) = "name";
+  }
+
+  // UnfollowUser removes a follow relationship from the current user to the target user.
+  rpc UnfollowUser(UnfollowUserRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/api/v1/{name=users/*}:unfollow"
+      body: "*"
+    };
+    option (google.api.method_signature) = "name";
+  }
+
+  // ListFollowing lists usernames that a user follows.
+  rpc ListFollowing(ListFollowingRequest) returns (ListFollowingResponse) {
+    option (google.api.http) = {get: "/api/v1/{parent=users/*}/following"};
+    option (google.api.method_signature) = "parent";
+  }
+
   // GetUserSetting returns the user setting.
   rpc GetUserSetting(GetUserSettingRequest) returns (UserSetting) {
     option (google.api.http) = {get: "/api/v1/{name=users/*/settings/*}"};
@@ -389,6 +413,12 @@ message UserStats {
   // Total memo count.
   int32 total_memo_count = 6;
 
+  // Number of users following this user.
+  int32 follower_count = 9;
+
+  // Number of users this user follows.
+  int32 following_count = 10;
+
   // Memo type statistics.
   message MemoTypeStats {
     int32 link_count = 1;
@@ -405,6 +435,37 @@ message GetUserStatsRequest {
     (google.api.field_behavior) = REQUIRED,
     (google.api.resource_reference) = {type: "memos.api.v1/User"}
   ];
+}
+
+message FollowUserRequest {
+  // Required. The user to follow.
+  // Format: users/{user}
+  string name = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference) = {type: "memos.api.v1/User"}
+  ];
+}
+
+message UnfollowUserRequest {
+  // Required. The user to unfollow.
+  // Format: users/{user}
+  string name = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference) = {type: "memos.api.v1/User"}
+  ];
+}
+
+message ListFollowingRequest {
+  // Required. The user whose following list is requested.
+  // Format: users/{user}
+  string parent = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference) = {type: "memos.api.v1/User"}
+  ];
+}
+
+message ListFollowingResponse {
+  repeated string usernames = 1;
 }
 
 message ListAllUserStatsRequest {

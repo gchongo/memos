@@ -1,85 +1,81 @@
-import { useCallback } from "react";
-import { useLocalStorage } from "@/hooks/useLocalStorage";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { userServiceClient } from "@/connect";
+import useCurrentUser from "@/hooks/useCurrentUser";
+import { userKeys } from "@/hooks/useUserQueries";
 
-const FOLLOWED_STORAGE_KEY = "memos-x-followed-usernames";
-const FOLLOWERS_STORAGE_KEY = "memos-x-follower-index";
-
-type FollowerIndex = Record<string, string[]>;
-
-const readFollowerIndex = (index: FollowerIndex | undefined): FollowerIndex => index ?? {};
-
-const uniqueUsernames = (usernames: string[]) => Array.from(new Set(usernames));
+export const useFollowing = (userName?: string) => {
+  return useQuery({
+    queryKey: userKeys.following(userName ?? ""),
+    queryFn: async () => {
+      if (!userName) {
+        throw new Error("User name is required");
+      }
+      const response = await userServiceClient.listFollowing({ parent: userName });
+      return response.usernames;
+    },
+    enabled: Boolean(userName),
+    staleTime: 1000 * 30,
+  });
+};
 
 export const useFollowedUsers = () => {
-  const [followedUsernames, setFollowedUsernames] = useLocalStorage<string[]>(FOLLOWED_STORAGE_KEY, []);
-  const [followerIndex, setFollowerIndex] = useLocalStorage<FollowerIndex>(FOLLOWERS_STORAGE_KEY, {});
+  const queryClient = useQueryClient();
+  const currentUser = useCurrentUser();
+  const { data: followedUsernames = [] } = useFollowing(currentUser?.name);
 
-  const isFollowing = useCallback(
-    (username: string) => followedUsernames.includes(username),
-    [followedUsernames],
-  );
+  const isFollowing = (username: string) => followedUsernames.includes(username);
 
-  const getFollowerCount = useCallback(
-    (username: string) => readFollowerIndex(followerIndex)[username]?.length ?? 0,
-    [followerIndex],
-  );
+  const invalidateFollowQueries = async (targetUsername: string) => {
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: userKeys.following(currentUser?.name ?? "") }),
+      queryClient.invalidateQueries({ queryKey: userKeys.userStats(`users/${targetUsername}`) }),
+      queryClient.invalidateQueries({ queryKey: userKeys.stats() }),
+    ]);
+  };
 
-  const follow = useCallback(
-    (username: string, followerUsername?: string) => {
-      setFollowedUsernames((current) => (current.includes(username) ? current : [...current, username]));
-
-      if (!followerUsername || followerUsername === username) {
-        return;
-      }
-
-      setFollowerIndex((current) => {
-        const next = { ...readFollowerIndex(current) };
-        const followers = uniqueUsernames([...(next[username] ?? []), followerUsername]);
-        next[username] = followers;
-        return next;
-      });
+  const followMutation = useMutation({
+    mutationFn: async (username: string) => {
+      await userServiceClient.followUser({ name: `users/${username}` });
     },
-    [setFollowedUsernames, setFollowerIndex],
-  );
-
-  const unfollow = useCallback(
-    (username: string, followerUsername?: string) => {
-      setFollowedUsernames((current) => current.filter((name) => name !== username));
-
-      if (!followerUsername) {
-        return;
-      }
-
-      setFollowerIndex((current) => {
-        const next = { ...readFollowerIndex(current) };
-        const followers = (next[username] ?? []).filter((name) => name !== followerUsername);
-        if (followers.length === 0) {
-          delete next[username];
-        } else {
-          next[username] = followers;
-        }
-        return next;
-      });
+    onSuccess: async (_, username) => {
+      await invalidateFollowQueries(username);
     },
-    [setFollowedUsernames, setFollowerIndex],
-  );
+  });
 
-  const toggleFollow = useCallback(
-    (username: string, followerUsername?: string) => {
-      if (isFollowing(username)) {
-        unfollow(username, followerUsername);
-      } else {
-        follow(username, followerUsername);
-      }
+  const unfollowMutation = useMutation({
+    mutationFn: async (username: string) => {
+      await userServiceClient.unfollowUser({ name: `users/${username}` });
     },
-    [follow, isFollowing, unfollow],
-  );
+    onSuccess: async (_, username) => {
+      await invalidateFollowQueries(username);
+    },
+  });
+
+  const follow = (username: string) => {
+    if (!currentUser || isFollowing(username)) {
+      return;
+    }
+    followMutation.mutate(username);
+  };
+
+  const unfollow = (username: string) => {
+    if (!currentUser || !isFollowing(username)) {
+      return;
+    }
+    unfollowMutation.mutate(username);
+  };
+
+  const toggleFollow = (username: string, _followerUsername?: string) => {
+    if (isFollowing(username)) {
+      unfollow(username);
+    } else {
+      follow(username);
+    }
+  };
 
   return {
     followedUsernames,
-    followerIndex,
     isFollowing,
-    getFollowerCount,
     follow,
     unfollow,
     toggleFollow,

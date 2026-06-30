@@ -277,6 +277,11 @@ func (s *APIV1Service) GetUserStats(ctx context.Context, request *v1pb.GetUserSt
 		offset += limit
 	}
 
+	followerCount, followingCount, err := s.getUserFollowCounts(ctx, userID)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to get follow counts: %v", err)
+	}
+
 	userStats := &v1pb.UserStats{
 		Name:                  fmt.Sprintf("%s/stats", BuildUserName(user.Username)),
 		MemoCreatedTimestamps: createdTimestamps,
@@ -284,6 +289,8 @@ func (s *APIV1Service) GetUserStats(ctx context.Context, request *v1pb.GetUserSt
 		TagCount:              tagCount,
 		PinnedMemos:           pinnedMemos,
 		TotalMemoCount:        totalMemoCount,
+		FollowerCount:         followerCount,
+		FollowingCount:        followingCount,
 		MemoTypeStats: &v1pb.UserStats_MemoTypeStats{
 			LinkCount: linkCount,
 			CodeCount: codeCount,

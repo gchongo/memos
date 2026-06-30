@@ -1497,6 +1497,32 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
+    /api/v1/users/{user}/following:
+        get:
+            tags:
+                - UserService
+            description: ListFollowing lists usernames that a user follows.
+            operationId: UserService_ListFollowing
+            parameters:
+                - name: user
+                  in: path
+                  description: The user id.
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListFollowingResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
     /api/v1/users/{user}/linkedIdentities:
         get:
             tags:
@@ -2275,6 +2301,35 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
+    /api/v1/users/{user}:follow:
+        post:
+            tags:
+                - UserService
+            description: FollowUser creates a follow relationship from the current user to the target user.
+            operationId: UserService_FollowUser
+            parameters:
+                - name: user
+                  in: path
+                  description: The user id.
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/FollowUserRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
     /api/v1/users/{user}:getStats:
         get:
             tags:
@@ -2295,6 +2350,35 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/UserStats'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /api/v1/users/{user}:unfollow:
+        post:
+            tags:
+                - UserService
+            description: UnfollowUser removes a follow relationship from the current user to the target user.
+            operationId: UserService_UnfollowUser
+            parameters:
+                - name: user
+                  in: path
+                  description: The user id.
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/UnfollowUserRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
                 default:
                     description: Default error response
                     content:
@@ -2693,6 +2777,16 @@ components:
                     type: string
                 avatarUrl:
                     type: string
+        FollowUserRequest:
+            required:
+                - name
+            type: object
+            properties:
+                name:
+                    type: string
+                    description: |-
+                        Required. The user to follow.
+                         Format: users/{user}
         GeneralSetting_CustomProfile:
             type: object
             properties:
@@ -3067,6 +3161,13 @@ components:
                     type: integer
                     description: The total count of attachments (may be approximate).
                     format: int32
+        ListFollowingResponse:
+            type: object
+            properties:
+                usernames:
+                    type: array
+                    items:
+                        type: string
         ListIdentityProvidersResponse:
             type: object
             properties:
@@ -3756,6 +3857,16 @@ components:
                 contentType:
                     type: string
                     description: Optional. The MIME type of the input audio.
+        UnfollowUserRequest:
+            required:
+                - name
+            type: object
+            properties:
+                name:
+                    type: string
+                    description: |-
+                        Required. The user to unfollow.
+                         Format: users/{user}
         UpsertMemoReactionRequest:
             required:
                 - name
@@ -4025,6 +4136,14 @@ components:
                 totalMemoCount:
                     type: integer
                     description: Total memo count.
+                    format: int32
+                followerCount:
+                    type: integer
+                    description: Number of users following this user.
+                    format: int32
+                followingCount:
+                    type: integer
+                    description: Number of users this user follows.
                     format: int32
             description: User statistics messages
         UserStats_MemoTypeStats:

@@ -53,6 +53,14 @@ const (
 	// UserServiceGetUserStatsProcedure is the fully-qualified name of the UserService's GetUserStats
 	// RPC.
 	UserServiceGetUserStatsProcedure = "/memos.api.v1.UserService/GetUserStats"
+	// UserServiceFollowUserProcedure is the fully-qualified name of the UserService's FollowUser RPC.
+	UserServiceFollowUserProcedure = "/memos.api.v1.UserService/FollowUser"
+	// UserServiceUnfollowUserProcedure is the fully-qualified name of the UserService's UnfollowUser
+	// RPC.
+	UserServiceUnfollowUserProcedure = "/memos.api.v1.UserService/UnfollowUser"
+	// UserServiceListFollowingProcedure is the fully-qualified name of the UserService's ListFollowing
+	// RPC.
+	UserServiceListFollowingProcedure = "/memos.api.v1.UserService/ListFollowing"
 	// UserServiceGetUserSettingProcedure is the fully-qualified name of the UserService's
 	// GetUserSetting RPC.
 	UserServiceGetUserSettingProcedure = "/memos.api.v1.UserService/GetUserSetting"
@@ -128,6 +136,12 @@ type UserServiceClient interface {
 	ListAllUserStats(context.Context, *connect.Request[v1.ListAllUserStatsRequest]) (*connect.Response[v1.ListAllUserStatsResponse], error)
 	// GetUserStats returns statistics for a specific user.
 	GetUserStats(context.Context, *connect.Request[v1.GetUserStatsRequest]) (*connect.Response[v1.UserStats], error)
+	// FollowUser creates a follow relationship from the current user to the target user.
+	FollowUser(context.Context, *connect.Request[v1.FollowUserRequest]) (*connect.Response[emptypb.Empty], error)
+	// UnfollowUser removes a follow relationship from the current user to the target user.
+	UnfollowUser(context.Context, *connect.Request[v1.UnfollowUserRequest]) (*connect.Response[emptypb.Empty], error)
+	// ListFollowing lists usernames that a user follows.
+	ListFollowing(context.Context, *connect.Request[v1.ListFollowingRequest]) (*connect.Response[v1.ListFollowingResponse], error)
 	// GetUserSetting returns the user setting.
 	GetUserSetting(context.Context, *connect.Request[v1.GetUserSettingRequest]) (*connect.Response[v1.UserSetting], error)
 	// UpdateUserSetting updates the user setting.
@@ -227,6 +241,24 @@ func NewUserServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 			httpClient,
 			baseURL+UserServiceGetUserStatsProcedure,
 			connect.WithSchema(userServiceMethods.ByName("GetUserStats")),
+			connect.WithClientOptions(opts...),
+		),
+		followUser: connect.NewClient[v1.FollowUserRequest, emptypb.Empty](
+			httpClient,
+			baseURL+UserServiceFollowUserProcedure,
+			connect.WithSchema(userServiceMethods.ByName("FollowUser")),
+			connect.WithClientOptions(opts...),
+		),
+		unfollowUser: connect.NewClient[v1.UnfollowUserRequest, emptypb.Empty](
+			httpClient,
+			baseURL+UserServiceUnfollowUserProcedure,
+			connect.WithSchema(userServiceMethods.ByName("UnfollowUser")),
+			connect.WithClientOptions(opts...),
+		),
+		listFollowing: connect.NewClient[v1.ListFollowingRequest, v1.ListFollowingResponse](
+			httpClient,
+			baseURL+UserServiceListFollowingProcedure,
+			connect.WithSchema(userServiceMethods.ByName("ListFollowing")),
 			connect.WithClientOptions(opts...),
 		),
 		getUserSetting: connect.NewClient[v1.GetUserSettingRequest, v1.UserSetting](
@@ -350,6 +382,9 @@ type userServiceClient struct {
 	deleteUser                  *connect.Client[v1.DeleteUserRequest, emptypb.Empty]
 	listAllUserStats            *connect.Client[v1.ListAllUserStatsRequest, v1.ListAllUserStatsResponse]
 	getUserStats                *connect.Client[v1.GetUserStatsRequest, v1.UserStats]
+	followUser                  *connect.Client[v1.FollowUserRequest, emptypb.Empty]
+	unfollowUser                *connect.Client[v1.UnfollowUserRequest, emptypb.Empty]
+	listFollowing               *connect.Client[v1.ListFollowingRequest, v1.ListFollowingResponse]
 	getUserSetting              *connect.Client[v1.GetUserSettingRequest, v1.UserSetting]
 	updateUserSetting           *connect.Client[v1.UpdateUserSettingRequest, v1.UserSetting]
 	listUserSettings            *connect.Client[v1.ListUserSettingsRequest, v1.ListUserSettingsResponse]
@@ -408,6 +443,21 @@ func (c *userServiceClient) ListAllUserStats(ctx context.Context, req *connect.R
 // GetUserStats calls memos.api.v1.UserService.GetUserStats.
 func (c *userServiceClient) GetUserStats(ctx context.Context, req *connect.Request[v1.GetUserStatsRequest]) (*connect.Response[v1.UserStats], error) {
 	return c.getUserStats.CallUnary(ctx, req)
+}
+
+// FollowUser calls memos.api.v1.UserService.FollowUser.
+func (c *userServiceClient) FollowUser(ctx context.Context, req *connect.Request[v1.FollowUserRequest]) (*connect.Response[emptypb.Empty], error) {
+	return c.followUser.CallUnary(ctx, req)
+}
+
+// UnfollowUser calls memos.api.v1.UserService.UnfollowUser.
+func (c *userServiceClient) UnfollowUser(ctx context.Context, req *connect.Request[v1.UnfollowUserRequest]) (*connect.Response[emptypb.Empty], error) {
+	return c.unfollowUser.CallUnary(ctx, req)
+}
+
+// ListFollowing calls memos.api.v1.UserService.ListFollowing.
+func (c *userServiceClient) ListFollowing(ctx context.Context, req *connect.Request[v1.ListFollowingRequest]) (*connect.Response[v1.ListFollowingResponse], error) {
+	return c.listFollowing.CallUnary(ctx, req)
 }
 
 // GetUserSetting calls memos.api.v1.UserService.GetUserSetting.
@@ -519,6 +569,12 @@ type UserServiceHandler interface {
 	ListAllUserStats(context.Context, *connect.Request[v1.ListAllUserStatsRequest]) (*connect.Response[v1.ListAllUserStatsResponse], error)
 	// GetUserStats returns statistics for a specific user.
 	GetUserStats(context.Context, *connect.Request[v1.GetUserStatsRequest]) (*connect.Response[v1.UserStats], error)
+	// FollowUser creates a follow relationship from the current user to the target user.
+	FollowUser(context.Context, *connect.Request[v1.FollowUserRequest]) (*connect.Response[emptypb.Empty], error)
+	// UnfollowUser removes a follow relationship from the current user to the target user.
+	UnfollowUser(context.Context, *connect.Request[v1.UnfollowUserRequest]) (*connect.Response[emptypb.Empty], error)
+	// ListFollowing lists usernames that a user follows.
+	ListFollowing(context.Context, *connect.Request[v1.ListFollowingRequest]) (*connect.Response[v1.ListFollowingResponse], error)
 	// GetUserSetting returns the user setting.
 	GetUserSetting(context.Context, *connect.Request[v1.GetUserSettingRequest]) (*connect.Response[v1.UserSetting], error)
 	// UpdateUserSetting updates the user setting.
@@ -614,6 +670,24 @@ func NewUserServiceHandler(svc UserServiceHandler, opts ...connect.HandlerOption
 		UserServiceGetUserStatsProcedure,
 		svc.GetUserStats,
 		connect.WithSchema(userServiceMethods.ByName("GetUserStats")),
+		connect.WithHandlerOptions(opts...),
+	)
+	userServiceFollowUserHandler := connect.NewUnaryHandler(
+		UserServiceFollowUserProcedure,
+		svc.FollowUser,
+		connect.WithSchema(userServiceMethods.ByName("FollowUser")),
+		connect.WithHandlerOptions(opts...),
+	)
+	userServiceUnfollowUserHandler := connect.NewUnaryHandler(
+		UserServiceUnfollowUserProcedure,
+		svc.UnfollowUser,
+		connect.WithSchema(userServiceMethods.ByName("UnfollowUser")),
+		connect.WithHandlerOptions(opts...),
+	)
+	userServiceListFollowingHandler := connect.NewUnaryHandler(
+		UserServiceListFollowingProcedure,
+		svc.ListFollowing,
+		connect.WithSchema(userServiceMethods.ByName("ListFollowing")),
 		connect.WithHandlerOptions(opts...),
 	)
 	userServiceGetUserSettingHandler := connect.NewUnaryHandler(
@@ -742,6 +816,12 @@ func NewUserServiceHandler(svc UserServiceHandler, opts ...connect.HandlerOption
 			userServiceListAllUserStatsHandler.ServeHTTP(w, r)
 		case UserServiceGetUserStatsProcedure:
 			userServiceGetUserStatsHandler.ServeHTTP(w, r)
+		case UserServiceFollowUserProcedure:
+			userServiceFollowUserHandler.ServeHTTP(w, r)
+		case UserServiceUnfollowUserProcedure:
+			userServiceUnfollowUserHandler.ServeHTTP(w, r)
+		case UserServiceListFollowingProcedure:
+			userServiceListFollowingHandler.ServeHTTP(w, r)
 		case UserServiceGetUserSettingProcedure:
 			userServiceGetUserSettingHandler.ServeHTTP(w, r)
 		case UserServiceUpdateUserSettingProcedure:
@@ -817,6 +897,18 @@ func (UnimplementedUserServiceHandler) ListAllUserStats(context.Context, *connec
 
 func (UnimplementedUserServiceHandler) GetUserStats(context.Context, *connect.Request[v1.GetUserStatsRequest]) (*connect.Response[v1.UserStats], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("memos.api.v1.UserService.GetUserStats is not implemented"))
+}
+
+func (UnimplementedUserServiceHandler) FollowUser(context.Context, *connect.Request[v1.FollowUserRequest]) (*connect.Response[emptypb.Empty], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("memos.api.v1.UserService.FollowUser is not implemented"))
+}
+
+func (UnimplementedUserServiceHandler) UnfollowUser(context.Context, *connect.Request[v1.UnfollowUserRequest]) (*connect.Response[emptypb.Empty], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("memos.api.v1.UserService.UnfollowUser is not implemented"))
+}
+
+func (UnimplementedUserServiceHandler) ListFollowing(context.Context, *connect.Request[v1.ListFollowingRequest]) (*connect.Response[v1.ListFollowingResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("memos.api.v1.UserService.ListFollowing is not implemented"))
 }
 
 func (UnimplementedUserServiceHandler) GetUserSetting(context.Context, *connect.Request[v1.GetUserSettingRequest]) (*connect.Response[v1.UserSetting], error) {

@@ -81,4 +81,13 @@ type Driver interface {
 	CreateUserIdentity(ctx context.Context, create *UserIdentity) (*UserIdentity, error)
 	ListUserIdentities(ctx context.Context, find *FindUserIdentity) ([]*UserIdentity, error)
 	DeleteUserIdentities(ctx context.Context, delete *DeleteUserIdentity) error
+
+	// UserFollow model related methods.
+	UpsertUserFollow(ctx context.Context, follow *UserFollow) error
+	DeleteUserFollow(ctx context.Context, delete *DeleteUserFollow) error
+	HasUserFollow(ctx context.Context, followerID, followeeID int32) (bool, error)
+	CountUserFollowers(ctx context.Context, followeeID int32) (int32, error)
+	CountUserFollowing(ctx context.Context, followerID int32) (int32, error)
+	ListFollowingUsernames(ctx context.Context, followerID int32) ([]string, error)
+	DeleteUserFollowsByUserID(ctx context.Context, userID int32) error
 }

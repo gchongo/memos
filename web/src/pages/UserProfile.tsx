@@ -97,7 +97,7 @@ const UserProfile = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const activeTab = parseTabView(searchParams.get("view"));
   const { compactMode } = useView();
-  const { followedUsernames, isFollowing, toggleFollow, getFollowerCount } = useFollowedUsers();
+  const { isFollowing, toggleFollow } = useFollowedUsers();
 
   const { data: user, isLoading, error } = useUser(`users/${username}`, { enabled: !!username });
   const { data: userStats } = useUserStats(user?.name);
@@ -167,7 +167,8 @@ const UserProfile = () => {
   const joinedLabel = user?.createTime
     ? t("layout.profile-joined", { joinedAt: formatJoinedLabel(timestampDate(user.createTime), i18n.language) })
     : undefined;
-  const followerCount = user ? getFollowerCount(user.username) : 0;
+  const followerCount = userStats?.followerCount ?? 0;
+  const followingCount = userStats?.followingCount ?? 0;
 
   const handleShareProfile = () => {
     if (!user) return;
@@ -177,7 +178,7 @@ const UserProfile = () => {
 
   const handleFollowToggle = () => {
     if (!user) return;
-    toggleFollow(user.username, currentUser?.username);
+    toggleFollow(user.username);
   };
 
   const emptyMessage =
@@ -220,7 +221,7 @@ const UserProfile = () => {
           <ProfileHero
             user={user}
             isOwnProfile={isOwnProfile}
-            followingCount={followedUsernames.length}
+            followingCount={followingCount}
             followerCount={followerCount}
             joinedLabel={joinedLabel}
             onShareProfile={handleShareProfile}

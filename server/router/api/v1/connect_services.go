@@ -157,6 +157,30 @@ func (s *ConnectServiceHandler) GetUserStats(ctx context.Context, req *connect.R
 	return connect.NewResponse(resp), nil
 }
 
+func (s *ConnectServiceHandler) FollowUser(ctx context.Context, req *connect.Request[v1pb.FollowUserRequest]) (*connect.Response[emptypb.Empty], error) {
+	resp, err := s.APIV1Service.FollowUser(ctx, req.Msg)
+	if err != nil {
+		return nil, convertGRPCError(err)
+	}
+	return connect.NewResponse(resp), nil
+}
+
+func (s *ConnectServiceHandler) UnfollowUser(ctx context.Context, req *connect.Request[v1pb.UnfollowUserRequest]) (*connect.Response[emptypb.Empty], error) {
+	resp, err := s.APIV1Service.UnfollowUser(ctx, req.Msg)
+	if err != nil {
+		return nil, convertGRPCError(err)
+	}
+	return connect.NewResponse(resp), nil
+}
+
+func (s *ConnectServiceHandler) ListFollowing(ctx context.Context, req *connect.Request[v1pb.ListFollowingRequest]) (*connect.Response[v1pb.ListFollowingResponse], error) {
+	resp, err := s.APIV1Service.ListFollowing(ctx, req.Msg)
+	if err != nil {
+		return nil, convertGRPCError(err)
+	}
+	return connect.NewResponse(resp), nil
+}
+
 func (s *ConnectServiceHandler) GetUserSetting(ctx context.Context, req *connect.Request[v1pb.GetUserSettingRequest]) (*connect.Response[v1pb.UserSetting], error) {
 	resp, err := s.APIV1Service.GetUserSetting(ctx, req.Msg)
 	if err != nil {
