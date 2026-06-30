@@ -18,6 +18,10 @@ import { useTranslate } from "@/utils/i18n";
 /** Matches the right sidebar column width in MainLayout (350px aside minus pl-6). */
 export const EXPLORE_SIDEBAR_WIDTH = 326;
 
+/** Shared width constraint for right-sidebar / mobile drawer widget cards. */
+export const SIDEBAR_WIDGET_CARD_CLASS = "box-border w-full max-w-full shrink-0 overflow-hidden";
+export const SIDEBAR_WIDGET_CARD_STYLE = { width: EXPLORE_SIDEBAR_WIDTH } as const;
+
 const SIDEBAR_TREND_COUNT = 5;
 const FETCH_COUNT = 30;
 const SNIPPET_MAX = 72;

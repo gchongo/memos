@@ -7,16 +7,17 @@ import { MonthNavigator } from "./MonthNavigator";
 
 interface Props {
   statisticsData: StatisticsData;
+  compact?: boolean;
 }
 
 const StatisticsView = (props: Props) => {
-  const { statisticsData } = props;
+  const { statisticsData, compact = false } = props;
   const { activityStats, timeBasis } = statisticsData;
   const navigateToDateFilter = useDateFilterNavigation();
   const [visibleMonthString, setVisibleMonthString] = useState(dayjs().format("YYYY-MM"));
 
   return (
-    <div className="group w-full mt-2 flex flex-col text-muted-foreground animate-fade-in">
+    <div className={compact ? "group flex w-full flex-col text-muted-foreground" : "group mt-2 flex w-full flex-col text-muted-foreground animate-fade-in"}>
       <MonthNavigator
         visibleMonth={visibleMonthString}
         onMonthChange={setVisibleMonthString}
@@ -24,13 +25,14 @@ const StatisticsView = (props: Props) => {
         timeBasis={timeBasis}
       />
 
-      <div className="w-full animate-scale-in">
+      <div className="w-full min-w-0 animate-scale-in">
         <MonthCalendar
           month={visibleMonthString}
           data={activityStats}
           maxCount={calculateMaxCount(activityStats)}
           onClick={navigateToDateFilter}
           timeBasis={timeBasis}
+          size={compact ? "small" : "default"}
         />
       </div>
     </div>

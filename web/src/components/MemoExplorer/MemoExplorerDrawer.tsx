@@ -33,7 +33,14 @@ const MemoExplorerDrawer = (props: Props) => {
         <SheetHeader className="sr-only">
           <SheetTitle />
         </SheetHeader>
-        <MemoExplorer className="px-0" context={context} features={features} statisticsData={statisticsData} tagCount={tagCount} />
+        <MemoExplorer
+          className="px-0"
+          context={context}
+          features={features}
+          statisticsData={statisticsData}
+          tagCount={tagCount}
+          stickySearch={false}
+        />
       </SheetContent>
     </Sheet>
   );

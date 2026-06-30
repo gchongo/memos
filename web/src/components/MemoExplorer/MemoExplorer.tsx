@@ -1,4 +1,4 @@
-import ExploreTrendsWidget from "@/components/ExploreTrendsWidget";
+import ExploreTrendsWidget, { SIDEBAR_WIDGET_CARD_CLASS, SIDEBAR_WIDGET_CARD_STYLE } from "@/components/ExploreTrendsWidget";
 import FollowSuggestionsWidget from "@/components/FollowSuggestionsWidget";
 import SearchBar from "@/components/SearchBar";
 import TagsCloudWidget from "@/components/TagsCloudWidget";
@@ -33,6 +33,8 @@ interface Props {
   features?: MemoExplorerFeatures;
   statisticsData: StatisticsData;
   tagCount: Record<string, number>;
+  /** When false, search scrolls with sidebar content (mobile drawer). */
+  stickySearch?: boolean;
 }
 
 const getDefaultFeatures = (context: MemoExplorerContext): MemoExplorerFeatures => {
@@ -88,7 +90,7 @@ const getDefaultFeatures = (context: MemoExplorerContext): MemoExplorerFeatures 
 };
 
 const MemoExplorer = (props: Props) => {
-  const { className, context = "home", features: featureOverrides = {}, statisticsData, tagCount } = props;
+  const { className, context = "home", features: featureOverrides = {}, statisticsData, tagCount, stickySearch = true } = props;
   const currentUser = useCurrentUser();
   const t = useTranslate();
   const navigate = useNavigate();
@@ -101,8 +103,8 @@ const MemoExplorer = (props: Props) => {
   return (
     <aside className={cn("relative flex w-full min-w-0 flex-col items-start justify-start text-sidebar-foreground", className)}>
       {features.search && (
-        <div className="sticky top-0 z-10 w-full bg-background pb-3 pt-1">
-          <SearchBar />
+        <div className={cn("w-full pb-1", stickySearch && "sticky top-0 z-10 bg-background pt-1")}>
+          <SearchBar className={stickySearch ? undefined : "mb-3"} />
         </div>
       )}
 
@@ -113,8 +115,8 @@ const MemoExplorer = (props: Props) => {
       {features.tagCloud && <TagsCloudWidget tagCount={tagCount} readonly={context === "explore"} />}
 
       {features.statistics && (
-        <XWidgetCard title={t("layout.activity")}>
-          <StatisticsView statisticsData={statisticsData} />
+        <XWidgetCard title={t("layout.activity")} className={SIDEBAR_WIDGET_CARD_CLASS} style={SIDEBAR_WIDGET_CARD_STYLE}>
+          <StatisticsView statisticsData={statisticsData} compact />
         </XWidgetCard>
       )}
 
@@ -141,7 +143,7 @@ const MemoExplorer = (props: Props) => {
       )}
 
       {features.tags && (
-        <XWidgetCard title={t("common.tags")}>
+        <XWidgetCard title={t("common.tags")} className={cn(SIDEBAR_WIDGET_CARD_CLASS, "py-0")} style={SIDEBAR_WIDGET_CARD_STYLE}>
           <TagsSection readonly={context === "explore"} tagCount={tagCount} embedded />
         </XWidgetCard>
       )}

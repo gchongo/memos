@@ -1,6 +1,6 @@
 import { MoreHorizontalIcon } from "lucide-react";
 import { useMemo } from "react";
-import { EXPLORE_SIDEBAR_WIDTH } from "@/components/ExploreTrendsWidget";
+import { SIDEBAR_WIDGET_CARD_CLASS, SIDEBAR_WIDGET_CARD_STYLE } from "@/components/ExploreTrendsWidget";
 import TagTree from "@/components/TagTree";
 import XWidgetCard from "@/components/XWidgetCard";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -75,8 +75,8 @@ const TagsCloudWidget = ({ tagCount, readonly = false }: TagsCloudWidgetProps) =
     <XWidgetCard
       title={t("common.tags")}
       action={headerAction}
-      className="box-border w-full max-w-full shrink-0 overflow-hidden py-0"
-      style={{ width: EXPLORE_SIDEBAR_WIDTH }}
+      className={cn(SIDEBAR_WIDGET_CARD_CLASS, "py-0")}
+      style={SIDEBAR_WIDGET_CARD_STYLE}
     >
       <div className="-mx-2 -mt-1 min-w-0 overflow-hidden px-2">
         {tags.length === 0 ? (
