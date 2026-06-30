@@ -18,7 +18,11 @@ const navLinkClass = ({ isActive }: { isActive: boolean }) =>
     isActive && "text-foreground",
   );
 
-const MobileBottomNav = () => {
+interface MobileBottomNavProps {
+  visible?: boolean;
+}
+
+const MobileBottomNav = ({ visible = true }: MobileBottomNavProps) => {
   const t = useTranslate();
   const currentUser = useCurrentUser();
   const { openCompose } = useComposeDialog();
@@ -27,8 +31,10 @@ const MobileBottomNav = () => {
 
   const profilePath = currentUser ? `/u/${encodeURIComponent(currentUser.username)}` : ROUTES.AUTH;
 
-  const shellClassName =
-    "fixed inset-x-0 bottom-0 z-50 flex flex-col bg-background/90 backdrop-blur-md md:hidden";
+  const shellClassName = cn(
+    "fixed inset-x-0 bottom-0 z-50 flex flex-col bg-background/90 backdrop-blur-md transition-transform duration-300 ease-in-out will-change-transform md:hidden",
+    !visible && "translate-y-full",
+  );
 
   const barClassName = "flex items-stretch justify-around px-2";
 

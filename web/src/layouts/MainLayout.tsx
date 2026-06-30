@@ -9,6 +9,7 @@ import { userServiceClient } from "@/connect";
 import useCurrentUser from "@/hooks/useCurrentUser";
 import { useFilteredMemoStats } from "@/hooks/useFilteredMemoStats";
 import useMediaQuery from "@/hooks/useMediaQuery";
+import { useMobileBottomNavVisibility } from "@/hooks/useMobileBottomNavVisibility";
 import { cn } from "@/lib/utils";
 import { ROUTES } from "@/router/routes";
 
@@ -82,6 +83,7 @@ const MainLayout = () => {
 
   const { statistics, tags } = useFilteredMemoStats({ userName: statsUserName, context });
   const memoExplorerProps = { context, statisticsData: statistics, tagCount: tags };
+  const bottomNavVisible = useMobileBottomNavVisibility(!md);
 
   return (
     <div className={cn("flex min-h-svh w-full justify-center bg-background max-md:px-0 md:px-6")}>
@@ -93,7 +95,12 @@ const MainLayout = () => {
         )}
 
         <section
-          className="flex min-w-0 flex-1 flex-col max-md:pb-[calc(var(--mobile-bottom-nav-height)+env(safe-area-inset-bottom,0px))]"
+          className={cn(
+            "flex min-w-0 flex-1 flex-col max-md:transition-[padding-bottom] max-md:duration-300 max-md:ease-in-out",
+            bottomNavVisible
+              ? "max-md:pb-[calc(var(--mobile-bottom-nav-height)+env(safe-area-inset-bottom,0px))]"
+              : "max-md:pb-[env(safe-area-inset-bottom,0px)]",
+          )}
           style={{ ["--mobile-bottom-nav-height" as string]: `${MOBILE_BOTTOM_NAV_HEIGHT}px` }}
         >
           {!md && <MobileHeader>{showMemoExplorer && <MemoExplorerDrawer {...memoExplorerProps} />}</MobileHeader>}
@@ -111,7 +118,7 @@ const MainLayout = () => {
           </div>
         </section>
       </div>
-      {!md && <MobileBottomNav />}
+      {!md && <MobileBottomNav visible={bottomNavVisible} />}
     </div>
   );
 };
