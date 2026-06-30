@@ -169,7 +169,7 @@ const UserMenu = (props: Props) => {
             <GlobeIcon className="size-4 text-muted-foreground" />
             {t("common.language")}
           </DropdownMenuSubTrigger>
-          <DropdownMenuSubContent className="max-h-[min(24rem,var(--radix-dropdown-menu-content-available-height))] overflow-y-auto p-0">
+          <DropdownMenuSubContent className="overflow-hidden p-0">
             <LocaleSearchList value={currentLocale} onChange={handleLocaleChange} className="w-64" />
           </DropdownMenuSubContent>
         </DropdownMenuSub>

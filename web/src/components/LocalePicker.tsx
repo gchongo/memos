@@ -30,7 +30,7 @@ export const LocaleSearchList = (props: LocaleSearchListProps) => {
   return (
     <div
       className={cn(
-        "flex max-h-[min(24rem,calc(100vh-2rem))] w-[var(--radix-popover-trigger-width)] min-w-48 max-w-[calc(100vw-2rem)] flex-col",
+        "flex h-[min(24rem,var(--radix-dropdown-menu-content-available-height,var(--radix-popover-content-available-height,24rem)))] w-[var(--radix-popover-trigger-width)] min-w-48 max-w-[calc(100vw-2rem)] flex-col overflow-hidden",
         className,
       )}
     >
@@ -45,7 +45,13 @@ export const LocaleSearchList = (props: LocaleSearchListProps) => {
           aria-label={t("common.language")}
         />
       </div>
-      <div className="mt-1 min-h-0 flex-1 touch-pan-y overflow-y-auto p-1" role="listbox" aria-label={t("common.language")}>
+      <div
+        className="mt-1 min-h-0 flex-1 touch-pan-y overflow-y-auto overscroll-y-contain p-1 [-webkit-overflow-scrolling:touch]"
+        role="listbox"
+        aria-label={t("common.language")}
+        onWheel={(event) => event.stopPropagation()}
+        onTouchMove={(event) => event.stopPropagation()}
+      >
         {filteredLocales.map((locale) => (
           <div
             key={locale}
