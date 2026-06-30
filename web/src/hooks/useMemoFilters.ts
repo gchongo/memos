@@ -31,10 +31,12 @@ export interface UseMemoFiltersOptions {
   visibilities?: Visibility[];
   /** When true, skip active search/tag filters from MemoFilterContext (e.g. explore sidebar). */
   ignoreContextFilters?: boolean;
+  /** When true, only return bookmarked/pinned memos (home bookmarks tab). */
+  pinnedOnly?: boolean;
 }
 
 export const useMemoFilters = (options: UseMemoFiltersOptions = {}): string | undefined => {
-  const { creatorName, includeShortcuts = false, includePinned = false, visibilities, ignoreContextFilters = false } = options;
+  const { creatorName, includeShortcuts = false, includePinned = false, visibilities, ignoreContextFilters = false, pinnedOnly = false } = options;
 
   const { shortcuts } = useAuth();
   const { filters, shortcut: currentShortcut } = useMemoFilterContext();
@@ -60,6 +62,10 @@ export const useMemoFilters = (options: UseMemoFiltersOptions = {}): string | un
     // Add shortcut filter if enabled and selected
     if (includeShortcuts && selectedShortcut?.filter) {
       conditions.push(selectedShortcut.filter);
+    }
+
+    if (pinnedOnly) {
+      conditions.push(`pinned`);
     }
 
     // Add active filters from context
@@ -97,5 +103,5 @@ export const useMemoFilters = (options: UseMemoFiltersOptions = {}): string | un
     }
 
     return conditions.length > 0 ? conditions.join(" && ") : undefined;
-  }, [creatorName, includeShortcuts, includePinned, visibilities, ignoreContextFilters, selectedShortcut, filters]);
+  }, [creatorName, includeShortcuts, includePinned, pinnedOnly, visibilities, ignoreContextFilters, selectedShortcut, filters]);
 };

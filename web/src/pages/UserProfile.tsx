@@ -62,11 +62,11 @@ const UserProfile = () => {
   const memoFilter = useMemoFilters({
     creatorName: user?.name,
     includeShortcuts: false,
-    includePinned: true,
+    includePinned: false,
   });
 
   const { listSort, orderBy } = useMemoSorting({
-    pinnedFirst: true,
+    pinnedFirst: false,
     state: State.NORMAL,
   });
 

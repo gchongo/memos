@@ -14,21 +14,21 @@ const Home = () => {
   const user = useCurrentUser();
   const { isInitialized } = useInstance();
   const { compactMode } = useView();
-  const { addFilter, removeFilter } = useMemoFilterContext();
+  const { removeFilter } = useMemoFilterContext();
   const [feedTab, setFeedTab] = useState<FeedTab>("latest");
 
+  // Bookmarks tab applies pinned via useMemoFilters.pinnedOnly — clear legacy context chips.
   useEffect(() => {
-    if (feedTab === "pinned") {
-      addFilter({ factor: "pinned", value: "true" });
-    } else {
-      removeFilter((filter) => filter.factor === "pinned");
-    }
-  }, [feedTab, addFilter, removeFilter]);
+    removeFilter((filter) => filter.factor === "pinned");
+  }, [feedTab, removeFilter]);
+
+  const isBookmarksTab = feedTab === "pinned";
 
   const memoFilter = useMemoFilters({
     creatorName: user?.name,
-    includeShortcuts: true,
-    includePinned: true,
+    includeShortcuts: !isBookmarksTab,
+    includePinned: false,
+    pinnedOnly: isBookmarksTab,
   });
 
   const { listSort, orderBy } = useMemoSorting({
