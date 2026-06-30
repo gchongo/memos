@@ -18,6 +18,7 @@ import { MEMO_CARD_BASE_CLASSES } from "./constants";
 import { useImagePreview } from "./hooks";
 import { MemoViewContext } from "./MemoViewContext";
 import type { MemoViewProps } from "./types";
+import { useTranslate } from "@/utils/i18n";
 import { saveScrollForPath } from "@/utils/scroll-restoration";
 
 const MemoView: React.FC<MemoViewProps> = (props: MemoViewProps) => {
