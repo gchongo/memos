@@ -2,6 +2,31 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <script>
+      (function () {
+        function reloadForStaleAssets() {
+          var key = "memos-chunk-reload";
+          var attempts = Number(sessionStorage.getItem(key) || "0");
+          if (attempts >= 2) return;
+          sessionStorage.setItem(key, String(attempts + 1));
+          var url = new URL(window.location.href);
+          url.searchParams.set("_r", String(Date.now()));
+          window.location.replace(url.toString());
+        }
+        function watchStylesheet(link) {
+          if (link.rel !== "stylesheet" || !link.href.includes("/assets/")) return;
+          link.addEventListener("error", reloadForStaleAssets);
+        }
+        document.querySelectorAll('link[rel="stylesheet"]').forEach(watchStylesheet);
+        new MutationObserver(function (mutations) {
+          mutations.forEach(function (mutation) {
+            mutation.addedNodes.forEach(function (node) {
+              if (node.tagName === "LINK") watchStylesheet(node);
+            });
+          });
+        }).observe(document.documentElement, { childList: true, subtree: true });
+      })();
+    </script>
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
