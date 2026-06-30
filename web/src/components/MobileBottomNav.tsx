@@ -12,7 +12,7 @@ import UserAvatar from "./UserAvatar";
 /** Visible bar height excluding the device safe-area inset. Keep in sync with MainLayout bottom padding. */
 export const MOBILE_BOTTOM_NAV_HEIGHT = 64;
 /** Minimum padding below the icon row when the device reports no safe-area inset. */
-export const MOBILE_BOTTOM_NAV_MIN_SAFE_BOTTOM = 20;
+export const MOBILE_BOTTOM_NAV_MIN_SAFE_BOTTOM = 8;
 
 export const mobileBottomNavStyleVars = {
   ["--mobile-bottom-nav-height" as string]: `${MOBILE_BOTTOM_NAV_HEIGHT}px`,
