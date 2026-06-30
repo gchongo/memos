@@ -13,6 +13,7 @@ export const EditorToolbar: FC<EditorToolbarProps> = ({
   onCancel,
   memoName,
   onAudioRecorderClick,
+  controllerRef,
   variant = "default",
 }) => {
   const t = useTranslate();
@@ -47,6 +48,7 @@ export const EditorToolbar: FC<EditorToolbarProps> = ({
             onToggleFocusMode={handleToggleFocusMode}
             memoName={memoName}
             onAudioRecorderClick={onAudioRecorderClick}
+            controllerRef={controllerRef}
           />
           <VisibilitySelector compact value={visibility} onChange={handleVisibilityChange} />
         </div>

@@ -1,5 +1,7 @@
+import type { RefObject } from "react";
 import type { Location, Memo, MemoRelation, Visibility } from "@/types/proto/api/v1/memo_service_pb";
 import type { AudioRecorderStatus } from "../hooks/useAudioRecorder";
+import type { EditorController } from "./editorController";
 
 export interface MemoEditorProps {
   className?: string;
@@ -34,6 +36,7 @@ export interface EditorToolbarProps {
   onCancel?: () => void;
   memoName?: string;
   onAudioRecorderClick: () => void;
+  controllerRef?: RefObject<EditorController | null>;
   variant?: "default" | "feed";
 }
 
@@ -70,6 +73,7 @@ export interface InsertMenuProps {
   onToggleFocusMode?: () => void;
   memoName?: string;
   onAudioRecorderClick?: () => void;
+  controllerRef?: RefObject<EditorController | null>;
   variant?: "default" | "feed";
 }
 

@@ -1,6 +1,8 @@
 import { uniqBy } from "lodash-es";
 import {
+  Code2Icon,
   FileIcon,
+  HashIcon,
   ImageIcon,
   LoaderIcon,
   type LucideIcon,
@@ -169,6 +171,31 @@ const InsertMenu = (props: InsertMenuProps) => {
     handleAttachmentUploadClick();
   }, [handleAttachmentUploadClick]);
 
+  const insertAtCursor = useCallback(
+    (markdown: string) => {
+      const editor = props.controllerRef?.current;
+      if (!editor) {
+        return;
+      }
+      editor.insertMarkdown(markdown);
+      editor.focus();
+      editor.scrollToCursor();
+    },
+    [props.controllerRef],
+  );
+
+  const handleInsertTag = useCallback(() => {
+    insertAtCursor("#");
+  }, [insertAtCursor]);
+
+  const handleInsertCheckbox = useCallback(() => {
+    insertAtCursor("- [ ] ");
+  }, [insertAtCursor]);
+
+  const handleInsertCodeBlock = useCallback(() => {
+    insertAtCursor("\n```\n\n```\n");
+  }, [insertAtCursor]);
+
   const feedToolbarItems = useMemo(
     () =>
       [
@@ -179,10 +206,10 @@ const InsertMenu = (props: InsertMenuProps) => {
           onClick: handleMediaUploadClick,
         },
         {
-          key: "record-audio",
-          label: t("editor.audio-recorder.trigger"),
-          icon: MicIcon,
-          onClick: () => props.onAudioRecorderClick?.(),
+          key: "tags",
+          label: t("tooltip.tags"),
+          icon: HashIcon,
+          onClick: handleInsertTag,
         },
         {
           key: "upload-file",
@@ -191,19 +218,13 @@ const InsertMenu = (props: InsertMenuProps) => {
           onClick: handleFileUploadClick,
         },
         {
-          key: "add-attachment",
-          label: t("editor.insert-menu.add-attachment"),
-          icon: PaperclipIcon,
-          onClick: handleAddAttachmentClick,
-        },
-        {
           key: "location",
           label: t("editor.insert-menu.add-location"),
           icon: MapPinIcon,
           onClick: handleLocationClick,
         },
       ] satisfies Array<{ key: string; label: string; icon: LucideIcon; onClick: () => void }>,
-    [handleAddAttachmentClick, handleFileUploadClick, handleLocationClick, handleMediaUploadClick, props, t],
+    [handleFileUploadClick, handleInsertTag, handleLocationClick, handleMediaUploadClick, t],
   );
 
   const menuItems = useMemo(
@@ -264,7 +285,7 @@ const InsertMenu = (props: InsertMenuProps) => {
     <>
       {variant === "feed" ? (
         <div className="flex shrink-0 flex-row flex-nowrap items-center gap-0.5">
-          {feedToolbarItems.map((item) => (
+          {feedToolbarItems.slice(0, 2).map((item) => (
             <button
               key={item.key}
               type="button"
@@ -273,7 +294,34 @@ const InsertMenu = (props: InsertMenuProps) => {
               aria-label={item.label}
               onClick={item.onClick}
             >
-              {isUploading && (item.key === "upload-image" || item.key === "upload-file" || item.key === "add-attachment") ? (
+              {isUploading && item.key === "upload-image" ? (
+                <LoaderIcon className="size-[18px] animate-spin" />
+              ) : (
+                <item.icon className="size-[18px]" strokeWidth={1.75} />
+              )}
+            </button>
+          ))}
+          <DropdownMenu modal={false}>
+            <DropdownMenuTrigger asChild>
+              <button type="button" className={feedIconButtonClass} aria-label={t("tooltip.markdown-menu")}>
+                <Code2Icon className="size-[18px]" strokeWidth={1.75} />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start">
+              <DropdownMenuItem onClick={handleInsertCheckbox}>{t("markdown.checkbox")}</DropdownMenuItem>
+              <DropdownMenuItem onClick={handleInsertCodeBlock}>{t("markdown.code-block")}</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          {feedToolbarItems.slice(2).map((item) => (
+            <button
+              key={item.key}
+              type="button"
+              className={feedIconButtonClass}
+              disabled={isUploading}
+              aria-label={item.label}
+              onClick={item.onClick}
+            >
+              {isUploading && item.key === "upload-file" ? (
                 <LoaderIcon className="size-[18px] animate-spin" />
               ) : (
                 <item.icon className="size-[18px]" strokeWidth={1.75} />
@@ -290,6 +338,14 @@ const InsertMenu = (props: InsertMenuProps) => {
               <DropdownMenuItem onClick={handleOpenLinkDialog}>
                 <LinkIcon className="h-4 w-4" />
                 {t("editor.insert-menu.link-memo")}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => props.onAudioRecorderClick?.()}>
+                <MicIcon className="h-4 w-4" />
+                {t("editor.audio-recorder.trigger")}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleAddAttachmentClick} disabled={isUploading}>
+                {isUploading ? <LoaderIcon className="h-4 w-4 animate-spin" /> : <PaperclipIcon className="h-4 w-4" />}
+                {t("editor.insert-menu.add-attachment")}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleToggleFocusMode}>

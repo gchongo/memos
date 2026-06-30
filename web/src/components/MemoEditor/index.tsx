@@ -364,6 +364,7 @@ const MemoEditorImpl: React.FC<MemoEditorProps> = ({
             onCancel={onCancel}
             memoName={memoName}
             onAudioRecorderClick={handleAudioRecorderClick}
+            controllerRef={editorRef}
           />
         </div>
       </div>
