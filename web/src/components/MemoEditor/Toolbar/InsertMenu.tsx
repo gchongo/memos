@@ -2,7 +2,6 @@ import { uniqBy } from "lodash-es";
 import {
   Code2Icon,
   FileIcon,
-  HashIcon,
   ImageIcon,
   LoaderIcon,
   type LucideIcon,
@@ -39,6 +38,7 @@ import { DOCUMENT_FILE_ACCEPT, isAudioFile, isDocumentFile, isVideoFile, useFile
 import { useEditorContext, useEditorSelector } from "../state";
 import type { InsertMenuProps } from "../types";
 import type { LocalFile } from "../types/attachment";
+import TagPickerMenu from "./TagPickerMenu";
 
 const InsertMenu = (props: InsertMenuProps) => {
   const { variant = "default" } = props;
@@ -184,10 +184,6 @@ const InsertMenu = (props: InsertMenuProps) => {
     [props.controllerRef],
   );
 
-  const handleInsertTag = useCallback(() => {
-    insertAtCursor("#");
-  }, [insertAtCursor]);
-
   const handleInsertCheckbox = useCallback(() => {
     insertAtCursor("- [ ] ");
   }, [insertAtCursor]);
@@ -206,12 +202,6 @@ const InsertMenu = (props: InsertMenuProps) => {
           onClick: handleMediaUploadClick,
         },
         {
-          key: "tags",
-          label: t("tooltip.tags"),
-          icon: HashIcon,
-          onClick: handleInsertTag,
-        },
-        {
           key: "upload-file",
           label: t("editor.insert-menu.upload-file"),
           icon: FileIcon,
@@ -224,7 +214,7 @@ const InsertMenu = (props: InsertMenuProps) => {
           onClick: handleLocationClick,
         },
       ] satisfies Array<{ key: string; label: string; icon: LucideIcon; onClick: () => void }>,
-    [handleFileUploadClick, handleInsertTag, handleLocationClick, handleMediaUploadClick, t],
+    [handleFileUploadClick, handleLocationClick, handleMediaUploadClick, t],
   );
 
   const menuItems = useMemo(
@@ -285,22 +275,20 @@ const InsertMenu = (props: InsertMenuProps) => {
     <>
       {variant === "feed" ? (
         <div className="flex shrink-0 flex-row flex-nowrap items-center gap-0.5">
-          {feedToolbarItems.slice(0, 2).map((item) => (
-            <button
-              key={item.key}
-              type="button"
-              className={feedIconButtonClass}
-              disabled={isUploading}
-              aria-label={item.label}
-              onClick={item.onClick}
-            >
-              {isUploading && item.key === "upload-image" ? (
-                <LoaderIcon className="size-[18px] animate-spin" />
-              ) : (
-                <item.icon className="size-[18px]" strokeWidth={1.75} />
-              )}
-            </button>
-          ))}
+          <button
+            type="button"
+            className={feedIconButtonClass}
+            disabled={isUploading}
+            aria-label={feedToolbarItems[0].label}
+            onClick={feedToolbarItems[0].onClick}
+          >
+            {isUploading ? (
+              <LoaderIcon className="size-[18px] animate-spin" />
+            ) : (
+              <ImageIcon className="size-[18px]" strokeWidth={1.75} />
+            )}
+          </button>
+          <TagPickerMenu controllerRef={props.controllerRef} triggerClassName={feedIconButtonClass} />
           <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
               <button type="button" className={feedIconButtonClass} aria-label={t("tooltip.markdown-menu")}>
@@ -312,7 +300,7 @@ const InsertMenu = (props: InsertMenuProps) => {
               <DropdownMenuItem onClick={handleInsertCodeBlock}>{t("markdown.code-block")}</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-          {feedToolbarItems.slice(2).map((item) => (
+          {feedToolbarItems.slice(1).map((item) => (
             <button
               key={item.key}
               type="button"

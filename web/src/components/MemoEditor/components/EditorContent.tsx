@@ -50,6 +50,7 @@ export const EditorContent = forwardRef<EditorController, EditorContentProps>(({
       getMarkdown: () => getActive()?.getMarkdown() ?? "",
       setMarkdown: (markdown) => getActive()?.setMarkdown(markdown),
       insertMarkdown: (markdown) => getActive()?.insertMarkdown(markdown),
+      insertTag: (tag) => getActive()?.insertTag(tag),
       scrollToCursor: () => getActive()?.scrollToCursor(),
       selectAll: () => getActive()?.selectAll(),
       // Formatting is whatever the active editor exposes: the WYSIWYG editor

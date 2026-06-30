@@ -148,6 +148,9 @@ const PlainEditor = forwardRef(function PlainEditor(props: PlainEditorProps, ref
         const suffix = after.length === 0 || after.startsWith("\n\n") ? "" : after.startsWith("\n") ? "\n" : "\n\n";
         actions.insertText(markdown, prefix, suffix);
       },
+      insertTag: (tag) => {
+        actions.insertText(`#${tag} `);
+      },
       scrollToCursor: () => actions.scrollToCursor(),
       selectAll: () => actions.setCursorPosition(0, actions.getContent().length),
     }),

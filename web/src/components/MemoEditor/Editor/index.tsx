@@ -210,6 +210,15 @@ const Editor = forwardRef<EditorController, EditorProps>(function Editor(props, 
       getMarkdown: () => serializeMarkdown(editor),
       setMarkdown: (markdown) => editor?.commands.setContent(markdown, { contentType: "markdown" }),
       insertMarkdown: (markdown) => editor?.chain().focus().insertContent(markdown, { contentType: "markdown" }).run(),
+      insertTag: (tag) =>
+        editor
+          ?.chain()
+          .focus()
+          .insertContent([
+            { type: "text", text: `#${tag}`, marks: [{ type: "tag", attrs: { tag } }] },
+            { type: "text", text: " " },
+          ])
+          .run(),
       scrollToCursor: () => editor?.commands.scrollIntoView(),
       selectAll: () => editor?.commands.selectAll(),
       // WYSIWYG supports rich formatting; the whole surface is driven by the
