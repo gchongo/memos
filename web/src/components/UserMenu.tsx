@@ -30,6 +30,7 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
+import { xMenuContentClass, xMenuItemClass, xMenuSubContentClass, xMenuSubTriggerClass } from "./ui/x-menu-styles";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 interface Props {
@@ -39,6 +40,7 @@ interface Props {
 
 const UserMenu = (props: Props) => {
   const { collapsed, variant = "default" } = props;
+  const isX = variant === "x";
   const t = useTranslate();
   const navigateTo = useNavigateTo();
   const currentUser = useCurrentUser();
@@ -50,9 +52,7 @@ const UserMenu = (props: Props) => {
 
   const handleLocaleChange = async (locale: Locale) => {
     if (!currentUser) return;
-    // Apply locale immediately for instant UI feedback and persist to localStorage
     loadLocale(locale);
-    // Persist to user settings
     updateUserGeneralSetting(
       { generalSetting: { locale }, updateMask: ["locale"] },
       {
@@ -65,9 +65,7 @@ const UserMenu = (props: Props) => {
 
   const handleThemeChange = async (theme: string) => {
     if (!currentUser) return;
-    // Apply theme immediately for instant UI feedback
     loadTheme(theme);
-    // Persist to user settings
     updateUserGeneralSetting(
       { generalSetting: { theme }, updateMask: ["theme"] },
       {
@@ -79,12 +77,9 @@ const UserMenu = (props: Props) => {
   };
 
   const handleSignOut = async () => {
-    // First, clear auth state and cache BEFORE doing anything else
     await logout();
 
     try {
-      // Then clear user-specific localStorage items
-      // Preserve app-wide settings (theme, locale, view preferences, tag view settings)
       const keysToPreserve = ["memos-theme", "memos-locale", "memos-view-setting", "tag-view-as-tree", "tag-tree-auto-expand"];
       const keysToRemove: string[] = [];
 
@@ -100,9 +95,11 @@ const UserMenu = (props: Props) => {
       // Ignore errors from localStorage operations
     }
 
-    // Always redirect to auth page (use replace to prevent back navigation)
     window.location.replace(Routes.AUTH);
   };
+
+  const menuItemClass = isX ? xMenuItemClass : undefined;
+  const menuSubTriggerClass = isX ? xMenuSubTriggerClass : undefined;
 
   return (
     <DropdownMenu>
@@ -110,16 +107,16 @@ const UserMenu = (props: Props) => {
         <div
           className={cn(
             "flex w-full cursor-pointer flex-row items-center text-foreground transition-colors",
-            variant === "x"
+            isX
               ? "max-w-[234px] gap-3 rounded-full p-3 hover:bg-accent"
-              : cn("w-auto justify-start items-center", collapsed ? "px-1" : "px-3"),
+              : cn("w-auto items-center justify-start", collapsed ? "px-1" : "px-3"),
           )}
         >
           <div className="relative shrink-0">
             {currentUser?.avatarUrl ? (
-              <UserAvatar avatarUrl={currentUser?.avatarUrl} />
+              <UserAvatar className={cn(isX && "h-10 w-10")} avatarUrl={currentUser?.avatarUrl} />
             ) : (
-              <User2Icon className="mx-auto h-auto w-6 text-muted-foreground" />
+              <User2Icon className={cn("mx-auto text-muted-foreground", isX ? "h-10 w-10" : "h-auto w-6")} />
             )}
             {sseStatus !== "connected" && (
               <Tooltip>
@@ -141,8 +138,8 @@ const UserMenu = (props: Props) => {
                 <div className="truncate text-[15px] font-bold text-foreground">{currentUser?.displayName || currentUser?.username}</div>
                 <div className="truncate text-[15px] text-muted-foreground">@{currentUser?.username}</div>
               </div>
-              {variant === "x" && <MoreHorizontalIcon className="h-[18px] w-[18px] shrink-0 text-foreground" />}
-              {variant !== "x" && (
+              {isX && <MoreHorizontalIcon className="h-[18px] w-[18px] shrink-0 text-foreground" />}
+              {!isX && (
                 <span className="ml-2 grow truncate text-lg font-medium text-foreground">
                   {currentUser?.displayName || currentUser?.username}
                 </span>
@@ -151,49 +148,57 @@ const UserMenu = (props: Props) => {
           )}
         </div>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start">
-        <DropdownMenuItem onClick={() => navigateTo(`/u/${encodeURIComponent(currentUser?.username ?? "")}`)}>
-          <SquareUserIcon className="size-4 text-muted-foreground" />
+      <DropdownMenuContent
+        align="start"
+        side={isX ? "top" : "bottom"}
+        sideOffset={isX ? 8 : 4}
+        className={isX ? xMenuContentClass : undefined}
+      >
+        <DropdownMenuItem className={menuItemClass} onClick={() => navigateTo(`/u/${encodeURIComponent(currentUser?.username ?? "")}`)}>
+          <SquareUserIcon className={isX ? undefined : "size-4 text-muted-foreground"} />
           {t("common.profile")}
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => navigateTo(Routes.ARCHIVED)}>
-          <ArchiveIcon className="size-4 text-muted-foreground" />
+        <DropdownMenuItem className={menuItemClass} onClick={() => navigateTo(Routes.ARCHIVED)}>
+          <ArchiveIcon className={isX ? undefined : "size-4 text-muted-foreground"} />
           {t("common.archived")}
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => navigateTo(Routes.ABOUT)}>
-          <InfoIcon className="size-4 text-muted-foreground" />
+        <DropdownMenuItem className={menuItemClass} onClick={() => navigateTo(Routes.ABOUT)}>
+          <InfoIcon className={isX ? undefined : "size-4 text-muted-foreground"} />
           {t("common.about")}
         </DropdownMenuItem>
         <DropdownMenuSub>
-          <DropdownMenuSubTrigger>
-            <GlobeIcon className="size-4 text-muted-foreground" />
+          <DropdownMenuSubTrigger className={menuSubTriggerClass}>
+            <GlobeIcon className={isX ? undefined : "size-4 text-muted-foreground"} />
             {t("common.language")}
           </DropdownMenuSubTrigger>
-          <DropdownMenuSubContent className="overflow-hidden p-0">
-            <LocaleSearchList value={currentLocale} onChange={handleLocaleChange} className="w-64" />
+          <DropdownMenuSubContent className={cn(isX ? xMenuSubContentClass : "overflow-hidden p-0")}>
+            <LocaleSearchList value={currentLocale} onChange={handleLocaleChange} className={isX ? "w-72" : "w-64"} />
           </DropdownMenuSubContent>
         </DropdownMenuSub>
         <DropdownMenuSub>
-          <DropdownMenuSubTrigger>
-            <PaletteIcon className="size-4 text-muted-foreground" />
+          <DropdownMenuSubTrigger className={menuSubTriggerClass}>
+            <PaletteIcon className={isX ? undefined : "size-4 text-muted-foreground"} />
             {t("setting.preference.theme")}
           </DropdownMenuSubTrigger>
-          <DropdownMenuSubContent>
+          <DropdownMenuSubContent className={isX ? xMenuSubContentClass : undefined}>
             {THEME_OPTIONS.map((option) => (
-              <DropdownMenuItem key={option.value} onClick={() => handleThemeChange(option.value)}>
-                {currentTheme === option.value && <CheckIcon className="w-4 h-auto" />}
-                {currentTheme !== option.value && <span className="w-4" />}
+              <DropdownMenuItem key={option.value} className={menuItemClass} onClick={() => handleThemeChange(option.value)}>
+                {currentTheme === option.value ? (
+                  <CheckIcon className={cn(isX ? "size-[22px]" : "w-4 h-auto")} />
+                ) : (
+                  <span className={isX ? "size-[22px]" : "w-4"} />
+                )}
                 {option.label}
               </DropdownMenuItem>
             ))}
           </DropdownMenuSubContent>
         </DropdownMenuSub>
-        <DropdownMenuItem onClick={() => navigateTo(Routes.SETTING)}>
-          <SettingsIcon className="size-4 text-muted-foreground" />
+        <DropdownMenuItem className={menuItemClass} onClick={() => navigateTo(Routes.SETTING)}>
+          <SettingsIcon className={isX ? undefined : "size-4 text-muted-foreground"} />
           {t("common.settings")}
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={handleSignOut}>
-          <LogOutIcon className="size-4 text-muted-foreground" />
+        <DropdownMenuItem className={menuItemClass} onClick={handleSignOut}>
+          <LogOutIcon className={isX ? undefined : "size-4 text-muted-foreground"} />
           {t("common.sign-out")}
         </DropdownMenuItem>
       </DropdownMenuContent>

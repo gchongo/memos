@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useInstance } from "@/contexts/InstanceContext";
 import useCurrentUser from "@/hooks/useCurrentUser";
 import useMediaQuery from "@/hooks/useMediaQuery";
+import { cn } from "@/lib/utils";
 import { User_Role } from "@/types/proto/api/v1/user_service_pb";
 import { useTranslate } from "@/utils/i18n";
 
@@ -79,54 +80,51 @@ const Setting = () => {
   return (
     <div className="min-h-full w-full bg-background text-foreground">
       <FeedHeader title={t("common.settings")} />
-      <div className="w-full px-4 py-4 sm:px-6 sm:py-6">
-        <div className="flex w-full flex-row items-start justify-start overflow-hidden rounded-2xl border border-border bg-card text-muted-foreground">
-          {sm && (
-            <div className="flex h-auto w-44 shrink-0 flex-col items-start justify-start border-r border-border/50 py-3 pl-1 pr-2">
-              <span className="text-sm mt-0.5 pl-3 font-mono select-none text-muted-foreground">{t("common.basic")}</span>
-              <div className="w-full flex flex-col justify-start items-start mt-1">{renderSectionMenuItems(sectionGroups.basic)}</div>
-              {isHost && (
-                <>
-                  <span className="text-sm mt-4 pl-3 font-mono select-none text-muted-foreground">{t("common.admin")}</span>
-                  <div className="w-full flex flex-col justify-start items-start mt-1">
-                    {renderSectionMenuItems(sectionGroups.admin)}
-                    <div className="px-3 mt-2 opacity-70 text-sm leading-5">
-                      {t("setting.version")}: {profile.version}
-                      {profile.commit && (
-                        <span className="block font-mono break-all">
-                          Commit:{" "}
-                          {commitUrl ? (
-                            <a className="underline hover:text-foreground" href={commitUrl} target="_blank" rel="noreferrer">
-                              {profile.commit}
-                            </a>
-                          ) : (
-                            profile.commit
-                          )}
-                        </span>
+      <div className="mx-auto flex w-full max-w-[1050px] flex-col sm:flex-row sm:min-h-[calc(100dvh-53px)]">
+        {sm && (
+          <aside className="w-full shrink-0 border-b border-border px-2 py-3 sm:w-[275px] sm:border-b-0 sm:border-r sm:py-4">
+            <div className="flex flex-col gap-0.5">{renderSectionMenuItems(sectionGroups.basic)}</div>
+            {isHost && (
+              <>
+                <p className="mt-4 px-4 text-[13px] font-bold text-foreground">{t("common.admin")}</p>
+                <div className="mt-1 flex flex-col gap-0.5">{renderSectionMenuItems(sectionGroups.admin)}</div>
+                <div className="mt-4 px-4 text-[13px] leading-5 text-muted-foreground">
+                  {t("setting.version")}: {profile.version}
+                  {profile.commit && (
+                    <span className="mt-1 block break-all font-mono text-xs">
+                      Commit:{" "}
+                      {commitUrl ? (
+                        <a className="underline hover:text-foreground" href={commitUrl} target="_blank" rel="noreferrer">
+                          {profile.commit}
+                        </a>
+                      ) : (
+                        profile.commit
                       )}
-                    </div>
-                  </div>
-                </>
-              )}
+                    </span>
+                  )}
+                </div>
+              </>
+            )}
+          </aside>
+        )}
+        <div className="min-w-0 flex-1 px-4 py-4 sm:px-8 sm:py-6">
+          {!sm && (
+            <div className="mb-4 inline-block w-auto">
+              <Select value={selectedSection} onValueChange={(value) => handleSectionSelectorItemClick(value as SettingSectionKey)}>
+                <SelectTrigger className="h-11 w-full min-w-[220px] rounded-full border-border bg-card">
+                  <SelectValue placeholder={t("setting.select-section")} />
+                </SelectTrigger>
+                <SelectContent className="rounded-2xl border-border/60 p-0">
+                  {sectionGroups.all.map((section) => (
+                    <SelectItem key={section.key} value={section.key} className="rounded-none px-4 py-3 text-[15px]">
+                      {t(section.labelKey)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           )}
-          <div className="w-full min-w-0 grow overflow-x-auto p-4 sm:p-6">
-            {!sm && (
-              <div className="mb-4 inline-block w-auto">
-                <Select value={selectedSection} onValueChange={(value) => handleSectionSelectorItemClick(value as SettingSectionKey)}>
-                  <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder={t("setting.select-section")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {sectionGroups.all.map((section) => (
-                      <SelectItem key={section.key} value={section.key}>
-                        {t(section.labelKey)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
+          <div className={cn(!sm && "mt-2")}>
             <ActiveSection />
           </div>
         </div>
