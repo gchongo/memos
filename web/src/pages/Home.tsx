@@ -7,6 +7,7 @@ import { useInstance } from "@/contexts/InstanceContext";
 import { useView } from "@/contexts/ViewContext";
 import { useMemoFilters, useMemoSorting } from "@/hooks";
 import useCurrentUser from "@/hooks/useCurrentUser";
+import { ROUTES } from "@/router/routes";
 import { State } from "@/types/proto/api/v1/common_pb";
 import { Memo } from "@/types/proto/api/v1/memo_service_pb";
 
@@ -48,6 +49,7 @@ const Home = () => {
           filter={memoFilter}
           enabled={isInitialized}
           showMemoEditor
+          scrollRestorationPath={ROUTES.HOME}
       />
     </div>
   );

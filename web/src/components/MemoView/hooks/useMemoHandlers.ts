@@ -6,10 +6,11 @@ interface UseMemoHandlersOptions {
   readonly: boolean;
   openEditor: () => void;
   openPreview: (items: string | string[] | PreviewMediaItem[], index?: number) => void;
+  suppressCardNavigation?: () => void;
 }
 
 export const useMemoHandlers = (options: UseMemoHandlersOptions) => {
-  const { readonly, openEditor, openPreview } = options;
+  const { readonly, openEditor, openPreview, suppressCardNavigation } = options;
   const { memoRelatedSetting } = useInstance();
 
   const handleMemoContentClick = useCallback(
@@ -17,12 +18,16 @@ export const useMemoHandlers = (options: UseMemoHandlersOptions) => {
       const targetEl = e.target as HTMLElement;
       if (targetEl.tagName === "IMG") {
         const linkElement = targetEl.closest("a");
-        if (linkElement) return; // If image is inside a link, don't show preview
+        if (linkElement) return;
         const imgUrl = targetEl.getAttribute("src");
-        if (imgUrl) openPreview(imgUrl);
+        if (imgUrl) {
+          e.stopPropagation();
+          suppressCardNavigation?.();
+          openPreview(imgUrl);
+        }
       }
     },
-    [openPreview],
+    [openPreview, suppressCardNavigation],
   );
 
   const handleMemoContentDoubleClick = useCallback(

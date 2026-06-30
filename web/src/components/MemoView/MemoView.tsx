@@ -18,7 +18,7 @@ import { MEMO_CARD_BASE_CLASSES } from "./constants";
 import { useImagePreview } from "./hooks";
 import { MemoViewContext } from "./MemoViewContext";
 import type { MemoViewProps } from "./types";
-import { useTranslate } from "@/utils/i18n";
+import { saveScrollForPath } from "@/utils/scroll-restoration";
 
 const MemoView: React.FC<MemoViewProps> = (props: MemoViewProps) => {
   const t = useTranslate();
@@ -97,11 +97,12 @@ const MemoView: React.FC<MemoViewProps> = (props: MemoViewProps) => {
       const target = event.target as HTMLElement;
       if (
         target.closest(
-          "a, button, input, textarea, [contenteditable='true'], [data-no-memo-nav], [role='menuitem'], [data-slot='dropdown-menu-content']",
+          "a, button, input, textarea, img, video, [contenteditable='true'], [data-no-memo-nav], [data-memo-media-preview], [role='menuitem'], [data-slot='dropdown-menu-content']",
         )
       ) {
         return;
       }
+      saveScrollForPath(parentPage);
       navigateTo(`/${memoData.name}`, { state: { from: parentPage } });
     },
     [isInMemoDetailPage, memoData.name, navigateTo, parentPage],

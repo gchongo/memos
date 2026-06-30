@@ -17,6 +17,7 @@ import { userKeys } from "@/hooks/useUserQueries";
 import { State } from "@/types/proto/api/v1/common_pb";
 import type { Memo } from "@/types/proto/api/v1/memo_service_pb";
 import { useTranslate } from "@/utils/i18n";
+import { restoreScrollForPath } from "@/utils/scroll-restoration";
 import MemoFilters from "../MemoFilters";
 import Placeholder from "../Placeholder";
 import Skeleton from "../Skeleton";
@@ -32,6 +33,8 @@ interface Props {
   enabled?: boolean;
   /** When true, render the inline MemoEditor above the list (e.g. on the Home page). */
   showMemoEditor?: boolean;
+  /** Restore window scroll position saved before navigating away from this feed. */
+  scrollRestorationPath?: string;
 }
 
 function useAutoFetchWhenNotScrollable({
@@ -160,6 +163,16 @@ const PagedMemoList = (props: Props) => {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  const restoredScrollRef = useRef(false);
+
+  useEffect(() => {
+    if (!props.scrollRestorationPath || isLoading || restoredScrollRef.current || sortedMemoList.length === 0) {
+      return;
+    }
+    restoredScrollRef.current = true;
+    restoreScrollForPath(props.scrollRestorationPath);
+  }, [props.scrollRestorationPath, isLoading, sortedMemoList.length]);
 
   const children = (
     <MentionResolutionProvider contents={sortedMemoList.map((memo) => memo.content)}>

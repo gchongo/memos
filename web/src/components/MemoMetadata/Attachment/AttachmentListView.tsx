@@ -80,7 +80,15 @@ const VisualTile = ({
   children,
 }: PropsWithChildren<{ className?: string; onPreview?: () => void; overlayLabel?: string; tileClassName?: string }>) => {
   return (
-    <div className={cn(tileClassName, className)} onClick={onPreview}>
+    <div
+      className={cn(tileClassName, className)}
+      data-no-memo-nav
+      data-memo-media-preview
+      onClick={(event) => {
+        event.stopPropagation();
+        onPreview?.();
+      }}
+    >
       <div className={MEDIA_HOVER_SURFACE_CLASS}>
         {children}
         <div className={MEDIA_HOVER_GRADIENT_CLASS} aria-hidden />
