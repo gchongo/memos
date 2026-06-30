@@ -1,13 +1,13 @@
 import { timestampDate } from "@bufbuild/protobuf/wkt";
-import { ArrowLeftIcon, CalendarDaysIcon } from "lucide-react";
-import { lazy, Suspense, useCallback, useMemo } from "react";
+import copy from "copy-to-clipboard";
+import { ArrowLeftIcon } from "lucide-react";
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "react-hot-toast";
-import { Link, useLocation, useParams, useSearchParams } from "react-router-dom";
+import { useLocation, useParams, useSearchParams } from "react-router-dom";
 import i18n from "@/i18n";
 import MemoView from "@/components/MemoView";
 import PagedMemoList from "@/components/PagedMemoList";
-import UserAvatar from "@/components/UserAvatar";
-import { Button } from "@/components/ui/button";
+import ProfileHero, { profileLayoutVars } from "@/components/Profile/ProfileHero";
 import { useView } from "@/contexts/ViewContext";
 import { useMemoFilters, useMemoSorting } from "@/hooks";
 import { useFollowedUsers } from "@/hooks/useFollowedUsers";
@@ -15,26 +15,14 @@ import useCurrentUser from "@/hooks/useCurrentUser";
 import useNavigateTo from "@/hooks/useNavigateTo";
 import { useUser, useUserStats } from "@/hooks/useUserQueries";
 import { cn } from "@/lib/utils";
-import { ROUTES } from "@/router/routes";
 import { State } from "@/types/proto/api/v1/common_pb";
 import type { Memo } from "@/types/proto/api/v1/memo_service_pb";
-import type { User } from "@/types/proto/api/v1/user_service_pb";
+import { isImage } from "@/utils/attachment";
 import { useTranslate } from "@/utils/i18n";
 
-type TabView = "memos" | "media" | "map";
+type TabView = "memos" | "replies" | "media" | "map";
 
 const UserMemoMap = lazy(() => import("@/components/UserMemoMap"));
-
-const PROFILE_COVER_HEIGHT = 200;
-const PROFILE_AVATAR_SIZE = 134;
-
-const hashUsername = (username: string) => {
-  let hash = 0;
-  for (const char of username) {
-    hash = char.charCodeAt(0) + ((hash << 5) - hash);
-  }
-  return Math.abs(hash);
-};
 
 const formatJoinedLabel = (date: Date, locale: string) => {
   if (locale.startsWith("zh")) {
@@ -43,23 +31,43 @@ const formatJoinedLabel = (date: Date, locale: string) => {
   return date.toLocaleDateString(locale, { year: "numeric", month: "long" });
 };
 
+const isTopLevelMemo = (memo: Memo) => !memo.parent;
+
+const isReplyMemo = (memo: Memo) => Boolean(memo.parent);
+
+const hasMediaContent = (memo: Memo) => {
+  if (memo.location?.latitude != null && memo.location?.longitude != null) {
+    return true;
+  }
+  return memo.attachments.some((attachment) => isImage(attachment.type) || attachment.type.startsWith("video"));
+};
+
+const parseTabView = (value: string | null): TabView => {
+  if (value === "map") return "map";
+  if (value === "media") return "media";
+  if (value === "replies") return "replies";
+  return "memos";
+};
+
 interface ProfileTabsProps {
   activeTab: TabView;
   onTabChange: (tab: TabView) => void;
   className?: string;
+  style?: React.CSSProperties;
 }
 
-const ProfileTabs = ({ activeTab, onTabChange, className }: ProfileTabsProps) => {
+const ProfileTabs = ({ activeTab, onTabChange, className, style }: ProfileTabsProps) => {
   const t = useTranslate();
 
   const tabs: { id: TabView; label: string }[] = [
     { id: "memos", label: t("layout.profile-tab-posts") },
-    { id: "media", label: t("common.media") },
-    { id: "map", label: t("common.map") },
+    { id: "replies", label: t("layout.profile-tab-replies") },
+    { id: "media", label: t("layout.profile-tab-media") },
+    { id: "map", label: t("layout.profile-tab-map") },
   ];
 
   return (
-    <nav className={cn("flex border-b border-border", className)}>
+    <nav className={cn("flex border-b border-border", className)} style={style}>
       {tabs.map((tab) => (
         <button
           key={tab.id}
@@ -78,119 +86,35 @@ const ProfileTabs = ({ activeTab, onTabChange, className }: ProfileTabsProps) =>
   );
 };
 
-interface ProfileHeroProps {
-  user: User;
-  isOwnProfile: boolean;
-  followingCount: number;
-  memoCount: number;
-}
-
-const ProfileHero = ({ user, isOwnProfile, followingCount, memoCount }: ProfileHeroProps) => {
-  const t = useTranslate();
-  const { isFollowing, toggleFollow } = useFollowedUsers();
-  const displayName = user.displayName || user.username;
-  const following = isFollowing(user.username);
-  const coverStyle = useMemo(() => {
-    const hue = hashUsername(user.username) % 360;
-    return {
-      background: `linear-gradient(135deg, hsl(${hue} 22% 28%) 0%, hsl(${(hue + 48) % 360} 18% 14%) 100%)`,
-    };
-  }, [user.username]);
-
-  const joinedLabel = user.createTime
-    ? t("layout.profile-joined", { date: formatJoinedLabel(timestampDate(user.createTime), i18n.language) })
-    : undefined;
-
-  return (
-    <>
-      <div className="relative w-full" style={{ height: PROFILE_COVER_HEIGHT }}>
-        <div className="h-full w-full bg-muted" style={coverStyle} />
-      </div>
-
-      <div className="relative px-4 pb-3">
-        <div className="-mt-[calc(var(--profile-avatar-size)/2+3px)] mb-3 flex items-end justify-between gap-3">
-          <UserAvatar
-            avatarUrl={user.avatarUrl}
-            className="h-[var(--profile-avatar-size)] w-[var(--profile-avatar-size)] shrink-0 rounded-full border-4 border-background bg-background shadow-sm"
-          />
-
-          <div className="flex shrink-0 items-center gap-2 pb-1">
-            {isOwnProfile ? (
-              <Button
-                asChild
-                variant="outline"
-                className="h-9 rounded-full border-border px-4 text-[14px] font-bold hover:bg-accent"
-              >
-                <Link to={ROUTES.SETTING}>{t("layout.edit-profile")}</Link>
-              </Button>
-            ) : (
-              <Button
-                type="button"
-                variant={following ? "outline" : "default"}
-                className={cn(
-                  "h-9 rounded-full px-4 text-[14px] font-bold",
-                  following
-                    ? "border-border bg-transparent text-foreground hover:bg-accent"
-                    : "bg-foreground text-background hover:bg-foreground/90",
-                )}
-                onClick={() => toggleFollow(user.username)}
-              >
-                {following ? t("layout.following") : t("layout.follow")}
-              </Button>
-            )}
-          </div>
-        </div>
-
-        <div className="space-y-3">
-          <div>
-            <h2 className="text-xl font-extrabold leading-6 text-foreground">{displayName}</h2>
-            <p className="text-[15px] leading-5 text-muted-foreground">@{user.username}</p>
-          </div>
-
-          {user.description && <p className="whitespace-pre-wrap text-[15px] leading-5 text-foreground">{user.description}</p>}
-
-          {joinedLabel && (
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[15px] text-muted-foreground">
-              <span className="inline-flex items-center gap-1">
-                <CalendarDaysIcon className="h-4 w-4 shrink-0" />
-                {joinedLabel}
-              </span>
-            </div>
-          )}
-
-          <div className="flex flex-wrap items-center gap-x-5 gap-y-1 text-[15px]">
-            {isOwnProfile && followingCount > 0 && (
-              <Link to={ROUTES.USERS} className="transition-opacity hover:opacity-80">
-                <span className="font-bold text-foreground">{followingCount}</span>{" "}
-                <span className="text-muted-foreground">{t("layout.following")}</span>
-              </Link>
-            )}
-            {memoCount > 0 && (
-              <span>
-                <span className="font-bold text-foreground">{memoCount}</span>{" "}
-                <span className="text-muted-foreground">{t("layout.profile-tab-posts")}</span>
-              </span>
-            )}
-          </div>
-        </div>
-      </div>
-    </>
-  );
-};
-
 const UserProfile = () => {
   const t = useTranslate();
   const username = useParams().username;
   const location = useLocation();
   const navigateTo = useNavigateTo();
   const currentUser = useCurrentUser();
+  const headerRef = useRef<HTMLElement>(null);
+  const [headerHeight, setHeaderHeight] = useState(53);
   const [searchParams, setSearchParams] = useSearchParams();
-  const activeTab = (searchParams.get("view") === "map" ? "map" : searchParams.get("view") === "media" ? "media" : "memos") as TabView;
+  const activeTab = parseTabView(searchParams.get("view"));
   const { compactMode } = useView();
-  const { followedUsernames } = useFollowedUsers();
+  const { followedUsernames, isFollowing, toggleFollow, getFollowerCount } = useFollowedUsers();
 
   const { data: user, isLoading, error } = useUser(`users/${username}`, { enabled: !!username });
   const { data: userStats } = useUserStats(user?.name);
+
+  useEffect(() => {
+    const header = headerRef.current;
+    if (!header) return;
+
+    const updateHeight = () => {
+      setHeaderHeight(header.getBoundingClientRect().height);
+    };
+
+    updateHeight();
+    const observer = new ResizeObserver(updateHeight);
+    observer.observe(header);
+    return () => observer.disconnect();
+  }, [user]);
 
   if (error && !isLoading) {
     toast.error(t("message.user-not-found"));
@@ -199,6 +123,7 @@ const UserProfile = () => {
   const isOwnProfile = Boolean(currentUser && user && currentUser.name === user.name);
   const memoCount = userStats?.totalMemoCount ?? 0;
   const displayName = user?.displayName || user?.username || "";
+  const scrollRestorationPath = `${location.pathname}${location.search}`;
 
   const memoFilter = useMemoFilters({
     creatorName: user?.name,
@@ -212,8 +137,18 @@ const UserProfile = () => {
     state: State.NORMAL,
   });
 
+  const postsListSort = useCallback(
+    (memos: Memo[]) => listSort(memos).filter(isTopLevelMemo),
+    [listSort],
+  );
+
+  const repliesListSort = useCallback(
+    (memos: Memo[]) => listSort(memos).filter(isReplyMemo),
+    [listSort],
+  );
+
   const mediaListSort = useCallback(
-    (memos: Memo[]) => listSort(memos).filter((memo) => memo.attachments.length > 0),
+    (memos: Memo[]) => listSort(memos).filter((memo) => isTopLevelMemo(memo) && hasMediaContent(memo)),
     [listSort],
   );
 
@@ -229,17 +164,39 @@ const UserProfile = () => {
   };
 
   const backTarget = typeof location.state?.from === "string" ? location.state.from : "/";
+  const joinedLabel = user?.createTime
+    ? t("layout.profile-joined", { joinedAt: formatJoinedLabel(timestampDate(user.createTime), i18n.language) })
+    : undefined;
+  const followerCount = user ? getFollowerCount(user.username) : 0;
+
+  const handleShareProfile = () => {
+    if (!user) return;
+    copy(`${window.location.origin}/u/${encodeURIComponent(user.username)}`);
+    toast.success(t("message.copied"));
+  };
+
+  const handleFollowToggle = () => {
+    if (!user) return;
+    toggleFollow(user.username, currentUser?.username);
+  };
+
+  const emptyMessage =
+    activeTab === "media"
+      ? t("layout.profile-empty-media")
+      : activeTab === "replies"
+        ? t("layout.profile-empty-replies")
+        : undefined;
 
   if (isLoading) return null;
 
   return (
     <section
       className="flex min-h-full w-full flex-col bg-background text-foreground"
-      style={{ "--profile-avatar-size": `${PROFILE_AVATAR_SIZE}px` } as React.CSSProperties}
+      style={{ "--profile-avatar-size": `${profileLayoutVars.avatarSize}px` } as React.CSSProperties}
     >
       {user ? (
         <>
-          <header className="sticky top-0 z-20 border-b border-border bg-background/80 backdrop-blur-md">
+          <header ref={headerRef} className="sticky top-0 z-20 border-b border-border bg-background/80 backdrop-blur-md">
             <div className="flex items-center gap-6 px-4 py-2">
               <button
                 type="button"
@@ -264,13 +221,18 @@ const UserProfile = () => {
             user={user}
             isOwnProfile={isOwnProfile}
             followingCount={followedUsernames.length}
-            memoCount={memoCount}
+            followerCount={followerCount}
+            joinedLabel={joinedLabel}
+            onShareProfile={handleShareProfile}
+            onFollowToggle={handleFollowToggle}
+            isFollowing={isFollowing(user.username)}
           />
 
           <ProfileTabs
             activeTab={activeTab}
             onTabChange={toggleTab}
-            className="sticky top-[53px] z-10 bg-background/80 backdrop-blur-md"
+            className="sticky z-10 bg-background/80 backdrop-blur-md"
+            style={{ top: headerHeight }}
           />
 
           <div className="flex-1">
@@ -279,9 +241,22 @@ const UserProfile = () => {
                 renderer={(memo: Memo) => (
                   <MemoView key={`${memo.name}-${memo.updateTime}`} memo={memo} showVisibility showPinned compact={compactMode} />
                 )}
-                listSort={listSort}
+                listSort={postsListSort}
                 orderBy={orderBy}
                 filter={memoFilter}
+                scrollRestorationPath={scrollRestorationPath}
+              />
+            )}
+            {activeTab === "replies" && (
+              <PagedMemoList
+                renderer={(memo: Memo) => (
+                  <MemoView key={`${memo.name}-${memo.updateTime}`} memo={memo} showVisibility showPinned compact={compactMode} />
+                )}
+                listSort={repliesListSort}
+                orderBy={orderBy}
+                filter={memoFilter}
+                scrollRestorationPath={scrollRestorationPath}
+                emptyMessage={emptyMessage}
               />
             )}
             {activeTab === "media" && (
@@ -292,6 +267,8 @@ const UserProfile = () => {
                 listSort={mediaListSort}
                 orderBy={orderBy}
                 filter={memoFilter}
+                scrollRestorationPath={scrollRestorationPath}
+                emptyMessage={emptyMessage}
               />
             )}
             {activeTab === "map" && (

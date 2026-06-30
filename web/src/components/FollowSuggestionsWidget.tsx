@@ -21,6 +21,7 @@ interface SuggestionRowProps {
 
 const SuggestionRow = ({ user, memoCount }: SuggestionRowProps) => {
   const t = useTranslate();
+  const currentUser = useCurrentUser();
   const navigateTo = useNavigateTo();
   const { isFollowing, toggleFollow } = useFollowedUsers();
   const profilePath = `/u/${user.username}`;
@@ -48,7 +49,7 @@ const SuggestionRow = ({ user, memoCount }: SuggestionRowProps) => {
             ? "border-border bg-transparent text-foreground hover:bg-accent"
             : "bg-foreground text-background hover:bg-foreground/90",
         )}
-        onClick={() => toggleFollow(user.username)}
+        onClick={() => toggleFollow(user.username, currentUser?.username)}
       >
         {following ? t("layout.following") : t("layout.follow")}
       </Button>

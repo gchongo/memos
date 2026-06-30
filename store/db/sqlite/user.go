@@ -48,6 +48,9 @@ func (d *DB) UpdateUser(ctx context.Context, update *store.UpdateUser) (*store.U
 	if v := update.AvatarURL; v != nil {
 		set, args = append(set, "avatar_url = ?"), append(args, *v)
 	}
+	if v := update.CoverURL; v != nil {
+		set, args = append(set, "cover_url = ?"), append(args, *v)
+	}
 	if v := update.PasswordHash; v != nil {
 		set, args = append(set, "password_hash = ?"), append(args, *v)
 	}
@@ -63,7 +66,7 @@ func (d *DB) UpdateUser(ctx context.Context, update *store.UpdateUser) (*store.U
 		UPDATE user
 		SET ` + strings.Join(set, ", ") + `
 		WHERE id = ?
-		RETURNING id, username, role, email, nickname, password_hash, avatar_url, description, created_ts, updated_ts, row_status
+		RETURNING id, username, role, email, nickname, password_hash, avatar_url, cover_url, description, created_ts, updated_ts, row_status
 	`
 	user := &store.User{}
 	if err := d.db.QueryRowContext(ctx, query, args...).Scan(
@@ -74,6 +77,7 @@ func (d *DB) UpdateUser(ctx context.Context, update *store.UpdateUser) (*store.U
 		&user.Nickname,
 		&user.PasswordHash,
 		&user.AvatarURL,
+		&user.CoverURL,
 		&user.Description,
 		&user.CreatedTs,
 		&user.UpdatedTs,
@@ -157,6 +161,7 @@ func (d *DB) ListUsers(ctx context.Context, find *store.FindUser) ([]*store.User
 			nickname,
 			password_hash,
 			avatar_url,
+			cover_url,
 			description,
 			created_ts,
 			updated_ts,
@@ -184,6 +189,7 @@ func (d *DB) ListUsers(ctx context.Context, find *store.FindUser) ([]*store.User
 			&user.Nickname,
 			&user.PasswordHash,
 			&user.AvatarURL,
+			&user.CoverURL,
 			&user.Description,
 			&user.CreatedTs,
 			&user.UpdatedTs,

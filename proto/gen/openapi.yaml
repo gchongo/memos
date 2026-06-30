@@ -3801,6 +3801,9 @@ components:
                 description:
                     type: string
                     description: Optional. The description of the user.
+                coverUrl:
+                    type: string
+                    description: Optional. The profile cover image URL of the user.
                 password:
                     writeOnly: true
                     type: string

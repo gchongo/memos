@@ -17,6 +17,7 @@ CREATE TABLE `user` (
   `nickname` VARCHAR(256) NOT NULL DEFAULT '',
   `password_hash` VARCHAR(256) NOT NULL,
   `avatar_url` LONGTEXT NOT NULL,
+  `cover_url` LONGTEXT NOT NULL,
   `description` VARCHAR(256) NOT NULL DEFAULT ''
 );
 

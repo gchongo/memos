@@ -47,8 +47,21 @@
     "trending-in": "Explore",
     "edit-profile": "Edit profile",
     "profile-tab-posts": "Posts",
+    "profile-tab-replies": "Replies",
+    "profile-tab-media": "Media",
+    "profile-tab-map": "Map",
     "profile-post-count": "{{count}} posts",
-    "profile-joined": "Joined {{date}}"
+    "profile-joined": "Joined {{joinedAt}}",
+    "profile-following-stat": "Following",
+    "profile-empty-media": "No media posts yet",
+    "profile-empty-replies": "No replies yet",
+    "profile-followers-stat": "Followers",
+    "profile-share": "Share profile",
+    "profile-upload-cover": "Upload cover",
+    "profile-change-cover": "Change cover",
+    "profile-remove-cover": "Remove cover",
+    "profile-cover-too-large": "Cover image must be 4MB or smaller",
+    "profile-cover-upload-failed": "Failed to update cover image"
   },
   "shortcutsPage": {
     "description": "Create reusable memo filters with fields, operators, time helpers, and tag matching.",

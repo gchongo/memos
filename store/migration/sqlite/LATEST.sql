@@ -18,6 +18,7 @@ CREATE TABLE user (
   nickname TEXT NOT NULL DEFAULT '',
   password_hash TEXT NOT NULL,
   avatar_url TEXT NOT NULL DEFAULT '',
+  cover_url TEXT NOT NULL DEFAULT '',
   description TEXT NOT NULL DEFAULT ''
 );
 

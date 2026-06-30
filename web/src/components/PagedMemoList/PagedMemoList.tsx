@@ -35,6 +35,8 @@ interface Props {
   showMemoEditor?: boolean;
   /** Restore window scroll position saved before navigating away from this feed. */
   scrollRestorationPath?: string;
+  /** Custom empty-state message when the filtered list has no items. */
+  emptyMessage?: string;
 }
 
 function useAutoFetchWhenNotScrollable({
@@ -196,7 +198,7 @@ const PagedMemoList = (props: Props) => {
             {!isFetchingNextPage && (
               <>
                 {!hasNextPage && sortedMemoList.length === 0 ? (
-                  <Placeholder variant="empty" message={t("message.no-data")} />
+                  <Placeholder variant="empty" message={props.emptyMessage ?? t("message.no-data")} />
                 ) : (
                   <div className="w-full opacity-70 flex flex-row justify-center items-center my-4">
                     <BackToTop />

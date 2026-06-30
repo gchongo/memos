@@ -16,6 +16,7 @@ interface UserRowProps {
 
 const UserRow = ({ user, memoCount }: UserRowProps) => {
   const t = useTranslate();
+  const currentUser = useCurrentUser();
   const { isFollowing, toggleFollow } = useFollowedUsers();
   const profilePath = `/u/${user.username}`;
   const following = isFollowing(user.username);
@@ -42,7 +43,7 @@ const UserRow = ({ user, memoCount }: UserRowProps) => {
             ? "border-border bg-transparent text-foreground hover:bg-accent"
             : "bg-foreground text-background hover:bg-foreground/90",
         )}
-        onClick={() => toggleFollow(user.username)}
+        onClick={() => toggleFollow(user.username, currentUser?.username)}
       >
         {following ? t("layout.following") : t("layout.follow")}
       </Button>

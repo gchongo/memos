@@ -41,6 +41,7 @@ type User struct {
 	Nickname     string
 	PasswordHash string
 	AvatarURL    string
+	CoverURL     string
 	Description  string
 }
 
@@ -55,6 +56,7 @@ type UpdateUser struct {
 	Nickname     *string
 	Password     *string
 	AvatarURL    *string
+	CoverURL     *string
 	PasswordHash *string
 	Description  *string
 }

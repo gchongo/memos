@@ -231,6 +231,9 @@ message User {
   // Optional. The description of the user.
   string description = 7 [(google.api.field_behavior) = OPTIONAL];
 
+  // Optional. The profile cover image URL of the user.
+  string cover_url = 12 [(google.api.field_behavior) = OPTIONAL];
+
   // Input only. The password for the user.
   string password = 8 [(google.api.field_behavior) = INPUT_ONLY];
 

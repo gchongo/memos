@@ -47,8 +47,21 @@
     "trending-in": "发现",
     "edit-profile": "编辑个人资料",
     "profile-tab-posts": "帖子",
+    "profile-tab-replies": "回复",
+    "profile-tab-media": "媒体",
+    "profile-tab-map": "地图",
     "profile-post-count": "{{count}} 帖子",
-    "profile-joined": "{{date}} 加入"
+    "profile-joined": "{{joinedAt}} 加入",
+    "profile-following-stat": "正在关注",
+    "profile-empty-media": "还没有媒体帖子",
+    "profile-empty-replies": "还没有回复",
+    "profile-followers-stat": "关注者",
+    "profile-share": "分享资料",
+    "profile-upload-cover": "上传封面",
+    "profile-change-cover": "更换封面",
+    "profile-remove-cover": "移除封面",
+    "profile-cover-too-large": "封面图片不能超过 4MB",
+    "profile-cover-upload-failed": "封面更新失败"
   },
   "shortcutsPage": {
     "description": "创建可复用的备忘录筛选器，支持字段、运算符、时间函数和标签匹配。",

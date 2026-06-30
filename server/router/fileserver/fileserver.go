@@ -122,6 +122,7 @@ func (s *FileServerService) RegisterRoutes(echoServer *echo.Echo) {
 	fileGroup := echoServer.Group("/file")
 	fileGroup.GET("/attachments/:uid/:filename", s.serveAttachmentFile)
 	fileGroup.GET("/users/:identifier/avatar", s.serveUserAvatar)
+	fileGroup.GET("/users/:identifier/cover", s.serveUserCover)
 }
 
 // =============================================================================
@@ -187,6 +188,38 @@ func (s *FileServerService) serveUserAvatar(c *echo.Context) error {
 
 	if !avatarAllowedTypes[imageType] {
 		return echo.NewHTTPError(http.StatusBadRequest, "invalid avatar image type")
+	}
+
+	setSecurityHeaders(c)
+	c.Response().Header().Set(echo.HeaderContentType, imageType)
+	c.Response().Header().Set(echo.HeaderCacheControl, cacheMaxAge)
+
+	return c.Blob(http.StatusOK, imageType, imageData)
+}
+
+// serveUserCover serves user profile cover images.
+func (s *FileServerService) serveUserCover(c *echo.Context) error {
+	ctx := c.Request().Context()
+	identifier := c.Param("identifier")
+
+	user, err := s.getUserByUsername(ctx, identifier)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to get user").Wrap(err)
+	}
+	if user == nil {
+		return echo.NewHTTPError(http.StatusNotFound, "user not found")
+	}
+	if user.CoverURL == "" {
+		return echo.NewHTTPError(http.StatusNotFound, "cover not found")
+	}
+
+	imageType, imageData, err := s.parseDataURI(user.CoverURL)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to parse cover data").Wrap(err)
+	}
+
+	if !avatarAllowedTypes[imageType] {
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid cover image type")
 	}
 
 	setSecurityHeaders(c)

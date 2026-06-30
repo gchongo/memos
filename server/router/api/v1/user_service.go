@@ -337,6 +337,24 @@ func (s *APIV1Service) UpdateUser(ctx context.Context, request *v1pb.UpdateUserR
 				}
 			}
 			update.AvatarURL = &request.User.AvatarUrl
+		case "cover_url":
+			if request.User.CoverUrl != "" {
+				imageType, _, err := extractImageInfo(request.User.CoverUrl)
+				if err != nil {
+					return nil, status.Errorf(codes.InvalidArgument, "invalid cover format: %v", err)
+				}
+				allowedCoverTypes := map[string]bool{
+					"image/png":  true,
+					"image/jpeg": true,
+					"image/jpg":  true,
+					"image/gif":  true,
+					"image/webp": true,
+				}
+				if !allowedCoverTypes[imageType] {
+					return nil, status.Errorf(codes.InvalidArgument, "invalid cover image type: %s. Only PNG, JPEG, GIF, and WebP are allowed", imageType)
+				}
+			}
+			update.CoverURL = &request.User.CoverUrl
 		case "description":
 			update.Description = &request.User.Description
 		case "role":
@@ -1327,6 +1345,7 @@ func convertUserFromStore(user *store.User, viewer *store.User) *v1pb.User {
 		Username:    user.Username,
 		DisplayName: user.Nickname,
 		AvatarUrl:   user.AvatarURL,
+		CoverUrl:    user.CoverURL,
 		Description: user.Description,
 	}
 	if canViewerAccessUserEmail(viewer, user) {
@@ -1340,6 +1359,14 @@ func convertUserFromStore(user *store.User, viewer *store.User) *v1pb.User {
 			userpb.AvatarUrl = fmt.Sprintf("/file/%s/avatar", userpb.Name)
 		} else {
 			userpb.AvatarUrl = user.AvatarURL
+		}
+	}
+	if user.CoverURL != "" {
+		_, _, err := extractImageInfo(user.CoverURL)
+		if err == nil {
+			userpb.CoverUrl = fmt.Sprintf("/file/%s/cover", userpb.Name)
+		} else {
+			userpb.CoverUrl = user.CoverURL
 		}
 	}
 	return userpb
