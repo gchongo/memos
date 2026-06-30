@@ -2,13 +2,14 @@ import { uniqBy } from "lodash-es";
 import {
   FileIcon,
   ImageIcon,
-  LinkIcon,
   LoaderIcon,
   type LucideIcon,
+  LinkIcon,
   MapPinIcon,
   Maximize2Icon,
   MicIcon,
   MoreHorizontalIcon,
+  PaperclipIcon,
   PlusIcon,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -32,7 +33,7 @@ import { useDebouncedEffect } from "@/hooks";
 import type { MemoRelation } from "@/types/proto/api/v1/memo_service_pb";
 import { useTranslate } from "@/utils/i18n";
 import { setPreferredEditorMode } from "../editorMode";
-import { useFileUpload, useLinkMemo, useLocation } from "../hooks";
+import { DOCUMENT_FILE_ACCEPT, isAudioFile, isDocumentFile, isImageFile, isVideoFile, useFileUpload, useLinkMemo, useLocation } from "../hooks";
 import { useEditorContext, useEditorSelector } from "../state";
 import type { InsertMenuProps } from "../types";
 import type { LocalFile } from "../types/attachment";
@@ -54,7 +55,16 @@ const InsertMenu = (props: InsertMenuProps) => {
     setMoreSubmenuOpen,
   );
 
-  const { fileInputRef, selectingFlag, handleFileInputChange, handleUploadClick } = useFileUpload((newFiles: LocalFile[]) => {
+  const {
+    imageInputRef,
+    documentInputRef,
+    attachmentInputRef,
+    selectingFlag,
+    handleFileInputChange,
+    handleImageUploadClick,
+    handleDocumentUploadClick,
+    handleAttachmentUploadClick,
+  } = useFileUpload((newFiles: LocalFile[]) => {
     newFiles.forEach((file) => dispatch(actions.addLocalFile(file)));
   });
 
@@ -147,19 +157,23 @@ const InsertMenu = (props: InsertMenuProps) => {
   );
 
   const handleMediaUploadClick = useCallback(() => {
-    handleUploadClick("image/*,video/*");
-  }, [handleUploadClick]);
+    handleImageUploadClick();
+  }, [handleImageUploadClick]);
 
   const handleFileUploadClick = useCallback(() => {
-    handleUploadClick();
-  }, [handleUploadClick]);
+    handleDocumentUploadClick();
+  }, [handleDocumentUploadClick]);
 
-  const menuItems = useMemo(
+  const handleAddAttachmentClick = useCallback(() => {
+    handleAttachmentUploadClick();
+  }, [handleAttachmentUploadClick]);
+
+  const feedToolbarItems = useMemo(
     () =>
       [
         {
-          key: "upload-media",
-          label: t("attachment-library.tabs.media"),
+          key: "upload-image",
+          label: t("editor.insert-menu.upload-image"),
           icon: ImageIcon,
           onClick: handleMediaUploadClick,
         },
@@ -171,9 +185,52 @@ const InsertMenu = (props: InsertMenuProps) => {
         },
         {
           key: "upload-file",
-          label: t("common.file"),
+          label: t("editor.insert-menu.upload-file"),
           icon: FileIcon,
           onClick: handleFileUploadClick,
+        },
+        {
+          key: "add-attachment",
+          label: t("editor.insert-menu.add-attachment"),
+          icon: PaperclipIcon,
+          onClick: handleAddAttachmentClick,
+        },
+        {
+          key: "location",
+          label: t("editor.insert-menu.add-location"),
+          icon: MapPinIcon,
+          onClick: handleLocationClick,
+        },
+      ] satisfies Array<{ key: string; label: string; icon: LucideIcon; onClick: () => void }>,
+    [handleAddAttachmentClick, handleFileUploadClick, handleLocationClick, handleMediaUploadClick, props, t],
+  );
+
+  const menuItems = useMemo(
+    () =>
+      [
+        {
+          key: "upload-media",
+          label: t("editor.insert-menu.upload-image"),
+          icon: ImageIcon,
+          onClick: handleMediaUploadClick,
+        },
+        {
+          key: "record-audio",
+          label: t("editor.audio-recorder.trigger"),
+          icon: MicIcon,
+          onClick: () => props.onAudioRecorderClick?.(),
+        },
+        {
+          key: "upload-file",
+          label: t("editor.insert-menu.upload-file"),
+          icon: FileIcon,
+          onClick: handleFileUploadClick,
+        },
+        {
+          key: "add-attachment",
+          label: t("editor.insert-menu.add-attachment"),
+          icon: PaperclipIcon,
+          onClick: handleAddAttachmentClick,
         },
         {
           key: "link",
@@ -188,7 +245,15 @@ const InsertMenu = (props: InsertMenuProps) => {
           onClick: handleLocationClick,
         },
       ] satisfies Array<{ key: string; label: string; icon: LucideIcon; onClick: () => void }>,
-    [handleFileUploadClick, handleLocationClick, handleMediaUploadClick, handleOpenLinkDialog, props, t],
+    [
+      handleAddAttachmentClick,
+      handleFileUploadClick,
+      handleLocationClick,
+      handleMediaUploadClick,
+      handleOpenLinkDialog,
+      props,
+      t,
+    ],
   );
 
   const feedIconButtonClass =
@@ -198,7 +263,7 @@ const InsertMenu = (props: InsertMenuProps) => {
     <>
       {variant === "feed" ? (
         <div className="flex shrink-0 flex-row flex-nowrap items-center gap-0.5">
-          {menuItems.map((item) => (
+          {feedToolbarItems.map((item) => (
             <button
               key={item.key}
               type="button"
@@ -207,7 +272,7 @@ const InsertMenu = (props: InsertMenuProps) => {
               aria-label={item.label}
               onClick={item.onClick}
             >
-              {isUploading && item.key === "upload-media" ? (
+              {isUploading && (item.key === "upload-image" || item.key === "upload-file" || item.key === "add-attachment") ? (
                 <LoaderIcon className="size-[18px] animate-spin" />
               ) : (
                 <item.icon className="size-[18px]" strokeWidth={1.75} />
@@ -221,6 +286,11 @@ const InsertMenu = (props: InsertMenuProps) => {
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start">
+              <DropdownMenuItem onClick={handleOpenLinkDialog}>
+                <LinkIcon className="h-4 w-4" />
+                {t("editor.insert-menu.link-memo")}
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleToggleFocusMode}>
                 <Maximize2Icon className="h-4 w-4" />
                 {t("editor.focus-mode")}
@@ -272,15 +342,32 @@ const InsertMenu = (props: InsertMenuProps) => {
         </DropdownMenu>
       )}
 
-      {/* Hidden file input */}
       <input
         className="hidden"
-        ref={fileInputRef}
+        ref={imageInputRef}
         disabled={isUploading}
-        onChange={handleFileInputChange}
+        onChange={handleFileInputChange(isImageFile)}
         type="file"
-        multiple={true}
-        accept="*"
+        multiple
+        accept="image/*"
+      />
+      <input
+        className="hidden"
+        ref={documentInputRef}
+        disabled={isUploading}
+        onChange={handleFileInputChange(isDocumentFile)}
+        type="file"
+        multiple
+        accept={DOCUMENT_FILE_ACCEPT}
+      />
+      <input
+        className="hidden"
+        ref={attachmentInputRef}
+        disabled={isUploading}
+        onChange={handleFileInputChange((file) => isVideoFile(file) || isAudioFile(file))}
+        type="file"
+        multiple
+        accept="video/*,audio/*,.mp4,.mov,.m4v,.webm,.mkv,.mp3,.wav,.m4a,.aac,.flac,.ogg"
       />
 
       <LinkMemoDialog

@@ -1,47 +1,87 @@
 import { create } from "@bufbuild/protobuf";
-import { useRef } from "react";
+import { useCallback, useRef } from "react";
 import { type MotionMedia, MotionMediaFamily, MotionMediaRole, MotionMediaSchema } from "@/types/proto/api/v1/attachment_service_pb";
 import type { LocalFile } from "../types/attachment";
 import { useBlobUrls } from "./useBlobUrls";
 
+/** Document / cloud file picker — excludes photos, videos, and audio. */
+export const DOCUMENT_FILE_ACCEPT =
+  ".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.md,.csv,.json,.xml,.zip,.rar,.7z,.gz,application/*,text/*";
+
+export const isImageFile = (file: File) => file.type.startsWith("image/");
+
+export const isVideoFile = (file: File) => file.type.startsWith("video/");
+
+export const isAudioFile = (file: File) => file.type.startsWith("audio/");
+
+export const isDocumentFile = (file: File) => !isImageFile(file) && !isVideoFile(file) && !isAudioFile(file);
+
 export const useFileUpload = (onFilesSelected: (localFiles: LocalFile[]) => void) => {
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
+  const documentInputRef = useRef<HTMLInputElement>(null);
+  const attachmentInputRef = useRef<HTMLInputElement>(null);
   const selectingFlagRef = useRef(false);
-  // Track preview blob URLs so they're revoked on unmount instead of leaking
-  // (matches the paste/drop/audio paths, which all go through useBlobUrls).
   const { createBlobUrl } = useBlobUrls();
 
-  const handleFileInputChange = (event?: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(fileInputRef.current?.files || event?.target.files || []);
-    if (files.length === 0 || selectingFlagRef.current) {
-      return;
-    }
-    selectingFlagRef.current = true;
-    const localFiles: LocalFile[] = pairAppleLivePhotoFiles(
-      files.map((file) => ({
-        file,
-        previewUrl: createBlobUrl(file),
-        origin: "upload",
-      })),
-    );
-    onFilesSelected(localFiles);
-    selectingFlagRef.current = false;
-    // Optionally clear input value to allow re-selecting the same file
-    if (fileInputRef.current) fileInputRef.current.value = "";
-  };
+  const emitFiles = useCallback(
+    (files: File[], filter?: (file: File) => boolean) => {
+      const selected = filter ? files.filter(filter) : files;
+      if (selected.length === 0 || selectingFlagRef.current) {
+        return;
+      }
 
+      selectingFlagRef.current = true;
+      const localFiles: LocalFile[] = pairAppleLivePhotoFiles(
+        selected.map((file) => ({
+          file,
+          previewUrl: createBlobUrl(file),
+          origin: "upload" as const,
+        })),
+      );
+      onFilesSelected(localFiles);
+      selectingFlagRef.current = false;
+    },
+    [createBlobUrl, onFilesSelected],
+  );
+
+  const handleFileInputChange = useCallback(
+    (filter?: (file: File) => boolean) => (event: React.ChangeEvent<HTMLInputElement>) => {
+      const files = Array.from(event.target.files ?? []);
+      emitFiles(files, filter);
+      event.target.value = "";
+    },
+    [emitFiles],
+  );
+
+  const handleImageUploadClick = useCallback(() => {
+    imageInputRef.current?.click();
+  }, []);
+
+  const handleDocumentUploadClick = useCallback(() => {
+    documentInputRef.current?.click();
+  }, []);
+
+  const handleAttachmentUploadClick = useCallback(() => {
+    attachmentInputRef.current?.click();
+  }, []);
+
+  /** @deprecated Use handleImageUploadClick / handleDocumentUploadClick instead. */
   const handleUploadClick = (accept = "*") => {
-    if (!fileInputRef.current) {
+    if (!attachmentInputRef.current) {
       return;
     }
-
-    fileInputRef.current.accept = accept;
-    fileInputRef.current.click();
+    attachmentInputRef.current.accept = accept;
+    attachmentInputRef.current.click();
   };
 
   return {
-    fileInputRef,
+    imageInputRef,
+    documentInputRef,
+    attachmentInputRef,
     selectingFlag: selectingFlagRef.current,
+    handleImageUploadClick,
+    handleDocumentUploadClick,
+    handleAttachmentUploadClick,
     handleFileInputChange,
     handleUploadClick,
   };

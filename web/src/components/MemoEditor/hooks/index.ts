@@ -7,7 +7,14 @@ export { useBlobUrls } from "./useBlobUrls";
 export { useDragAndDrop } from "./useDragAndDrop";
 export { useEditorActiveState } from "./useEditorActiveState";
 export { COMPACT_TOOLBAR_WIDTH, isCompactWidth, useElementWidth } from "./useElementWidth";
-export { useFileUpload } from "./useFileUpload";
+export {
+  DOCUMENT_FILE_ACCEPT,
+  isAudioFile,
+  isDocumentFile,
+  isImageFile,
+  isVideoFile,
+  useFileUpload,
+} from "./useFileUpload";
 export { useFocusMode } from "./useFocusMode";
 export { useKeyboard } from "./useKeyboard";
 export { useLinkMemo } from "./useLinkMemo";

@@ -203,9 +203,11 @@
     "save": "保存",
     "saving": "保存中...",
     "insert-menu": {
+      "add-attachment": "添加附件",
       "add-location": "添加位置",
       "link-memo": "链接备忘录",
-      "upload-file": "上传文件"
+      "upload-file": "选择文件",
+      "upload-image": "图片或拍照"
     },
     "audio-recorder": {
       "attachment-label": "录音",

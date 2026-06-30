@@ -248,9 +248,11 @@
       "more": "More formatting"
     },
     "insert-menu": {
+      "add-attachment": "Add attachment",
       "add-location": "Add location",
       "link-memo": "Link memo",
-      "upload-file": "Upload file"
+      "upload-file": "Choose file",
+      "upload-image": "Photo or camera"
     },
     "no-changes-detected": "No changes detected",
     "save": "Save",
