@@ -2,6 +2,7 @@ import { timestampDate } from "@bufbuild/protobuf/wkt";
 import type { LucideIcon } from "lucide-react";
 import { TrashIcon } from "lucide-react";
 import UserAvatar from "@/components/UserAvatar";
+import i18n from "@/i18n";
 import { cn } from "@/lib/utils";
 import type { UserNotification } from "@/types/proto/api/v1/user_service_pb";
 import { UserNotification_Status } from "@/types/proto/api/v1/user_service_pb";
@@ -46,8 +47,13 @@ const InboxUnavailableMessage = ({ notification, icon: Icon, summary }: InboxUna
               <span className="text-sm text-muted-foreground/80">{summary}</span>
               {notification.createTime && (
                 <span className="text-xs text-muted-foreground/60">
-                  {timestampDate(notification.createTime)?.toLocaleDateString([], { month: "short", day: "numeric" })} at{" "}
-                  {timestampDate(notification.createTime)?.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                  {(() => {
+                    const date = timestampDate(notification.createTime);
+                    const locale = i18n.language;
+                    const dateLabel = date.toLocaleDateString(locale, { month: "short", day: "numeric" });
+                    const timeLabel = date.toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" });
+                    return `${dateLabel} ${timeLabel}`;
+                  })()}
                 </span>
               )}
             </div>

@@ -262,12 +262,20 @@
   },
   "inbox": {
     "comment-unavailable-summary": "评论了您的帖子",
+    "commented-on-your-memo": "评论了你的帖子",
+    "comment-label": "评论",
     "content-unavailable": "相关内容已删除或您暂无访问权限，可删除此通知。",
+    "empty-comment": "空评论",
+    "empty-memo": "空帖子",
     "failed-to-load": "加载失败",
+    "memo-label": "帖子",
     "mention-unavailable-summary": "提到了您",
+    "mentioned-you-in-comment": "在评论中提到了你",
+    "mentioned-you-in-memo": "在帖子中提到了你",
     "memo-comment": "{{user}} 评论了您的“{{memo}}”。",
     "no-archived": "无已归档通知",
     "no-unread": "无未读通知",
+    "original-memo-label": "原帖",
     "unread": "未读"
   },
   "markdown": {
@@ -860,6 +868,8 @@
   "tag": {
     "all-tags": "全部标签",
     "create-tag": "创建标签",
+    "create-tag-placeholder": "输入标签名…",
+    "create-tag-with-name": "创建 #{{tag}}",
     "create-tags-guide": "您可以通过输入 “#标签” 创建标签。",
     "delete-confirm": "您确定要删除此标签吗?所有相关的备忘录将会被归档。",
     "delete-success": "标签删除成功",

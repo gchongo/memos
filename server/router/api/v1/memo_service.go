@@ -180,8 +180,8 @@ func (s *APIV1Service) CreateMemo(ctx context.Context, request *v1pb.CreateMemoR
 
 func (s *APIV1Service) ListMemos(ctx context.Context, request *v1pb.ListMemosRequest) (*v1pb.ListMemosResponse, error) {
 	memoFind := &store.FindMemo{
-		// Exclude comments by default.
-		ExcludeComments: true,
+		// Exclude comments by default unless explicitly requested.
+		ExcludeComments: !request.GetIncludeComments(),
 	}
 	currentUser, err := s.fetchCurrentUser(ctx)
 	if err != nil {

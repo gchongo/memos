@@ -1,4 +1,5 @@
 import { createElement } from "react";
+import { isTagChar } from "@/utils/tag-grammar";
 import { createSuggestionExtension } from "./suggestionExtension";
 
 export interface TagSuggestionOptions {
@@ -21,9 +22,15 @@ export function createTagSuggestion({ getTags }: TagSuggestionOptions) {
         return [];
       }
       const q = query.toLowerCase();
-      return getTags()
+      const matches = getTags()
         .filter((tag) => tag.toLowerCase().includes(q))
         .slice(0, MAX_SUGGESTIONS);
+      const trimmed = query.trim();
+      const hasExact = matches.some((tag) => tag.toLowerCase() === q);
+      if (trimmed && !hasExact && [...trimmed].every((char) => isTagChar(char))) {
+        return [trimmed, ...matches].slice(0, MAX_SUGGESTIONS);
+      }
+      return matches;
     },
     command: ({ editor, range, props: tag }) => {
       editor

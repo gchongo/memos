@@ -37,6 +37,8 @@ interface Props {
   scrollRestorationPath?: string;
   /** Custom empty-state message when the filtered list has no items. */
   emptyMessage?: string;
+  /** Include comment/reply memos in the list (excluded by default on the server). */
+  includeComments?: boolean;
 }
 
 function useAutoFetchWhenNotScrollable({
@@ -105,6 +107,7 @@ const PagedMemoList = (props: Props) => {
       orderBy: props.orderBy || "create_time desc",
       filter: props.filter,
       pageSize: props.pageSize || DEFAULT_LIST_MEMOS_PAGE_SIZE,
+      includeComments: props.includeComments ?? false,
     },
     { enabled: props.enabled ?? true },
   );

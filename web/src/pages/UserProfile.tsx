@@ -255,6 +255,7 @@ const UserProfile = () => {
                 listSort={repliesListSort}
                 orderBy={orderBy}
                 filter={memoFilter}
+                includeComments
                 scrollRestorationPath={scrollRestorationPath}
                 emptyMessage={emptyMessage}
               />

@@ -676,6 +676,11 @@ paths:
                   description: Optional. If true, show deleted memos in the response.
                   schema:
                     type: boolean
+                - name: includeComments
+                  in: query
+                  description: Optional. If true, include comment memos in the response (excluded by default).
+                  schema:
+                    type: boolean
             responses:
                 "200":
                     description: OK

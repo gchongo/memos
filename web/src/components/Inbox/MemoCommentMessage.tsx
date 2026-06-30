@@ -2,6 +2,7 @@ import { timestampDate } from "@bufbuild/protobuf/wkt";
 import { CheckIcon, MessageCircleIcon, TrashIcon } from "lucide-react";
 import UserAvatar from "@/components/UserAvatar";
 import useNavigateTo from "@/hooks/useNavigateTo";
+import i18n from "@/i18n";
 import { cn } from "@/lib/utils";
 import { UserNotification, UserNotification_Status } from "@/types/proto/api/v1/user_service_pb";
 import { useTranslate } from "@/utils/i18n";
@@ -12,11 +13,21 @@ interface Props {
   notification: UserNotification;
 }
 
+function formatNotificationTime(createTime: Parameters<typeof timestampDate>[0]) {
+  if (!createTime) return "";
+  const date = timestampDate(createTime);
+  const locale = i18n.language;
+  const dateLabel = date.toLocaleDateString(locale, { month: "short", day: "numeric" });
+  const timeLabel = date.toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" });
+  return `${dateLabel} ${timeLabel}`;
+}
+
 function MemoCommentMessage({ notification }: Props) {
   const t = useTranslate();
   const navigateTo = useNavigateTo();
   const commentPayload = notification.payload?.case === "memoComment" ? notification.payload.value : undefined;
   const sender = notification.senderUser;
+  const senderName = sender?.displayName || sender?.username || t("common.user");
 
   const { handleArchiveMessage, handleDeleteMessage } = useInboxNotificationActions(notification);
 
@@ -64,15 +75,9 @@ function MemoCommentMessage({ notification }: Props) {
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-3 mb-1">
             <div className="flex items-center gap-1.5 flex-wrap min-w-0">
-              <span className="font-semibold text-sm text-foreground/95">{sender?.displayName || sender?.username}</span>
-              <span className="text-sm text-muted-foreground/80">commented on your memo</span>
-              <span className="text-xs text-muted-foreground/60">
-                {notification.createTime &&
-                  timestampDate(notification.createTime)?.toLocaleDateString([], { month: "short", day: "numeric" })}{" "}
-                at{" "}
-                {notification.createTime &&
-                  timestampDate(notification.createTime)?.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-              </span>
+              <span className="font-semibold text-sm text-foreground/95">{senderName}</span>
+              <span className="text-sm text-muted-foreground/80">{t("inbox.commented-on-your-memo")}</span>
+              <span className="text-xs text-muted-foreground/60">{formatNotificationTime(notification.createTime)}</span>
             </div>
             <div className="flex items-center gap-1 shrink-0">
               {isUnread ? (
@@ -97,8 +102,10 @@ function MemoCommentMessage({ notification }: Props) {
 
           <div className="pl-3 border-l-2 border-muted-foreground/20 mb-3">
             <p className="text-sm text-foreground/60 line-clamp-1 leading-relaxed">
-              <span className="text-xs text-muted-foreground/50 font-medium mr-2 uppercase tracking-wide">Original:</span>
-              {commentPayload.relatedMemoSnippet || <span className="italic text-muted-foreground/40">Empty memo</span>}
+              <span className="text-xs text-muted-foreground/50 font-medium mr-2 uppercase tracking-wide">
+                {t("inbox.original-memo-label")}
+              </span>
+              {commentPayload.relatedMemoSnippet || <span className="italic text-muted-foreground/40">{t("inbox.empty-memo")}</span>}
             </p>
           </div>
 
@@ -111,9 +118,9 @@ function MemoCommentMessage({ notification }: Props) {
                 <MessageCircleIcon className="w-4 h-4 text-primary" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-xs text-primary/60 font-semibold mb-1 uppercase tracking-wider">Comment</p>
+                <p className="text-xs text-primary/60 font-semibold mb-1 uppercase tracking-wider">{t("inbox.comment-label")}</p>
                 <p className="text-sm text-foreground/90 line-clamp-2">
-                  {commentPayload.memoSnippet || <span className="italic text-muted-foreground/50">Empty comment</span>}
+                  {commentPayload.memoSnippet || <span className="italic text-muted-foreground/50">{t("inbox.empty-comment")}</span>}
                 </p>
               </div>
             </div>

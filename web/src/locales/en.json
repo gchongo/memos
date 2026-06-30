@@ -310,12 +310,20 @@
   },
   "inbox": {
     "comment-unavailable-summary": "commented on your post",
+    "commented-on-your-memo": "commented on your post",
+    "comment-label": "Comment",
     "content-unavailable": "The related content was deleted or is no longer accessible. You can remove this notification.",
+    "empty-comment": "Empty comment",
+    "empty-memo": "Empty post",
     "failed-to-load": "Failed to load inbox item",
+    "memo-label": "Post",
     "mention-unavailable-summary": "mentioned you",
+    "mentioned-you-in-comment": "mentioned you in a comment",
+    "mentioned-you-in-memo": "mentioned you in a post",
     "memo-comment": "{{user}} has a comment on your {{memo}}.",
     "no-archived": "No archived notifications",
     "no-unread": "No unread notifications",
+    "original-memo-label": "Original",
     "unread": "Unread"
   },
   "live-update": {
@@ -915,6 +923,8 @@
   "tag": {
     "all-tags": "All Tags",
     "create-tag": "Create Tag",
+    "create-tag-placeholder": "Type a tag name…",
+    "create-tag-with-name": "Create #{{tag}}",
     "create-tags-guide": "You can create tags by inputting `#tag`.",
     "delete-confirm": "Are you sure you want to delete this tag? All related memos will be archived.",
     "delete-success": "Tag deleted successfully",
