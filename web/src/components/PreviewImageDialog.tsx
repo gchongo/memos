@@ -1,5 +1,5 @@
 import { ChevronLeft, ChevronRight, RotateCcw, X, ZoomIn, ZoomOut } from "lucide-react";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import MotionPhotoPreview from "@/components/MotionPhotoPreview";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
@@ -22,6 +22,19 @@ const ZOOM_STEP = 0.2;
 const DOUBLE_TAP_ZOOM = 2;
 
 const clampZoom = (scale: number) => Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, scale));
+
+const swallowNextPointerClick = () => {
+  const consumeEvent = (event: Event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+    document.removeEventListener("click", consumeEvent, true);
+    document.removeEventListener("pointerup", consumeEvent, true);
+  };
+
+  document.addEventListener("click", consumeEvent, true);
+  document.addEventListener("pointerup", consumeEvent, true);
+};
 
 function PreviewImageDialog({ open, onOpenChange, imgUrls = [], items, initialIndex = 0 }: Props) {
   const sm = useMediaQuery("sm");
@@ -48,6 +61,11 @@ function PreviewImageDialog({ open, onOpenChange, imgUrls = [], items, initialIn
   const zoomPercent = Math.round(zoomScale * 100);
   const isZoomed = zoomScale > MIN_ZOOM;
 
+  const closePreview = useCallback(() => {
+    swallowNextPointerClick();
+    onOpenChange(false);
+  }, [onOpenChange]);
+
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (!open) {
@@ -55,7 +73,7 @@ function PreviewImageDialog({ open, onOpenChange, imgUrls = [], items, initialIn
       }
 
       if (event.key === "Escape") {
-        onOpenChange(false);
+        closePreview();
         return;
       }
 
@@ -71,13 +89,12 @@ function PreviewImageDialog({ open, onOpenChange, imgUrls = [], items, initialIn
 
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [itemCount, onOpenChange, open]);
+  }, [closePreview, itemCount, open]);
 
   useEffect(() => {
     setZoomScale(MIN_ZOOM);
   }, [currentItem?.id, open]);
 
-  const handleClose = () => onOpenChange(false);
   const handlePrevious = () => {
     setCurrentIndex((prev) => Math.max(prev - 1, 0));
   };
@@ -107,7 +124,9 @@ function PreviewImageDialog({ open, onOpenChange, imgUrls = [], items, initialIn
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         showCloseButton={false}
-        className="!h-[100vh] !w-[100vw] !max-h-[100vh] !max-w-[100vw] overflow-hidden border-0 bg-black/92 p-0 shadow-none"
+        className="!fixed !inset-0 !top-0 !left-0 !h-[100vh] !w-[100vw] !max-h-[100vh] !max-w-[100vw] !translate-x-0 !translate-y-0 overflow-hidden border-0 bg-black/92 p-0 shadow-none"
+        onPointerDownOutside={(event) => event.preventDefault()}
+        onInteractOutside={(event) => event.preventDefault()}
       >
         <VisuallyHidden>
           <DialogTitle>{currentItem.filename || "Attachment preview"}</DialogTitle>
@@ -117,8 +136,21 @@ function PreviewImageDialog({ open, onOpenChange, imgUrls = [], items, initialIn
           </DialogDescription>
         </VisuallyHidden>
 
-        <div className="absolute inset-x-0 top-0 z-20 bg-linear-to-b from-black/70 via-black/35 to-transparent px-3 pb-6 pt-3 sm:px-5 sm:pt-4">
-          <div className="flex items-start justify-between gap-3">
+        <button
+          type="button"
+          aria-label="Close preview"
+          className="absolute inset-0 z-0 cursor-default border-0 bg-transparent p-0"
+          onPointerDown={(event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            if (!isZoomed) {
+              closePreview();
+            }
+          }}
+        />
+
+        <div className="pointer-events-none absolute inset-x-0 top-0 z-20 bg-linear-to-b from-black/70 via-black/35 to-transparent px-3 pb-6 pt-3 sm:px-5 sm:pt-4">
+          <div className="pointer-events-auto flex items-start justify-between gap-3">
             <div className="min-w-0 text-white">
               <div className="truncate text-sm font-medium">{currentItem.filename || "Attachment"}</div>
               {hasMultiple && (
@@ -130,7 +162,7 @@ function PreviewImageDialog({ open, onOpenChange, imgUrls = [], items, initialIn
 
             <Button
               type="button"
-              onClick={handleClose}
+              onClick={closePreview}
               variant="ghost"
               size="icon"
               className="shrink-0 rounded-full bg-white/10 text-white hover:bg-white/16 hover:text-white"
@@ -142,19 +174,17 @@ function PreviewImageDialog({ open, onOpenChange, imgUrls = [], items, initialIn
         </div>
 
         <div
-          data-testid={isImagePreview ? "preview-zoom-surface" : undefined}
           className={cn(
-            "flex h-full w-full items-center justify-center px-3 pb-20 pt-16 sm:px-16 sm:pb-8 sm:pt-20",
+            "pointer-events-none relative z-10 flex h-full w-full items-center justify-center px-3 pb-20 pt-16 sm:px-16 sm:pb-8 sm:pt-20",
             isImagePreview && "cursor-zoom-in",
           )}
-          onWheel={handleWheel}
-          onClick={(event) => {
-            if (event.target === event.currentTarget && !isZoomed) {
-              handleClose();
-            }
-          }}
         >
-          <div className="flex max-h-full max-w-full items-center justify-center" onClick={(event) => event.stopPropagation()}>
+          <div
+            data-testid={isImagePreview ? "preview-zoom-surface" : undefined}
+            className="pointer-events-auto flex max-h-full max-w-full items-center justify-center"
+            onPointerDown={(event) => event.stopPropagation()}
+            onWheel={handleWheel}
+          >
             {currentItem.kind === "video" ? (
               <video
                 key={currentItem.id}
@@ -195,8 +225,8 @@ function PreviewImageDialog({ open, onOpenChange, imgUrls = [], items, initialIn
         </div>
 
         {isImagePreview && (
-          <div className="absolute inset-x-0 bottom-0 z-30 px-3 pb-3 pt-6">
-            <div className="mx-auto flex w-fit items-center gap-1 rounded-full bg-black/60 px-2 py-2 text-white shadow-lg backdrop-blur-sm">
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-30 px-3 pb-3 pt-6">
+            <div className="pointer-events-auto mx-auto flex w-fit items-center gap-1 rounded-full bg-black/60 px-2 py-2 text-white shadow-lg backdrop-blur-sm">
               {hasMultiple && !sm && (
                 <>
                   <ZoomButton label="Previous item" onClick={handlePrevious} disabled={!canGoPrevious}>
