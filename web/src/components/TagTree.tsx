@@ -1,5 +1,6 @@
-import { ChevronRightIcon, HashIcon } from "lucide-react";
+import { ChevronRightIcon } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
+import TagCloudPill from "@/components/TagCloudPill";
 import { type MemoFilter, useMemoFilterContext } from "@/contexts/MemoFilterContext";
 
 interface Tag {
@@ -71,7 +72,7 @@ const TagTree = ({ tagAmounts: rawTagAmounts, expandSubTags }: Props) => {
   }, [rawTagAmounts]);
 
   return (
-    <div className="flex flex-col justify-start items-start relative w-full h-auto flex-nowrap gap-2 mt-1">
+    <div className="relative mt-1 flex h-auto w-full flex-col flex-nowrap items-start justify-start gap-2">
       {tags.map((t, idx) => (
         <TagItemContainer key={t.text + "-" + idx} tag={t} expandSubTags={expandSubTags} />
       ))}
@@ -100,7 +101,6 @@ const TagItemContainer = (props: TagItemContainerProps) => {
     if (isActive) {
       removeFilter((f: MemoFilter) => f.factor === "tagSearch" && f.value === tag.text);
     } else {
-      // Remove all existing tag filters first, then add the new one
       removeFilter((f: MemoFilter) => f.factor === "tagSearch");
       addFilter({
         factor: "tagSearch",
@@ -116,34 +116,22 @@ const TagItemContainer = (props: TagItemContainerProps) => {
 
   return (
     <>
-      <div className="relative flex flex-row justify-between items-center w-full leading-6 py-0 mt-px text-sm select-none shrink-0">
-        <div
-          className={`flex flex-row justify-start items-center truncate shrink leading-5 mr-1 cursor-pointer transition-colors ${
-            isActive ? "text-primary" : "text-muted-foreground"
-          }`}
-          onClick={handleTagClick}
-        >
-          <HashIcon className="w-4 h-auto shrink-0 mr-1" />
-          <span className={`truncate hover:opacity-80 ${isActive ? "font-medium" : ""}`}>
-            {tag.key} {tag.amount > 1 && <span className="opacity-60">({tag.amount})</span>}
-          </span>
-        </div>
-        <div className="flex flex-row justify-end items-center">
-          {hasSubTags ? (
-            <span
-              className={`flex flex-row justify-center items-center w-6 h-6 shrink-0 transition-all rotate-0 cursor-pointer ${
-                showSubTags && "rotate-90"
-              }`}
-              onClick={handleToggleBtnClick}
-            >
-              <ChevronRightIcon className="w-5 h-5 text-muted-foreground hover:text-foreground" />
-            </span>
-          ) : null}
-        </div>
+      <div className="relative mt-px flex w-full shrink-0 select-none flex-row items-center justify-between gap-2">
+        <TagCloudPill tag={tag.text} amount={tag.amount} isActive={isActive} onClick={handleTagClick} className="min-w-0 flex-1" />
+        {hasSubTags ? (
+          <button
+            type="button"
+            aria-expanded={showSubTags}
+            className={`flex h-6 w-6 shrink-0 cursor-pointer flex-row items-center justify-center transition-all ${showSubTags ? "rotate-90" : "rotate-0"}`}
+            onClick={handleToggleBtnClick}
+          >
+            <ChevronRightIcon className="h-5 w-5 text-muted-foreground hover:text-foreground" />
+          </button>
+        ) : null}
       </div>
       {hasSubTags ? (
         <div
-          className={`w-[calc(100%-0.5rem)] flex flex-col justify-start items-start h-auto ml-2 pl-2 border-l-2 border-l-border ${
+          className={`ml-2 flex h-auto w-[calc(100%-0.5rem)] flex-col items-start justify-start border-l-2 border-l-border pl-2 ${
             !showSubTags && "hidden"
           }`}
         >

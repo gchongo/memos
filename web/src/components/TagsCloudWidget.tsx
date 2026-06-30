@@ -1,6 +1,7 @@
 import { MoreHorizontalIcon } from "lucide-react";
 import { useMemo } from "react";
 import { SIDEBAR_WIDGET_CARD_CLASS, SIDEBAR_WIDGET_CARD_STYLE } from "@/components/ExploreTrendsWidget";
+import TagCloudPill from "@/components/TagCloudPill";
 import TagTree from "@/components/TagTree";
 import XWidgetCard from "@/components/XWidgetCard";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -8,7 +9,6 @@ import { Switch } from "@/components/ui/switch";
 import { type MemoFilter, useMemoFilterContext } from "@/contexts/MemoFilterContext";
 import { useLocalStorage } from "@/hooks";
 import { cn } from "@/lib/utils";
-import { tagStyles } from "@/lib/markdownStyles";
 import { useTranslate } from "@/utils/i18n";
 
 interface TagsCloudWidgetProps {
@@ -85,25 +85,16 @@ const TagsCloudWidget = ({ tagCount, readonly = false }: TagsCloudWidgetProps) =
         ) : treeMode ? (
           <TagTree tagAmounts={tags} expandSubTags={!!treeAutoExpand} />
         ) : (
-          <div className="flex flex-row flex-wrap items-center gap-x-3 gap-y-2 py-1">
-            {tags.map(([tag, amount]) => {
-              const isActive = getFiltersByFactor("tagSearch").some((filter: MemoFilter) => filter.value === tag);
-              return (
-                <button
-                  key={tag}
-                  type="button"
-                  onClick={() => handleTagClick(tag)}
-                  className={cn(
-                    tagStyles.base,
-                    "max-w-full transition-opacity hover:opacity-85",
-                    isActive ? tagStyles.activeColor : tagStyles.defaultColor,
-                  )}
-                >
-                  <span className="truncate">#{tag}</span>
-                  {amount > 1 && <span className="ml-1 shrink-0 opacity-70">({amount})</span>}
-                </button>
-              );
-            })}
+          <div className="flex flex-row flex-wrap items-center gap-2 py-1">
+            {tags.map(([tag, amount]) => (
+              <TagCloudPill
+                key={tag}
+                tag={tag}
+                amount={amount}
+                isActive={getFiltersByFactor("tagSearch").some((filter: MemoFilter) => filter.value === tag)}
+                onClick={() => handleTagClick(tag)}
+              />
+            ))}
           </div>
         )}
       </div>

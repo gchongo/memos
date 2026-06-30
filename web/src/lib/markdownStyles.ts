@@ -64,8 +64,8 @@ export const headingClass = (level: HeadingLevel): string => headingClasses[leve
 export const tagStyles = {
   /** Pill shape, padding, and typography — always applied. */
   base: "inline-flex max-w-full items-center align-baseline rounded-full px-2.5 py-1 text-[13px] leading-none font-medium",
-  /** Default theme pill — solid muted surface, high-contrast label. */
-  defaultColor: "bg-accent text-foreground",
+  /** Default theme pill — visible on both page and card surfaces. */
+  defaultColor: "bg-foreground/12 text-foreground",
   /** Selected / active filter state in tag lists. */
   activeColor: "bg-[var(--x-accent)] text-white",
 } as const;
