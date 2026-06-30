@@ -32,18 +32,20 @@ const MainLayout = () => {
 
   const isProfilePage = Boolean(matchPath(PROFILE_ROUTE, location.pathname));
   const isMemoDetailPage = Boolean(matchPath(MEMO_DETAIL_ROUTE, location.pathname));
+  const isMemoSharePage = Boolean(matchPath(MEMO_SHARE_ROUTE, location.pathname));
   const showMemoExplorer =
     location.pathname === ROUTES.HOME ||
     location.pathname === ROUTES.EXPLORE ||
     location.pathname === ROUTES.INBOX ||
     location.pathname === ARCHIVED_ROUTE ||
     isProfilePage ||
-    isMemoDetailPage;
+    isMemoDetailPage ||
+    isMemoSharePage;
 
   const contentWidthClass = WIDE_CONTENT_ROUTES.has(location.pathname) ? "max-w-[920px]" : "max-w-[600px]";
 
   const context: MemoExplorerContext = useMemo(() => {
-    if (matchPath(MEMO_DETAIL_ROUTE, location.pathname)) return "explore";
+    if (matchPath(MEMO_DETAIL_ROUTE, location.pathname) || matchPath(MEMO_SHARE_ROUTE, location.pathname)) return "explore";
     if (location.pathname === ROUTES.HOME) return "home";
     if (location.pathname === ROUTES.EXPLORE) return "explore";
     if (location.pathname === ROUTES.INBOX) return "inbox";

@@ -30,7 +30,7 @@ export function useDiscoverableUsers(options?: { enabled?: boolean; excludeCurre
       state: State.NORMAL,
       filter: EXPLORE_VISIBILITY_FILTER(!!currentUser),
     },
-    { enabled: enabled && !isAdmin },
+    { enabled },
   );
 
   const rankedStats = useMemo(() => {
@@ -44,13 +44,29 @@ export function useDiscoverableUsers(options?: { enabled?: boolean; excludeCurre
     [rankedStats],
   );
 
-  const { data: userMap, isLoading: usersLoading } = useUsersByNames(userNames);
+  const { data: userMap, isLoading: usersLoading } = useUsersByNames(userNames, {
+    enabled: enabled && !isAdmin,
+  });
+
+  const activityByUserName = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const stats of rankedStats) {
+      map.set(userNameFromStatsResourceName(stats.name), getUserActivityScore(stats));
+    }
+    return map;
+  }, [rankedStats]);
 
   const users = useMemo(() => {
     if (isAdmin) {
       return adminUsers
         .filter((user) => user.username && (!excludeCurrentUser || user.name !== currentUser?.name))
-        .sort((a, b) => (a.displayName || a.username).localeCompare(b.displayName || b.username, undefined, { sensitivity: "base" }));
+        .sort((a, b) => {
+          const activityDiff = (activityByUserName.get(b.name) ?? 0) - (activityByUserName.get(a.name) ?? 0);
+          if (activityDiff !== 0) {
+            return activityDiff;
+          }
+          return (a.displayName || a.username).localeCompare(b.displayName || b.username, undefined, { sensitivity: "base" });
+        });
     }
 
     const result: User[] = [];
@@ -62,20 +78,12 @@ export function useDiscoverableUsers(options?: { enabled?: boolean; excludeCurre
       }
     }
     return result;
-  }, [adminUsers, currentUser?.name, excludeCurrentUser, isAdmin, rankedStats, userMap]);
-
-  const activityByUserName = useMemo(() => {
-    const map = new Map<string, number>();
-    for (const stats of rankedStats) {
-      map.set(userNameFromStatsResourceName(stats.name), getUserActivityScore(stats));
-    }
-    return map;
-  }, [rankedStats]);
+  }, [activityByUserName, adminUsers, currentUser?.name, excludeCurrentUser, isAdmin, rankedStats, userMap]);
 
   const isLoading =
     enabled &&
     users.length === 0 &&
-    (isAdmin ? adminUsersPending : statsPending || (userNames.length > 0 && usersLoading));
+    (isAdmin ? adminUsersPending || statsPending : statsPending || (userNames.length > 0 && usersLoading));
 
   return {
     users,

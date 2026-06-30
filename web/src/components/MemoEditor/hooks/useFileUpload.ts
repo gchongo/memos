@@ -16,6 +16,22 @@ export const isAudioFile = (file: File) => file.type.startsWith("audio/");
 
 export const isDocumentFile = (file: File) => !isImageFile(file) && !isVideoFile(file) && !isAudioFile(file);
 
+/** Gallery/camera picks: images only, plus a paired live-photo video when selected together. */
+export function filterPhotoPickerFiles(files: File[]): File[] {
+  const images = files.filter(isImageFile);
+  const videos = files.filter(isVideoFile);
+
+  if (images.length === 0) {
+    return [];
+  }
+
+  if (images.length === 1 && videos.length === 1) {
+    return [images[0], videos[0]];
+  }
+
+  return images;
+}
+
 export const useFileUpload = (onFilesSelected: (localFiles: LocalFile[]) => void) => {
   const imageInputRef = useRef<HTMLInputElement>(null);
   const documentInputRef = useRef<HTMLInputElement>(null);
@@ -53,6 +69,15 @@ export const useFileUpload = (onFilesSelected: (localFiles: LocalFile[]) => void
     [emitFiles],
   );
 
+  const handlePhotoInputChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      const files = Array.from(event.target.files ?? []);
+      emitFiles(filterPhotoPickerFiles(files));
+      event.target.value = "";
+    },
+    [emitFiles],
+  );
+
   const handleImageUploadClick = useCallback(() => {
     imageInputRef.current?.click();
   }, []);
@@ -82,6 +107,7 @@ export const useFileUpload = (onFilesSelected: (localFiles: LocalFile[]) => void
     handleImageUploadClick,
     handleDocumentUploadClick,
     handleAttachmentUploadClick,
+    handlePhotoInputChange,
     handleFileInputChange,
     handleUploadClick,
   };

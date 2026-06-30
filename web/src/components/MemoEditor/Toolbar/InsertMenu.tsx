@@ -33,7 +33,7 @@ import { useDebouncedEffect } from "@/hooks";
 import type { MemoRelation } from "@/types/proto/api/v1/memo_service_pb";
 import { useTranslate } from "@/utils/i18n";
 import { setPreferredEditorMode } from "../editorMode";
-import { DOCUMENT_FILE_ACCEPT, isAudioFile, isDocumentFile, isImageFile, isVideoFile, useFileUpload, useLinkMemo, useLocation } from "../hooks";
+import { DOCUMENT_FILE_ACCEPT, isAudioFile, isDocumentFile, isVideoFile, useFileUpload, useLinkMemo, useLocation } from "../hooks";
 import { useEditorContext, useEditorSelector } from "../state";
 import type { InsertMenuProps } from "../types";
 import type { LocalFile } from "../types/attachment";
@@ -61,6 +61,7 @@ const InsertMenu = (props: InsertMenuProps) => {
     attachmentInputRef,
     selectingFlag,
     handleFileInputChange,
+    handlePhotoInputChange,
     handleImageUploadClick,
     handleDocumentUploadClick,
     handleAttachmentUploadClick,
@@ -346,10 +347,10 @@ const InsertMenu = (props: InsertMenuProps) => {
         className="hidden"
         ref={imageInputRef}
         disabled={isUploading}
-        onChange={handleFileInputChange(isImageFile)}
+        onChange={handlePhotoInputChange}
         type="file"
         multiple
-        accept="image/*"
+        accept="image/*,video/*"
       />
       <input
         className="hidden"

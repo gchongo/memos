@@ -9,6 +9,7 @@ export { useEditorActiveState } from "./useEditorActiveState";
 export { COMPACT_TOOLBAR_WIDTH, isCompactWidth, useElementWidth } from "./useElementWidth";
 export {
   DOCUMENT_FILE_ACCEPT,
+  filterPhotoPickerFiles,
   isAudioFile,
   isDocumentFile,
   isImageFile,

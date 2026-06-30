@@ -251,9 +251,9 @@ export function useUpdateUserGeneralSetting(currentUserName?: string) {
 }
 
 // Hook to fetch multiple users by names (returns Map<name, User>)
-export function useUsersByNames(names: string[]) {
-  const enabled = names.length > 0;
+export function useUsersByNames(names: string[], options?: { enabled?: boolean }) {
   const uniqueNames = Array.from(new Set(names));
+  const queryEnabled = (options?.enabled ?? true) && uniqueNames.length > 0;
 
   return useQuery({
     queryKey: userKeys.byNames(uniqueNames),
@@ -275,7 +275,7 @@ export function useUsersByNames(names: string[]) {
       }
       return userMap;
     },
-    enabled,
+    enabled: queryEnabled,
     staleTime: 1000 * 60 * 5, // 5 minutes - user profiles don't change often
   });
 }
