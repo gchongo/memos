@@ -35,6 +35,7 @@ const MemoView: React.FC<MemoViewProps> = (props: MemoViewProps) => {
     showActionBar = true,
   } = props;
   const cardRef = useRef<HTMLDivElement>(null);
+  const suppressCardNavigationRef = useRef(false);
   const [showEditor, setShowEditor] = useState(false);
   const [showCommentEditor, setShowCommentEditor] = useState(false);
   const [internalShareImageOpen, setInternalShareImageOpen] = useState(false);
@@ -57,6 +58,9 @@ const MemoView: React.FC<MemoViewProps> = (props: MemoViewProps) => {
 
   const openEditor = useCallback(() => setShowEditor(true), []);
   const closeEditor = useCallback(() => setShowEditor(false), []);
+  const suppressCardNavigation = useCallback(() => {
+    suppressCardNavigationRef.current = true;
+  }, []);
   const openCommentEditor = useCallback(() => {
     setShowCommentEditor(true);
     window.requestAnimationFrame(() => {
@@ -86,8 +90,16 @@ const MemoView: React.FC<MemoViewProps> = (props: MemoViewProps) => {
       if (isInMemoDetailPage) {
         return;
       }
+      if (suppressCardNavigationRef.current) {
+        suppressCardNavigationRef.current = false;
+        return;
+      }
       const target = event.target as HTMLElement;
-      if (target.closest("a, button, input, textarea, [contenteditable='true'], [data-no-memo-nav]")) {
+      if (
+        target.closest(
+          "a, button, input, textarea, [contenteditable='true'], [data-no-memo-nav], [role='menuitem'], [data-slot='dropdown-menu-content']",
+        )
+      ) {
         return;
       }
       navigateTo(`/${memoData.name}`, { state: { from: parentPage } });
@@ -137,6 +149,7 @@ const MemoView: React.FC<MemoViewProps> = (props: MemoViewProps) => {
       openEditor,
       openCommentEditor,
       closeCommentEditor,
+      suppressCardNavigation,
       toggleBlurVisibility,
       openPreview,
       openShareImage,
@@ -155,6 +168,7 @@ const MemoView: React.FC<MemoViewProps> = (props: MemoViewProps) => {
       openEditor,
       openCommentEditor,
       closeCommentEditor,
+      suppressCardNavigation,
       toggleBlurVisibility,
       openPreview,
       openShareImage,

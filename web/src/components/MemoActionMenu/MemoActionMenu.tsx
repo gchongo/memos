@@ -13,7 +13,7 @@ import {
   MoreVerticalIcon,
   TrashIcon,
 } from "lucide-react";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,6 +25,7 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { MemoViewContext } from "@/components/MemoView/MemoViewContext";
 import { State } from "@/types/proto/api/v1/common_pb";
 import { useTranslate } from "@/utils/i18n";
 import { countTasks } from "@/utils/markdown-manipulation";
@@ -34,6 +35,12 @@ import type { MemoActionMenuProps } from "./types";
 const MemoActionMenu = (props: MemoActionMenuProps) => {
   const { memo, readonly } = props;
   const t = useTranslate();
+  const memoViewContext = useContext(MemoViewContext);
+
+  const withMenuSelect = (handler: () => void) => () => {
+    memoViewContext?.suppressCardNavigation();
+    handler();
+  };
 
   // Dialog state
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -64,88 +71,93 @@ const MemoActionMenu = (props: MemoActionMenuProps) => {
   });
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="size-4">
-          <MoreVerticalIcon className="text-muted-foreground" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" sideOffset={2}>
-        {/* Edit actions (non-readonly, non-archived) */}
-        {!readonly && !isArchived && (
-          <>
-            {!isComment && (
-              <DropdownMenuItem onClick={handleTogglePinMemoBtnClick}>
-                {memo.pinned ? <BookmarkMinusIcon className="w-4 h-auto" /> : <BookmarkPlusIcon className="w-4 h-auto" />}
-                {memo.pinned ? t("common.unpin") : t("common.pin")}
+    <div
+      data-no-memo-nav
+      onClick={(event) => event.stopPropagation()}
+      onPointerDown={(event) => event.stopPropagation()}
+    >
+      <DropdownMenu modal>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" size="icon" className="size-4">
+            <MoreVerticalIcon className="text-muted-foreground" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" sideOffset={2} data-no-memo-nav>
+          {/* Edit actions (non-readonly, non-archived) */}
+          {!readonly && !isArchived && (
+            <>
+              {!isComment && (
+                <DropdownMenuItem onSelect={withMenuSelect(() => void handleTogglePinMemoBtnClick())}>
+                  {memo.pinned ? <BookmarkMinusIcon className="w-4 h-auto" /> : <BookmarkPlusIcon className="w-4 h-auto" />}
+                  {memo.pinned ? t("common.unpin") : t("common.pin")}
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuItem onSelect={withMenuSelect(handleEditMemoClick)}>
+                <Edit3Icon className="w-4 h-auto" />
+                {t("common.edit")}
               </DropdownMenuItem>
-            )}
-            <DropdownMenuItem onClick={handleEditMemoClick}>
-              <Edit3Icon className="w-4 h-auto" />
-              {t("common.edit")}
-            </DropdownMenuItem>
-          </>
-        )}
+            </>
+          )}
 
-        {/* Copy submenu (non-archived) */}
-        {!isArchived && (
-          <DropdownMenuSub>
-            <DropdownMenuSubTrigger>
-              <CopyIcon className="w-4 h-auto" />
-              {t("common.copy")}
-            </DropdownMenuSubTrigger>
-            <DropdownMenuSubContent>
-              <DropdownMenuItem onClick={handleCopyLink}>
-                <LinkIcon className="w-4 h-auto" />
-                {t("memo.copy-link")}
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleCopyContent}>
-                <FileTextIcon className="w-4 h-auto" />
-                {t("memo.copy-content")}
-              </DropdownMenuItem>
-            </DropdownMenuSubContent>
-          </DropdownMenuSub>
-        )}
+          {/* Copy submenu (non-archived) */}
+          {!isArchived && (
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger>
+                <CopyIcon className="w-4 h-auto" />
+                {t("common.copy")}
+              </DropdownMenuSubTrigger>
+              <DropdownMenuSubContent data-no-memo-nav>
+                <DropdownMenuItem onSelect={withMenuSelect(handleCopyLink)}>
+                  <LinkIcon className="w-4 h-auto" />
+                  {t("memo.copy-link")}
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={withMenuSelect(handleCopyContent)}>
+                  <FileTextIcon className="w-4 h-auto" />
+                  {t("memo.copy-content")}
+                </DropdownMenuItem>
+              </DropdownMenuSubContent>
+            </DropdownMenuSub>
+          )}
 
-        {/* Task submenu (writable task memos) */}
-        {canMutateTasks && (
-          <DropdownMenuSub>
-            <DropdownMenuSubTrigger>
-              <ListChecksIcon className="w-4 h-auto" />
-              {t("memo.task-actions.title")}
-            </DropdownMenuSubTrigger>
-            <DropdownMenuSubContent>
-              <DropdownMenuItem disabled={!hasOpenTasks} onClick={handleCheckAllTaskListItemsClick}>
-                <CheckCheckIcon className="w-4 h-auto" />
-                {t("memo.task-actions.check-all")}
-              </DropdownMenuItem>
-              <DropdownMenuItem disabled={!hasCompletedTasks} onClick={handleUncheckAllTaskListItemsClick}>
-                <ListRestartIcon className="w-4 h-auto" />
-                {t("memo.task-actions.uncheck-all")}
-              </DropdownMenuItem>
-            </DropdownMenuSubContent>
-          </DropdownMenuSub>
-        )}
+          {/* Task submenu (writable task memos) */}
+          {canMutateTasks && (
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger>
+                <ListChecksIcon className="w-4 h-auto" />
+                {t("memo.task-actions.title")}
+              </DropdownMenuSubTrigger>
+              <DropdownMenuSubContent data-no-memo-nav>
+                <DropdownMenuItem disabled={!hasOpenTasks} onSelect={withMenuSelect(() => void handleCheckAllTaskListItemsClick())}>
+                  <CheckCheckIcon className="w-4 h-auto" />
+                  {t("memo.task-actions.check-all")}
+                </DropdownMenuItem>
+                <DropdownMenuItem disabled={!hasCompletedTasks} onSelect={withMenuSelect(() => void handleUncheckAllTaskListItemsClick())}>
+                  <ListRestartIcon className="w-4 h-auto" />
+                  {t("memo.task-actions.uncheck-all")}
+                </DropdownMenuItem>
+              </DropdownMenuSubContent>
+            </DropdownMenuSub>
+          )}
 
-        {/* Write actions (non-readonly) */}
-        {!readonly && (
-          <>
-            {/* Archive/Restore (non-comment) */}
-            {!isComment && (
-              <DropdownMenuItem onClick={handleToggleMemoStatusClick}>
-                {isArchived ? <ArchiveRestoreIcon className="w-4 h-auto" /> : <ArchiveIcon className="w-4 h-auto" />}
-                {isArchived ? t("common.restore") : t("common.archive")}
-              </DropdownMenuItem>
-            )}
+          {/* Write actions (non-readonly) */}
+          {!readonly && (
+            <>
+              {/* Archive/Restore (non-comment) */}
+              {!isComment && (
+                <DropdownMenuItem onSelect={withMenuSelect(() => void handleToggleMemoStatusClick())}>
+                  {isArchived ? <ArchiveRestoreIcon className="w-4 h-auto" /> : <ArchiveIcon className="w-4 h-auto" />}
+                  {isArchived ? t("common.restore") : t("common.archive")}
+                </DropdownMenuItem>
+              )}
 
-            {/* Delete */}
-            <DropdownMenuItem onClick={handleDeleteMemoClick}>
-              <TrashIcon className="w-4 h-auto" />
-              {t("common.delete")}
-            </DropdownMenuItem>
-          </>
-        )}
-      </DropdownMenuContent>
+              {/* Delete */}
+              <DropdownMenuItem onSelect={withMenuSelect(handleDeleteMemoClick)}>
+                <TrashIcon className="w-4 h-auto" />
+                {t("common.delete")}
+              </DropdownMenuItem>
+            </>
+          )}
+        </DropdownMenuContent>
 
       {/* Delete confirmation dialog */}
       <ConfirmDialog
@@ -158,7 +170,8 @@ const MemoActionMenu = (props: MemoActionMenuProps) => {
         onConfirm={confirmDeleteMemo}
         confirmVariant="destructive"
       />
-    </DropdownMenu>
+      </DropdownMenu>
+    </div>
   );
 };
 

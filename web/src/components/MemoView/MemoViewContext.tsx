@@ -22,6 +22,7 @@ export interface MemoViewContextValue {
   openEditor: () => void;
   openCommentEditor: () => void;
   closeCommentEditor: () => void;
+  suppressCardNavigation: () => void;
   toggleBlurVisibility: () => void;
   openPreview: (items: string | string[] | PreviewMediaItem[], index?: number) => void;
   openShareImage: () => void;
