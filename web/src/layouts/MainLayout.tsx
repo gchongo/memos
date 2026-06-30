@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { matchPath, Outlet, useLocation } from "react-router-dom";
 import type { MemoExplorerContext } from "@/components/MemoExplorer";
 import { MemoExplorer, MemoExplorerDrawer } from "@/components/MemoExplorer";
-import MobileBottomNav, { MOBILE_BOTTOM_NAV_EXTRA_INSET, MOBILE_BOTTOM_NAV_HEIGHT } from "@/components/MobileBottomNav";
+import MobileBottomNav, { mobileBottomNavStyleVars } from "@/components/MobileBottomNav";
 import MobileHeader from "@/components/MobileHeader";
 import Navigation from "@/components/Navigation";
 import { userServiceClient } from "@/connect";
@@ -98,13 +98,10 @@ const MainLayout = () => {
           className={cn(
             "flex min-w-0 flex-1 flex-col max-md:transition-[padding-bottom] max-md:duration-300 max-md:ease-in-out",
             bottomNavVisible
-              ? "max-md:pb-[calc(var(--mobile-bottom-nav-height)+var(--mobile-bottom-nav-extra-inset)+env(safe-area-inset-bottom,0px))]"
-              : "max-md:pb-[env(safe-area-inset-bottom,0px)]",
+              ? "max-md:pb-[calc(var(--mobile-bottom-nav-height)+max(env(safe-area-inset-bottom,0px),var(--mobile-bottom-nav-min-safe-bottom)))]"
+              : "max-md:pb-[max(env(safe-area-inset-bottom,0px),var(--mobile-bottom-nav-min-safe-bottom))]",
           )}
-          style={{
-            ["--mobile-bottom-nav-height" as string]: `${MOBILE_BOTTOM_NAV_HEIGHT}px`,
-            ["--mobile-bottom-nav-extra-inset" as string]: `${MOBILE_BOTTOM_NAV_EXTRA_INSET}px`,
-          }}
+          style={mobileBottomNavStyleVars}
         >
           {!md && <MobileHeader>{showMemoExplorer && <MemoExplorerDrawer {...memoExplorerProps} />}</MobileHeader>}
 
