@@ -1,6 +1,7 @@
 import { AlertCircle, RefreshCw } from "lucide-react";
-import { Component, type ErrorInfo, type ReactNode } from "react";
+import { Component, type ErrorInfo, type ReactNode, useEffect } from "react";
 import { useRouteError } from "react-router-dom";
+import { isChunkLoadError, clearChunkReloadFlag, reloadForStaleDeployment } from "@/utils/chunk-reload";
 import { Button } from "./ui/button";
 
 interface Props {
@@ -74,6 +75,19 @@ export class ErrorBoundary extends Component<Props, State> {
 export function ChunkLoadErrorFallback() {
   const error = useRouteError() as Error | undefined;
 
+  useEffect(() => {
+    if (error && isChunkLoadError(error)) {
+      reloadForStaleDeployment();
+    }
+  }, [error]);
+
+  const handleReload = () => {
+    clearChunkReloadFlag();
+    if (!reloadForStaleDeployment()) {
+      window.location.reload();
+    }
+  };
+
   return (
     <div className="flex items-center justify-center min-h-screen bg-background">
       <div className="max-w-md w-full p-6 space-y-4">
@@ -93,7 +107,7 @@ export function ChunkLoadErrorFallback() {
           </details>
         )}
 
-        <Button onClick={() => window.location.reload()} className="w-full gap-2">
+        <Button onClick={handleReload} className="w-full gap-2">
           <RefreshCw className="w-4 h-4" />
           Reload Application
         </Button>

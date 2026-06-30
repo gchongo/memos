@@ -16,12 +16,14 @@ import { useLiveMemoRefresh } from "@/hooks/useLiveMemoRefresh";
 import { useTokenRefreshOnFocus } from "@/hooks/useTokenRefreshOnFocus";
 import { queryClient } from "@/lib/query-client";
 import router from "./router";
+import { clearChunkReloadFlag, registerChunkLoadRecovery } from "@/utils/chunk-reload";
 import { applyLocaleEarly } from "./utils/i18n";
 import { applyThemeEarly } from "./utils/theme";
 
 // Apply theme and locale early to prevent flash
 applyThemeEarly();
 applyLocaleEarly();
+registerChunkLoadRecovery();
 
 // Inner component that initializes contexts
 function AppInitializer({ children }: { children: React.ReactNode }) {
@@ -47,6 +49,12 @@ function AppInitializer({ children }: { children: React.ReactNode }) {
 
   // Live refresh: listen for memo changes via SSE and invalidate caches.
   useLiveMemoRefresh();
+
+  useEffect(() => {
+    if (authInitialized && instanceInitialized) {
+      clearChunkReloadFlag();
+    }
+  }, [authInitialized, instanceInitialized]);
 
   if (!authInitialized || !instanceInitialized) {
     return null;

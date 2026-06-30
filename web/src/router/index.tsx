@@ -4,6 +4,7 @@ import App from "@/App";
 import { ChunkLoadErrorFallback } from "@/components/ErrorBoundary";
 import MainLayout from "@/layouts/MainLayout";
 import RootLayout from "@/layouts/RootLayout";
+import { isChunkLoadError, reloadForStaleDeployment } from "@/utils/chunk-reload";
 import { LandingRoute, RequireAuthRoute, RequireGuestRoute } from "./guards";
 import { ROUTES } from "./routes";
 
@@ -11,13 +12,8 @@ import { ROUTES } from "./routes";
 function lazyWithReload<T extends React.ComponentType>(factory: () => Promise<{ default: T }>) {
   return lazy(() =>
     factory().catch((error) => {
-      const isChunkError =
-        error?.message?.includes("Failed to fetch dynamically imported module") ||
-        error?.message?.includes("Importing a module script failed");
-      const reloadKey = "chunk-reload";
-      if (isChunkError && !sessionStorage.getItem(reloadKey)) {
-        sessionStorage.setItem(reloadKey, "1");
-        window.location.reload();
+      if (isChunkLoadError(error) && reloadForStaleDeployment()) {
+        return new Promise<{ default: T }>(() => {});
       }
       throw error;
     }),
