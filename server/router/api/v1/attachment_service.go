@@ -18,6 +18,7 @@ import (
 
 	"github.com/disintegration/imaging"
 	"github.com/pkg/errors"
+	"github.com/usememos/memos/internal/attachmentaccesstoken"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -203,7 +204,7 @@ func (s *APIV1Service) CreateAttachment(ctx context.Context, request *v1pb.Creat
 		return nil, status.Errorf(codes.Internal, "failed to create attachment: %v", err)
 	}
 
-	return convertAttachmentFromStore(attachment), nil
+	return s.convertAttachmentFromStore(attachment), nil
 }
 
 func (s *APIV1Service) ListAttachments(ctx context.Context, request *v1pb.ListAttachmentsRequest) (*v1pb.ListAttachmentsResponse, error) {
@@ -256,7 +257,7 @@ func (s *APIV1Service) ListAttachments(ctx context.Context, request *v1pb.ListAt
 	response := &v1pb.ListAttachmentsResponse{}
 
 	for _, attachment := range attachments {
-		response.Attachments = append(response.Attachments, convertAttachmentFromStore(attachment))
+		response.Attachments = append(response.Attachments, s.convertAttachmentFromStore(attachment))
 	}
 
 	// For simplicity, set total size to the number of returned attachments.
@@ -289,7 +290,7 @@ func (s *APIV1Service) GetAttachment(ctx context.Context, request *v1pb.GetAttac
 		return nil, err
 	}
 
-	return convertAttachmentFromStore(attachment), nil
+	return s.convertAttachmentFromStore(attachment), nil
 }
 
 func (s *APIV1Service) UpdateAttachment(ctx context.Context, request *v1pb.UpdateAttachmentRequest) (*v1pb.Attachment, error) {
@@ -422,7 +423,7 @@ func (s *APIV1Service) BatchDeleteAttachments(ctx context.Context, request *v1pb
 	return &emptypb.Empty{}, nil
 }
 
-func convertAttachmentFromStore(attachment *store.Attachment) *v1pb.Attachment {
+func (s *APIV1Service) convertAttachmentFromStore(attachment *store.Attachment) *v1pb.Attachment {
 	attachmentMessage := &v1pb.Attachment{
 		Name:        fmt.Sprintf("%s%s", AttachmentNamePrefix, attachment.UID),
 		CreateTime:  timestamppb.New(time.Unix(attachment.CreatedTs, 0)),
@@ -437,9 +438,15 @@ func convertAttachmentFromStore(attachment *store.Attachment) *v1pb.Attachment {
 	}
 	if attachment.StorageType == storepb.AttachmentStorageType_EXTERNAL || attachment.StorageType == storepb.AttachmentStorageType_S3 {
 		attachmentMessage.ExternalLink = attachment.Reference
+	} else if shouldSignAttachmentFileURL(attachment.Type) {
+		attachmentMessage.ExternalLink = attachmentaccesstoken.BuildSignedRelativePath(attachment.UID, attachment.Filename, s.Secret)
 	}
 
 	return attachmentMessage
+}
+
+func shouldSignAttachmentFileURL(mimeType string) bool {
+	return strings.HasPrefix(mimeType, "video/") || strings.HasPrefix(mimeType, "audio/")
 }
 
 // SaveAttachmentBlob saves the blob of attachment based on the storage config.

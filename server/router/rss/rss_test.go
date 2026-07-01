@@ -51,7 +51,7 @@ func TestPublicRSSExcludesComments(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	service := NewRSSService(&profile.Profile{}, stores, markdown.NewService())
+	service := NewRSSService(&profile.Profile{}, stores, markdown.NewService(), "rss-test-secret")
 
 	exploreRSS := renderRSS(t, service, "/explore/rss.xml", "")
 	require.Contains(t, exploreRSS, "public parent should stay in rss")

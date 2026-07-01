@@ -8,6 +8,7 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -20,6 +21,7 @@ import (
 	"github.com/pkg/errors"
 	"golang.org/x/sync/semaphore"
 
+	"github.com/usememos/memos/internal/attachmentaccesstoken"
 	"github.com/usememos/memos/internal/motionphoto"
 	"github.com/usememos/memos/internal/profile"
 	"github.com/usememos/memos/internal/storage/s3"
@@ -102,6 +104,7 @@ var dataURIRegex = regexp.MustCompile(`^data:(?P<type>[^;]+);base64,(?P<base64>.
 type FileServerService struct {
 	Profile       *profile.Profile
 	Store         *store.Store
+	secret        string
 	authenticator *auth.Authenticator
 
 	// thumbnailSemaphore limits concurrent thumbnail generation.
@@ -113,6 +116,7 @@ func NewFileServerService(profile *profile.Profile, store *store.Store, secret s
 	return &FileServerService{
 		Profile:            profile,
 		Store:              store,
+		secret:             secret,
 		authenticator:      auth.NewAuthenticator(store, secret),
 		thumbnailSemaphore: semaphore.NewWeighted(maxConcurrentThumbnails),
 	}
@@ -149,6 +153,10 @@ func (s *FileServerService) serveAttachmentFile(c *echo.Context) error {
 	}
 
 	if err := s.checkAttachmentPermission(ctx, c, attachment); err != nil {
+		return err
+	}
+
+	if err := s.checkBandwidthProtectedMedia(c, attachment); err != nil {
 		return err
 	}
 
@@ -785,6 +793,61 @@ func (s *FileServerService) checkAttachmentPermission(ctx context.Context, c *ec
 	}
 
 	return nil
+}
+
+// checkBandwidthProtectedMedia blocks hotlinked video/audio downloads on public memos.
+func (s *FileServerService) checkBandwidthProtectedMedia(c *echo.Context, attachment *store.Attachment) error {
+	if !isBandwidthProtectedMediaType(attachment.Type) {
+		return nil
+	}
+
+	if c.QueryParam("share_token") != "" {
+		return nil
+	}
+
+	if token := c.QueryParam(attachmentaccesstoken.QueryParamName); token != "" {
+		if attachmentaccesstoken.Verify(token, attachment.UID, s.secret) {
+			return nil
+		}
+		return echo.NewHTTPError(http.StatusForbidden, "invalid file token")
+	}
+
+	user, err := s.getCurrentUser(c.Request().Context(), c)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to get current user").Wrap(err)
+	}
+	if user != nil {
+		return nil
+	}
+
+	if isSameOriginMediaRequest(c) {
+		return nil
+	}
+
+	return echo.NewHTTPError(http.StatusForbidden, "media hotlink forbidden")
+}
+
+func isBandwidthProtectedMediaType(mimeType string) bool {
+	return strings.HasPrefix(mimeType, "video/") || strings.HasPrefix(mimeType, "audio/")
+}
+
+func isSameOriginMediaRequest(c *echo.Context) bool {
+	switch c.Request().Header.Get("Sec-Fetch-Site") {
+	case "same-origin", "same-site":
+		return true
+	}
+
+	referer := c.Request().Header.Get("Referer")
+	if referer == "" {
+		return false
+	}
+
+	refererURL, err := url.Parse(referer)
+	if err != nil {
+		return false
+	}
+
+	return strings.EqualFold(refererURL.Host, c.Request().Host)
 }
 
 // getCurrentUser retrieves the current authenticated user from the request.

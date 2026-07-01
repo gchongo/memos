@@ -92,10 +92,14 @@ export function getShareToken(share: MemoShare): string {
   return share.name.split("/").pop() ?? "";
 }
 
+import type { Attachment } from "@/types/proto/api/v1/attachment_service_pb";
+import { getAttachmentUrl } from "@/utils/attachment";
+
 /** Rewrites attachment URLs to include a share token for unauthenticated access. */
 export function withShareAttachmentLinks(attachments: Attachment[], token: string): Attachment[] {
-  return attachments.map((a) => {
-    if (a.externalLink) return a;
-    return { ...a, externalLink: `${window.location.origin}/file/${a.name}/${a.filename}?share_token=${encodeURIComponent(token)}` };
+  return attachments.map((attachment) => {
+    const url = new URL(getAttachmentUrl(attachment));
+    url.searchParams.set("share_token", token);
+    return { ...attachment, externalLink: url.toString() };
   });
 }

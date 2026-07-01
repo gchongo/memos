@@ -14,6 +14,7 @@ import (
 	"github.com/gorilla/feeds"
 	"github.com/labstack/echo/v5"
 
+	"github.com/usememos/memos/internal/attachmentaccesstoken"
 	"github.com/usememos/memos/internal/markdown"
 	"github.com/usememos/memos/internal/profile"
 	storepb "github.com/usememos/memos/proto/gen/store"
@@ -43,6 +44,7 @@ type RSSService struct {
 	Profile         *profile.Profile
 	Store           *store.Store
 	MarkdownService markdown.Service
+	secret          string
 
 	// Cache for RSS feeds
 	cache      map[string]*cacheEntry
@@ -55,11 +57,12 @@ type RSSHeading struct {
 	Language    string
 }
 
-func NewRSSService(profile *profile.Profile, store *store.Store, markdownService markdown.Service) *RSSService {
+func NewRSSService(profile *profile.Profile, store *store.Store, markdownService markdown.Service, secret string) *RSSService {
 	return &RSSService{
 		Profile:         profile,
 		Store:           store,
 		MarkdownService: markdownService,
+		secret:          secret,
 		cache:           make(map[string]*cacheEntry),
 	}
 }
@@ -281,6 +284,8 @@ func (s *RSSService) generateRSSFromMemoList(ctx context.Context, memoList []*st
 			enclosure := feeds.Enclosure{}
 			if attachment.StorageType == storepb.AttachmentStorageType_EXTERNAL || attachment.StorageType == storepb.AttachmentStorageType_S3 {
 				enclosure.Url = attachment.Reference
+			} else if strings.HasPrefix(attachment.Type, "video/") || strings.HasPrefix(attachment.Type, "audio/") {
+				enclosure.Url = strings.TrimRight(baseURL, "/") + attachmentaccesstoken.BuildSignedRelativePath(attachment.UID, attachment.Filename, s.secret)
 			} else {
 				enclosure.Url = fmt.Sprintf("%s/file/attachments/%s/%s", baseURL, attachment.UID, attachment.Filename)
 			}

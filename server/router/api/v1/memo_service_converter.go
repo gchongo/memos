@@ -69,7 +69,7 @@ func (s *APIV1Service) convertMemoFromStoreWithCreators(ctx context.Context, mem
 
 	memoMessage.Attachments = []*v1pb.Attachment{}
 	for _, attachment := range attachments {
-		attachmentResponse := convertAttachmentFromStore(attachment)
+		attachmentResponse := s.convertAttachmentFromStore(attachment)
 		memoMessage.Attachments = append(memoMessage.Attachments, attachmentResponse)
 	}
 

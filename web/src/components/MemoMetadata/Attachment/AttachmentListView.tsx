@@ -1,4 +1,4 @@
-import { DownloadIcon, FileIcon, PaperclipIcon } from "lucide-react";
+import { DownloadIcon, ExpandIcon, FileIcon, PaperclipIcon } from "lucide-react";
 import type { PropsWithChildren } from "react";
 import { useMemo } from "react";
 import InlineFeedVideo from "@/components/InlineFeedVideo";
@@ -97,15 +97,28 @@ const VisualTile = ({
   );
 };
 
-const VideoVisualShell = ({ className, children }: PropsWithChildren<{ className?: string }>) => (
+const VideoVisualShell = ({ className, children, onExpand }: PropsWithChildren<{ className?: string; onExpand?: () => void }>) => (
   <div
-    className={cn(FEED_VIDEO_SHELL_CLASS, className)}
+    className={cn(FEED_VIDEO_SHELL_CLASS, "relative", className)}
     data-no-memo-nav
     data-memo-media-preview
     onClick={(event) => event.stopPropagation()}
     onPointerDown={(event) => event.stopPropagation()}
   >
     {children}
+    {onExpand && (
+      <button
+        type="button"
+        className="absolute right-2 top-2 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-background/80 text-foreground/70 backdrop-blur-sm transition-colors hover:bg-background hover:text-foreground"
+        aria-label="Open fullscreen preview"
+        onClick={(event) => {
+          event.stopPropagation();
+          onExpand();
+        }}
+      >
+        <ExpandIcon className="h-4 w-4" />
+      </button>
+    )}
   </div>
 );
 
@@ -126,7 +139,7 @@ const CollageVisualItem = ({
 
   if (item.kind === "video") {
     return (
-      <VideoVisualShell className={cn("block h-full w-full", className)}>
+      <VideoVisualShell className={cn("block h-full w-full", className)} onExpand={onPreview}>
         <InlineFeedVideo
           variant="collage"
           sourceUrl={item.sourceUrl}
@@ -193,7 +206,7 @@ const SingleVisualItem = ({ item, onPreview, tileClassName }: { item: VisualItem
 
   if (item.kind === "video") {
     return (
-      <VideoVisualShell className="inline-block max-w-full">
+      <VideoVisualShell className="inline-block max-w-full" onExpand={onPreview}>
         <InlineFeedVideo variant="feed" sourceUrl={item.sourceUrl} posterUrl={item.posterUrl} alt={item.filename} />
       </VideoVisualShell>
     );
@@ -220,11 +233,7 @@ const VisualGallery = ({
   if (layout.mode === "single") {
     return (
       <div className="w-full">
-        <SingleVisualItem
-          item={layout.item}
-          onPreview={layout.item.kind === "video" ? undefined : () => onPreview?.(layout.item.id)}
-          tileClassName={tileClassName}
-        />
+        <SingleVisualItem item={layout.item} onPreview={() => onPreview?.(layout.item.id)} tileClassName={tileClassName} />
       </div>
     );
   }
@@ -237,7 +246,7 @@ const VisualGallery = ({
           item={item}
           className={className}
           overlayLabel={overlayLabel}
-          onPreview={item.kind === "video" ? undefined : () => onPreview?.(item.id)}
+          onPreview={() => onPreview?.(item.id)}
           tileClassName={tileClassName}
         />
       ))}
@@ -275,7 +284,7 @@ const Divider = () => <div className="border-t border-border/70 opacity-80" />;
 const AttachmentListView = ({ attachments, onImagePreview }: AttachmentListViewProps) => {
   const { visual, audio, docs } = useMemo(() => separateAttachments(attachments), [attachments]);
   const visualItems = useMemo(() => buildAttachmentVisualItems(visual), [visual]);
-  const previewItems = useMemo(() => visualItems.filter((item) => item.kind !== "video").map((item) => item.previewItem), [visualItems]);
+  const previewItems = useMemo(() => visualItems.map((item) => item.previewItem), [visualItems]);
   const hasVisual = visualItems.length > 0;
   const hasAudio = audio.length > 0;
   const hasDocs = docs.length > 0;

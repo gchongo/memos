@@ -1,11 +1,24 @@
 import { Attachment, MotionMediaFamily, MotionMediaRole } from "@/types/proto/api/v1/attachment_service_pb";
 
-const buildAttachmentFileUrl = (attachment: Attachment, query: Record<string, string>): string => {
-  const url = attachment.externalLink
-    ? new URL(attachment.externalLink)
-    : new URL(`${window.location.origin}/file/${attachment.name}/${attachment.filename}`);
+const resolveAttachmentBaseUrl = (attachment: Attachment): URL => {
+  if (attachment.externalLink) {
+    if (attachment.externalLink.startsWith("http://") || attachment.externalLink.startsWith("https://")) {
+      return new URL(attachment.externalLink);
+    }
+    return new URL(attachment.externalLink, window.location.origin);
+  }
 
+  return new URL(`${window.location.origin}/file/${attachment.name}/${attachment.filename}`);
+};
+
+export const getAttachmentUrl = (attachment: Attachment) => {
+  return resolveAttachmentBaseUrl(attachment).toString();
+};
+
+const buildAttachmentFileUrl = (attachment: Attachment, query: Record<string, string>): string => {
+  const url = resolveAttachmentBaseUrl(attachment);
   const shareToken = url.searchParams.get("share_token");
+  const fileToken = url.searchParams.get("file_token");
   url.search = "";
 
   for (const [key, value] of Object.entries(query)) {
@@ -15,16 +28,11 @@ const buildAttachmentFileUrl = (attachment: Attachment, query: Record<string, st
   if (shareToken) {
     url.searchParams.set("share_token", shareToken);
   }
-
-  return url.toString();
-};
-
-export const getAttachmentUrl = (attachment: Attachment) => {
-  if (attachment.externalLink) {
-    return attachment.externalLink;
+  if (fileToken) {
+    url.searchParams.set("file_token", fileToken);
   }
 
-  return `${window.location.origin}/file/${attachment.name}/${attachment.filename}`;
+  return url.toString();
 };
 
 export const getAttachmentThumbnailUrl = (attachment: Attachment) => {
