@@ -8,6 +8,9 @@ const MAX_POSTER_BYTES = 512 * 1024;
 const SKIP_BELOW_BYTES = 8 * 1024 * 1024;
 const POSTER_JPEG_QUALITY = 0.82;
 const MIN_VALID_VIDEO_BYTES = 32 * 1024;
+const POSTER_TIMEOUT_MS = 6_000;
+const VIDEO_PROBE_TIMEOUT_MS = 8_000;
+const COMPRESS_TIMEOUT_MS = 180_000;
 
 export interface VideoUploadPreparation {
   file: File;
@@ -24,6 +27,22 @@ const replaceExtension = (filename: string, extension: string): string => {
 };
 
 const toUint8Array = (data: string | Uint8Array): Uint8Array => (data instanceof Uint8Array ? data : new TextEncoder().encode(data));
+
+const withTimeout = async <T>(promise: Promise<T>, timeoutMs: number, fallback: T): Promise<T> => {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    return await Promise.race([
+      promise,
+      new Promise<T>((resolve) => {
+        timer = setTimeout(() => resolve(fallback), timeoutMs);
+      }),
+    ]);
+  } finally {
+    if (timer !== undefined) {
+      clearTimeout(timer);
+    }
+  }
+};
 
 const scaleDimensions = (width: number, height: number, maxDimension: number) => {
   const longest = Math.max(width, height);
@@ -112,7 +131,10 @@ export const shouldCompressVideo = async (file: File): Promise<boolean> => {
 
   if (file.size <= SKIP_BELOW_BYTES) {
     try {
-      const { width, height } = await probeVideoDimensions(file);
+      const { width, height } = await withTimeout(probeVideoDimensions(file), VIDEO_PROBE_TIMEOUT_MS, { width: 0, height: 0 });
+      if (width <= 0 || height <= 0) {
+        return false;
+      }
       return Math.max(width, height) > MAX_VIDEO_DIMENSION;
     } catch {
       return false;
@@ -149,6 +171,64 @@ const getFFmpeg = async (): Promise<FFmpeg> => {
   return ffmpegLoadPromise;
 };
 
+const waitForVideoFrame = (video: HTMLVideoElement): Promise<void> =>
+  new Promise((resolve, reject) => {
+    let settled = false;
+    const timers: ReturnType<typeof setTimeout>[] = [];
+
+    const clearTimers = () => {
+      for (const timer of timers) {
+        clearTimeout(timer);
+      }
+      timers.length = 0;
+    };
+
+    const tryResolve = () => {
+      if (settled) {
+        return;
+      }
+      settled = true;
+      clearTimers();
+      resolve();
+    };
+
+    const tryReject = () => {
+      if (settled) {
+        return;
+      }
+      settled = true;
+      clearTimers();
+      reject(new Error("Failed to decode video frame"));
+    };
+
+    video.onerror = tryReject;
+
+    video.onloadeddata = () => {
+      if (video.videoWidth <= 0 || video.videoHeight <= 0) {
+        tryReject();
+        return;
+      }
+
+      const seekTarget = Math.min(0.05, Math.max(0.001, (video.duration || 1) * 0.01));
+      if (seekTarget <= 0.001 && video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
+        tryResolve();
+        return;
+      }
+
+      video.onseeked = tryResolve;
+      try {
+        video.currentTime = seekTarget;
+      } catch {
+        tryResolve();
+        return;
+      }
+
+      timers.push(setTimeout(tryResolve, 1_500));
+    };
+
+    timers.push(setTimeout(tryReject, POSTER_TIMEOUT_MS - 500));
+  });
+
 const extractPosterWithCanvas = async (file: File): Promise<Uint8Array | null> => {
   const url = URL.createObjectURL(file);
   const video = document.createElement("video");
@@ -157,15 +237,8 @@ const extractPosterWithCanvas = async (file: File): Promise<Uint8Array | null> =
   video.playsInline = true;
 
   try {
-    await new Promise<void>((resolve, reject) => {
-      const fail = () => reject(new Error("Failed to decode video frame"));
-      video.onerror = fail;
-      video.onloadeddata = () => {
-        video.currentTime = 0.001;
-      };
-      video.onseeked = () => resolve();
-      video.src = url;
-    });
+    video.src = url;
+    await waitForVideoFrame(video);
 
     const { width, height } = scaleDimensions(video.videoWidth, video.videoHeight, POSTER_MAX_DIMENSION);
     const canvas = document.createElement("canvas");
@@ -193,37 +266,6 @@ const extractPosterWithCanvas = async (file: File): Promise<Uint8Array | null> =
   }
 };
 
-const extractPosterWithFfmpeg = async (ffmpeg: FFmpeg, inputName: string): Promise<Uint8Array | null> => {
-  const posterName = "poster.jpg";
-
-  try {
-    await ffmpeg.exec([
-      "-ss",
-      "0",
-      "-i",
-      inputName,
-      "-vframes",
-      "1",
-      "-vf",
-      `scale=${POSTER_MAX_DIMENSION}:${POSTER_MAX_DIMENSION}:force_original_aspect_ratio=decrease`,
-      "-q:v",
-      "8",
-      posterName,
-    ]);
-
-    const output = await ffmpeg.readFile(posterName);
-    const bytes = toUint8Array(output);
-    if (bytes.byteLength === 0 || bytes.byteLength > MAX_POSTER_BYTES) {
-      return null;
-    }
-    return bytes;
-  } catch {
-    return null;
-  } finally {
-    await ffmpeg.deleteFile(posterName).catch(() => undefined);
-  }
-};
-
 const compressWithFfmpeg = async (file: File, onProgress?: (ratio: number) => void): Promise<File | null> => {
   const ffmpeg = await getFFmpeg();
   const inputName = "input";
@@ -231,7 +273,7 @@ const compressWithFfmpeg = async (file: File, onProgress?: (ratio: number) => vo
 
   const progressHandler = ({ progress }: { progress?: number }) => {
     if (typeof progress === "number" && Number.isFinite(progress)) {
-      onProgress?.(Math.min(0.85, Math.max(0, progress)));
+      onProgress?.(Math.min(0.75, Math.max(0.1, progress)));
     }
   };
 
@@ -274,7 +316,8 @@ const compressWithFfmpeg = async (file: File, onProgress?: (ratio: number) => vo
       lastModified: Date.now(),
     });
 
-    if (!(await canPlayVideoFile(compressed))) {
+    const playable = await withTimeout(canPlayVideoFile(compressed), VIDEO_PROBE_TIMEOUT_MS, false);
+    if (!playable) {
       return null;
     }
 
@@ -296,29 +339,23 @@ const compressWithFfmpeg = async (file: File, onProgress?: (ratio: number) => vo
 export async function prepareVideoUpload(file: File, onProgress?: (ratio: number) => void): Promise<VideoUploadPreparation> {
   onProgress?.(0.05);
 
+  // Poster from the original file first — never block upload on this step.
+  let poster = await withTimeout(extractPosterWithCanvas(file), POSTER_TIMEOUT_MS, null);
+  onProgress?.(0.2);
+
   let resultFile = file;
   if (await shouldCompressVideo(file)) {
-    const compressed = await compressWithFfmpeg(file, onProgress);
+    onProgress?.(0.25);
+    const compressed = await withTimeout(compressWithFfmpeg(file, onProgress), COMPRESS_TIMEOUT_MS, null);
     if (compressed) {
       resultFile = compressed;
     }
   }
 
-  onProgress?.(0.9);
-  let poster = await extractPosterWithCanvas(resultFile);
+  onProgress?.(0.95);
+
   if (!poster && resultFile !== file) {
-    poster = await extractPosterWithCanvas(file);
-  }
-  if (!poster && (await shouldCompressVideo(file))) {
-    try {
-      const ffmpeg = await getFFmpeg();
-      const inputName = "poster-input";
-      await ffmpeg.writeFile(inputName, await fetchFile(resultFile));
-      poster = await extractPosterWithFfmpeg(ffmpeg, inputName);
-      await ffmpeg.deleteFile(inputName).catch(() => undefined);
-    } catch {
-      // Ignore poster extraction failures; playback must still work.
-    }
+    poster = await withTimeout(extractPosterWithCanvas(resultFile), POSTER_TIMEOUT_MS, null);
   }
 
   onProgress?.(1);
