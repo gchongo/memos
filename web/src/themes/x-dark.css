@@ -29,8 +29,8 @@
   --warning: oklch(0.78 0.14 75);
   --warning-foreground: oklch(0.25 0.03 75);
 
-  --border: oklch(0.28 0.005 255);
-  --input: oklch(0.28 0.005 255);
+  --border: oklch(0.32 0.005 255);
+  --input: oklch(0.32 0.005 255);
   --ring: oklch(0.68 0.14 235);
 
   --sidebar: oklch(0 0 0);

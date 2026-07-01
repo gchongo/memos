@@ -10,7 +10,10 @@ interface Props {
 }
 
 const XWidgetCard = ({ title, children, className, action, style }: Props) => (
-  <div className={cn("mb-4 overflow-hidden rounded-2xl bg-card", className)} style={style}>
+  <div
+    className={cn("mb-4 overflow-hidden rounded-2xl border border-border bg-background", className)}
+    style={style}
+  >
     {(title || action) && (
       <div className="flex items-center justify-between px-4 pt-3">
         {title && <h2 className="text-xl font-extrabold text-foreground">{title}</h2>}

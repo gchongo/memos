@@ -42,7 +42,7 @@ const SearchBar = ({ className, variant = "x" }: Props) => {
       <SearchIcon className="absolute left-4 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-muted-foreground" />
       <input
         className={cn(
-          "w-full rounded-full border-none bg-card py-3 pl-12 text-[15px] text-foreground outline-none placeholder:text-muted-foreground focus:ring-1 focus:ring-[var(--x-accent)]",
+          "w-full rounded-full border border-border bg-background py-3 pl-12 text-[15px] text-foreground outline-none placeholder:text-muted-foreground focus:ring-1 focus:ring-[var(--x-accent)]",
           variant === "x" ? "pr-4" : "pr-10",
           variant === "default" && "rounded-lg border border-border bg-sidebar p-1 pl-8 text-sm leading-6",
         )}
