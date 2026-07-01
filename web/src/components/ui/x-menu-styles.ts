@@ -8,10 +8,10 @@ export const xMenuContentClass =
 export const xMenuItemClass =
   "relative flex cursor-pointer items-center gap-4 px-4 py-3 text-[15px] font-normal text-foreground outline-none transition-colors focus:bg-accent hover:bg-accent data-[highlighted]:bg-accent [&_svg]:pointer-events-none [&_svg]:size-[22px] [&_svg]:shrink-0 [&_svg]:text-foreground";
 
-/** X-style submenu trigger with chevron on the right. */
+/** X-style submenu trigger with chevron on the right (opens downward in sidebar menus). */
 export const xMenuSubTriggerClass = cn(
   xMenuItemClass,
-  "data-[state=open]:bg-accent [&>svg:last-child]:ml-auto [&>svg:last-child]:size-[18px] [&>svg:last-child]:text-muted-foreground",
+  "data-[state=open]:bg-accent [&>svg:last-child]:ml-auto [&>svg:last-child]:size-[18px] [&>svg:last-child]:rotate-90 [&>svg:last-child]:text-muted-foreground",
 );
 
 /** X-style nested submenu panel. */

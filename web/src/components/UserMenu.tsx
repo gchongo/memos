@@ -100,6 +100,23 @@ const UserMenu = (props: Props) => {
 
   const menuItemClass = isX ? xMenuItemClass : undefined;
   const menuSubTriggerClass = isX ? xMenuSubTriggerClass : undefined;
+  const submenuPlacement = isX
+    ? ({
+        side: "bottom" as const,
+        align: "start" as const,
+        sideOffset: 4,
+        collisionPadding: 16,
+      })
+    : ({
+        side: "right" as const,
+        align: "start" as const,
+        collisionPadding: 16,
+      });
+  const submenuContentClass = cn(
+    isX ? xMenuSubContentClass : "overflow-hidden p-0",
+    isX &&
+      "w-[var(--radix-dropdown-menu-trigger-width)] max-w-[min(300px,calc(100vw-2rem))] max-h-[min(50vh,var(--radix-dropdown-menu-content-available-height))] overflow-y-auto",
+  );
 
   return (
     <DropdownMenu>
@@ -171,8 +188,8 @@ const UserMenu = (props: Props) => {
             <GlobeIcon className={isX ? undefined : "size-4 text-muted-foreground"} />
             {t("common.language")}
           </DropdownMenuSubTrigger>
-          <DropdownMenuSubContent className={cn(isX ? xMenuSubContentClass : "overflow-hidden p-0")}>
-            <LocaleSearchList value={currentLocale} onChange={handleLocaleChange} className={isX ? "w-72" : "w-64"} />
+          <DropdownMenuSubContent {...submenuPlacement} className={submenuContentClass}>
+            <LocaleSearchList value={currentLocale} onChange={handleLocaleChange} className={isX ? "w-full" : "w-64"} />
           </DropdownMenuSubContent>
         </DropdownMenuSub>
         <DropdownMenuSub>
@@ -180,7 +197,7 @@ const UserMenu = (props: Props) => {
             <PaletteIcon className={isX ? undefined : "size-4 text-muted-foreground"} />
             {t("setting.preference.theme")}
           </DropdownMenuSubTrigger>
-          <DropdownMenuSubContent className={isX ? xMenuSubContentClass : undefined}>
+          <DropdownMenuSubContent {...submenuPlacement} className={isX ? submenuContentClass : undefined}>
             {THEME_OPTIONS.map((option) => (
               <DropdownMenuItem key={option.value} className={menuItemClass} onClick={() => handleThemeChange(option.value)}>
                 {currentTheme === option.value ? (
