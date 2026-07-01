@@ -1,10 +1,10 @@
 import { create } from "@bufbuild/protobuf";
-import { attachmentServiceClient } from "@/connect";
 import type { Attachment } from "@/types/proto/api/v1/attachment_service_pb";
-import { AttachmentSchema, CreateAttachmentRequestSchema, MotionMediaSchema } from "@/types/proto/api/v1/attachment_service_pb";
+import { AttachmentSchema, MotionMediaSchema } from "@/types/proto/api/v1/attachment_service_pb";
 import { compressImageFile } from "@/utils/compress-image";
 import { prepareVideoUpload } from "@/utils/compress-video";
-import { connectUnaryUpload } from "@/utils/connectUnaryUpload";
+import { sendConnectUpload } from "@/utils/connectUnaryUpload";
+import { encodeCreateAttachmentUpload, generateAttachmentUploadId } from "@/utils/encodeCreateAttachmentUpload";
 import { inferMimeTypeFromFilename, isVideoFile } from "../hooks/useFileUpload";
 import type { LocalFile } from "../types/attachment";
 import { reportUploadProgress, type UploadProgressCallback } from "./uploadProgress";
@@ -53,38 +53,31 @@ const uploadPreparedFile = async (
   onProgress?: UploadProgressCallback,
 ): Promise<Attachment> => {
   const mimeType = file.type || inferMimeTypeFromFilename(file.name) || "application/octet-stream";
-  const buffer = new Uint8Array(await file.arrayBuffer());
-  const request = create(CreateAttachmentRequestSchema, {
-    attachment: create(AttachmentSchema, {
-      filename: file.name,
-      size: BigInt(file.size),
-      type: file.type || mimeType,
-      content: buffer,
-      thumbnail: thumbnail ?? new Uint8Array(0),
-      motionMedia: motionMedia ? create(MotionMediaSchema, motionMedia) : undefined,
-    }),
-  });
+  const attachmentId = generateAttachmentUploadId();
 
   reportUploadProgress(onProgress, fileIndex, fileCount, file.name, "uploading", 0);
 
+  const body = await encodeCreateAttachmentUpload({
+    attachmentId,
+    filename: file.name,
+    mimeType,
+    file,
+    thumbnail,
+    motionMedia: motionMedia ? create(MotionMediaSchema, motionMedia) : undefined,
+  });
+
+  const reportProgress = (loaded: number, total: number) => {
+    reportUploadProgress(onProgress, fileIndex, fileCount, file.name, "uploading", total > 0 ? loaded / total : 0);
+  };
+
   try {
-    return await connectUnaryUpload(
-      CREATE_ATTACHMENT_PROCEDURE,
-      CreateAttachmentRequestSchema,
-      AttachmentSchema,
-      request,
-      (loaded, total) => {
-        reportUploadProgress(onProgress, fileIndex, fileCount, file.name, "uploading", total > 0 ? loaded / total : 0);
-      },
-    );
+    return await sendConnectUpload(CREATE_ATTACHMENT_PROCEDURE, AttachmentSchema, body, reportProgress);
   } catch (error) {
     if (!isRetryableUploadError(error)) {
       throw error;
     }
 
-    const attachment = await attachmentServiceClient.createAttachment({ attachment: request.attachment });
-    reportUploadProgress(onProgress, fileIndex, fileCount, file.name, "uploading", 1);
-    return attachment;
+    return await sendConnectUpload(CREATE_ATTACHMENT_PROCEDURE, AttachmentSchema, body, reportProgress);
   }
 };
 

@@ -27,15 +27,12 @@ export function decodeConnectEnvelope(buffer: ArrayBuffer): Uint8Array {
   return view.subarray(5, 5 + length);
 }
 
-export async function connectUnaryUpload<TReq extends Message, TRes extends Message>(
+export async function sendConnectUpload<TRes extends Message>(
   procedure: string,
-  requestSchema: GenMessage<TReq>,
   responseSchema: GenMessage<TRes>,
-  request: TReq,
+  body: Uint8Array,
   onUploadProgress?: (loaded: number, total: number) => void,
 ): Promise<TRes> {
-  const messageBytes = toBinary(requestSchema, request);
-  const body = encodeConnectEnvelope(messageBytes);
   const token = await getRequestToken();
 
   return new Promise((resolve, reject) => {
@@ -85,8 +82,18 @@ export async function connectUnaryUpload<TReq extends Message, TRes extends Mess
 
     xhr.onerror = () => reject(new Error("Network error during upload"));
     xhr.ontimeout = () => reject(new Error("Upload timed out"));
-    const payload = new Uint8Array(body.byteLength);
-    payload.set(body);
-    xhr.send(new Blob([payload]));
+    xhr.send(body);
   });
+}
+
+export async function connectUnaryUpload<TReq extends Message, TRes extends Message>(
+  procedure: string,
+  requestSchema: GenMessage<TReq>,
+  responseSchema: GenMessage<TRes>,
+  request: TReq,
+  onUploadProgress?: (loaded: number, total: number) => void,
+): Promise<TRes> {
+  const messageBytes = toBinary(requestSchema, request);
+  const body = encodeConnectEnvelope(messageBytes);
+  return sendConnectUpload(procedure, responseSchema, body, onUploadProgress);
 }
