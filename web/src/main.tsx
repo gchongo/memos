@@ -8,6 +8,7 @@ import { RouterProvider } from "react-router-dom";
 import "./i18n";
 import "./index.css";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import AppSplash from "@/components/AppSplash";
 import { refreshAccessToken } from "@/connect";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { InstanceProvider, useInstance } from "@/contexts/InstanceContext";
@@ -57,7 +58,7 @@ function AppInitializer({ children }: { children: React.ReactNode }) {
   }, [authInitialized, instanceInitialized]);
 
   if (!authInitialized || !instanceInitialized) {
-    return null;
+    return <AppSplash />;
   }
 
   return <>{children}</>;

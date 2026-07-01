@@ -4,6 +4,46 @@
     <meta charset="UTF-8" />
     <script>
       (function () {
+        var STORAGE_KEY = "memos-theme";
+        var COLORS = {
+          default: "#faf9f5",
+          "default-dark": "#1d1f23",
+          "x-dark": "#000000",
+          paper: "#f5ede4",
+        };
+
+        function resolveTheme(theme) {
+          if (theme === "system") {
+            return window.matchMedia("(prefers-color-scheme: dark)").matches ? "default-dark" : "default";
+          }
+          return COLORS[theme] ? theme : "x-dark";
+        }
+
+        var theme = "x-dark";
+        try {
+          var stored = localStorage.getItem(STORAGE_KEY);
+          if (stored) {
+            theme = resolveTheme(stored);
+          }
+        } catch (error) {
+          theme = "x-dark";
+        }
+
+        var background = COLORS[theme] || COLORS["x-dark"];
+        var html = document.documentElement;
+        html.style.backgroundColor = background;
+        html.style.colorScheme = theme.indexOf("dark") >= 0 || theme === "x-dark" ? "dark" : "light";
+        html.setAttribute("data-theme", theme);
+        document.body.style.backgroundColor = background;
+
+        var meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) {
+          meta.setAttribute("content", background);
+        }
+      })();
+    </script>
+    <script>
+      (function () {
         function reloadForStaleAssets() {
           var key = "memos-chunk-reload";
           var attempts = Number(sessionStorage.getItem(key) || "0");
@@ -34,15 +74,85 @@
     <link rel="icon" type="image/webp" href="/logo.webp" />
     <link rel="manifest" href="/site.webmanifest" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no, interactive-widget=resizes-content" />
-    <meta name="theme-color" content="#faf9f5" />
+    <meta name="theme-color" content="#000000" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <style>
+      #app-splash {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: inherit;
+      }
+
+      #app-splash-inner {
+        position: relative;
+        width: 5rem;
+        height: 5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      #app-splash-ring {
+        position: absolute;
+        inset: 0;
+        border-radius: 9999px;
+        border: 2px solid color-mix(in oklch, currentColor 18%, transparent);
+        border-top-color: color-mix(in oklch, currentColor 72%, transparent);
+        animation: app-splash-spin 0.9s linear infinite;
+      }
+
+      #app-splash-logo {
+        position: relative;
+        width: 3rem;
+        height: 3rem;
+        border-radius: 0.75rem;
+        animation: app-splash-pulse 1.6s ease-in-out infinite;
+      }
+
+      @keyframes app-splash-pulse {
+        0%,
+        100% {
+          opacity: 1;
+          transform: scale(1);
+        }
+
+        50% {
+          opacity: 0.72;
+          transform: scale(0.96);
+        }
+      }
+
+      @keyframes app-splash-spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        #app-splash-ring,
+        #app-splash-logo {
+          animation: none;
+        }
+      }
+    </style>
     <!-- memos.metadata.head -->
     <title>Memos</title>
   </head>
   <body class="text-base w-full min-h-svh">
-    <div id="root" class="relative w-full min-h-full"></div>
+    <div id="root" class="relative w-full min-h-full">
+      <div id="app-splash" role="status" aria-live="polite" aria-label="Loading">
+        <div id="app-splash-inner">
+          <div id="app-splash-ring" aria-hidden="true"></div>
+          <img id="app-splash-logo" src="/logo.webp" alt="" width="48" height="48" draggable="false" />
+        </div>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
     <!-- memos.metadata.body -->
   </body>

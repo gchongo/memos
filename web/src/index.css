@@ -32,6 +32,40 @@
   }
 }
 
+@keyframes splash-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.72;
+    transform: scale(0.96);
+  }
+}
+
+@keyframes splash-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.splash-ring {
+  animation: splash-spin 0.9s linear infinite;
+}
+
+.splash-logo {
+  animation: splash-pulse 1.6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .splash-ring,
+  .splash-logo {
+    animation: none;
+  }
+}
+
 /* Tiptap WYSIWYG memo editor */
 .memo-wysiwyg p.is-editor-empty:first-child::before {
   content: attr(data-placeholder);
