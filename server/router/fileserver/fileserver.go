@@ -250,19 +250,16 @@ func (s *FileServerService) serveUserCover(c *echo.Context) error {
 
 // serveVideoThumbnail serves a cached JPEG poster for video attachments.
 func (s *FileServerService) serveVideoThumbnail(c *echo.Context, attachment *store.Attachment) error {
-	thumbnailPath, err := s.getThumbnailPath(attachment)
+	blob, err := s.getOrGenerateVideoThumbnail(c.Request().Context(), attachment)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, "failed to resolve thumbnail path").Wrap(err)
-	}
-
-	blob, err := s.readCachedThumbnail(thumbnailPath)
-	if err != nil {
-		legacyPath := filepath.Join(s.Profile.Data, ThumbnailCacheFolder, attachment.UID+".jpeg")
-		blob, err = s.readCachedThumbnail(legacyPath)
-	}
-	if err != nil {
+		if errors.Is(err, errVideoThumbnailUnavailable) {
+			if c.Request().Method == http.MethodHead {
+				return c.NoContent(http.StatusNoContent)
+			}
+			return echo.NewHTTPError(http.StatusNotFound, "video thumbnail not found")
+		}
+		slog.Warn("failed to get video thumbnail", "attachmentUID", attachment.UID, "error", err)
 		if c.Request().Method == http.MethodHead {
-			// Avoid console 404 noise when the client probes for an optional cached poster.
 			return c.NoContent(http.StatusNoContent)
 		}
 		return echo.NewHTTPError(http.StatusNotFound, "video thumbnail not found")

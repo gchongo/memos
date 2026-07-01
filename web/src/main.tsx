@@ -20,10 +20,12 @@ import router from "./router";
 import { clearChunkReloadFlag, registerChunkLoadRecovery } from "@/utils/chunk-reload";
 import { applyLocaleEarly } from "./utils/i18n";
 import { applyThemeEarly } from "./utils/theme";
+import { registerServiceWorker } from "./utils/pwa";
 
 // Apply theme and locale early to prevent flash
 applyThemeEarly();
 applyLocaleEarly();
+registerServiceWorker();
 registerChunkLoadRecovery();
 
 // Inner component that initializes contexts
