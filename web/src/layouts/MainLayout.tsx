@@ -3,7 +3,8 @@ import { matchPath, Outlet, useLocation } from "react-router-dom";
 import type { MemoExplorerContext } from "@/components/MemoExplorer";
 import { MemoExplorer, MemoExplorerDrawer } from "@/components/MemoExplorer";
 import { GLASS_CHROME_CLASS, GLASS_PANEL_CLASS } from "@/lib/glass";
-import MobileBottomNav, { MOBILE_BOTTOM_NAV_HEIGHT } from "@/components/MobileBottomNav";
+import MobileBottomNavPortal from "@/components/MobileBottomNavPortal";
+import { MOBILE_BOTTOM_NAV_HEIGHT } from "@/components/MobileBottomNav";
 import MobileHeader from "@/components/MobileHeader";
 import Navigation from "@/components/Navigation";
 import { userServiceClient } from "@/connect";
@@ -87,40 +88,47 @@ const MainLayout = () => {
   const bottomNavVisible = useMobileBottomNavVisibility(!md);
 
   return (
-    <div className={cn("flex min-h-svh w-full justify-center bg-background max-md:px-0 md:px-6")}>
-      <div className={cn("flex w-full", X_SHELL_MAX)}>
-        {md && (
-          <aside className={cn("sticky top-0 hidden h-svh w-[275px] shrink-0 flex-col px-2 md:flex", GLASS_CHROME_CLASS)}>
-            <Navigation />
-          </aside>
-        )}
-
-        <section
-          className={cn(
-            "flex min-w-0 flex-1 flex-col max-md:transition-[padding-bottom] max-md:duration-150 max-md:ease-in-out",
-            bottomNavVisible
-              ? "max-md:pb-[calc(var(--mobile-bottom-nav-height)+env(safe-area-inset-bottom,0px))]"
-              : "max-md:pb-[env(safe-area-inset-bottom,0px)]",
+    <>
+      <div className={cn("flex min-h-svh w-full justify-center bg-background max-md:min-h-dvh max-md:px-0 md:px-6")}>
+        <div className={cn("flex w-full min-h-[inherit]", X_SHELL_MAX)}>
+          {md && (
+            <aside className={cn("sticky top-0 hidden h-svh w-[275px] shrink-0 flex-col px-2 md:flex", GLASS_CHROME_CLASS)}>
+              <Navigation />
+            </aside>
           )}
-          style={{ ["--mobile-bottom-nav-height" as string]: `${MOBILE_BOTTOM_NAV_HEIGHT}px` }}
-        >
-          {!md && <MobileHeader>{showMemoExplorer && <MemoExplorerDrawer {...memoExplorerProps} />}</MobileHeader>}
 
-          <div className="flex w-full min-w-0 flex-1 justify-center xl:justify-start">
-            <div className={cn("w-full min-w-0 shrink-0 md:border-x md:border-border", contentWidthClass)}>
-              <Outlet />
-            </div>
-
-            {xl && showMemoExplorer && (
-              <aside className={cn("sticky top-0 hidden h-svh w-[350px] min-w-[350px] max-w-[350px] shrink-0 overflow-x-hidden overflow-y-auto pl-6 pt-2 xl:block", GLASS_PANEL_CLASS)}>
-                <MemoExplorer {...memoExplorerProps} />
-              </aside>
+          <section
+            className={cn(
+              "flex min-h-[inherit] min-w-0 flex-1 flex-col max-md:transition-[padding-bottom] max-md:duration-150 max-md:ease-in-out",
+              bottomNavVisible
+                ? "max-md:pb-[calc(var(--mobile-bottom-nav-height)+env(safe-area-inset-bottom,0px))]"
+                : "max-md:pb-[env(safe-area-inset-bottom,0px)]",
             )}
-          </div>
-        </section>
+            style={{ ["--mobile-bottom-nav-height" as string]: `${MOBILE_BOTTOM_NAV_HEIGHT}px` }}
+          >
+            {!md && <MobileHeader>{showMemoExplorer && <MemoExplorerDrawer {...memoExplorerProps} />}</MobileHeader>}
+
+            <div className="flex w-full min-w-0 flex-1 justify-center xl:justify-start">
+              <div className={cn("w-full min-w-0 shrink-0 md:border-x md:border-border", contentWidthClass)}>
+                <Outlet />
+              </div>
+
+              {xl && showMemoExplorer && (
+                <aside
+                  className={cn(
+                    "sticky top-0 hidden h-svh w-[350px] min-w-[350px] max-w-[350px] shrink-0 overflow-x-hidden overflow-y-auto pl-6 pt-2 xl:block",
+                    GLASS_PANEL_CLASS,
+                  )}
+                >
+                  <MemoExplorer {...memoExplorerProps} />
+                </aside>
+              )}
+            </div>
+          </section>
+        </div>
       </div>
-      {!md && <MobileBottomNav visible={bottomNavVisible} />}
-    </div>
+      {!md && <MobileBottomNavPortal visible={bottomNavVisible} />}
+    </>
   );
 };
 

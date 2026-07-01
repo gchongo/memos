@@ -29,6 +29,17 @@ export const useMobileBottomNavVisibility = (enabled: boolean) => {
 
     const updateVisibility = () => {
       const currentY = window.scrollY;
+      const viewportHeight = window.visualViewport?.height ?? window.innerHeight;
+      const scrollHeight = Math.max(document.documentElement.scrollHeight, document.body.scrollHeight);
+      const pageCanScroll = scrollHeight > viewportHeight + TOP_REVEAL_OFFSET;
+
+      if (!pageCanScroll) {
+        setVisible(true);
+        lastScrollY.current = currentY;
+        ticking.current = false;
+        return;
+      }
+
       const delta = currentY - lastScrollY.current;
 
       if (currentY <= TOP_REVEAL_OFFSET) {

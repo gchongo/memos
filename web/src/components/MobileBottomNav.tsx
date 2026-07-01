@@ -62,8 +62,8 @@ const MobileBottomNav = ({ visible = true }: MobileBottomNavProps) => {
 
   const shellClassName = cn(
     GLASS_CHROME_CLASS,
-    "fixed inset-x-0 bottom-0 z-50 flex flex-col transition-transform duration-150 ease-in-out will-change-transform md:hidden",
-    !visible && "translate-y-full",
+    "fixed inset-x-0 bottom-0 z-50 flex flex-col md:hidden transition-transform duration-150 ease-in-out",
+    !visible && "translate-y-full will-change-transform",
   );
 
   const barClassName = "flex items-stretch justify-around px-2";

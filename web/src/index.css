@@ -29,6 +29,13 @@
 
   body {
     @apply bg-background text-foreground;
+    min-height: 100dvh;
+    min-height: -webkit-fill-available;
+  }
+
+  html {
+    min-height: 100dvh;
+    min-height: -webkit-fill-available;
   }
 
   :root {
