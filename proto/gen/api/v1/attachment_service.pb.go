@@ -223,7 +223,9 @@ type Attachment struct {
 	// Format: memos/{memo}
 	Memo *string `protobuf:"bytes,8,opt,name=memo,proto3,oneof" json:"memo,omitempty"`
 	// Optional. Motion media metadata.
-	MotionMedia   *MotionMedia `protobuf:"bytes,9,opt,name=motion_media,json=motionMedia,proto3" json:"motion_media,omitempty"`
+	MotionMedia *MotionMedia `protobuf:"bytes,9,opt,name=motion_media,json=motionMedia,proto3" json:"motion_media,omitempty"`
+	// Optional. Input-only JPEG thumbnail (e.g. first video frame). Stored in the instance thumbnail cache.
+	Thumbnail     []byte `protobuf:"bytes,10,opt,name=thumbnail,proto3" json:"thumbnail,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -317,6 +319,13 @@ func (x *Attachment) GetMemo() string {
 func (x *Attachment) GetMotionMedia() *MotionMedia {
 	if x != nil {
 		return x.MotionMedia
+	}
+	return nil
+}
+
+func (x *Attachment) GetThumbnail() []byte {
+	if x != nil {
+		return x.Thumbnail
 	}
 	return nil
 }
@@ -720,7 +729,7 @@ const file_api_v1_attachment_service_proto_rawDesc = "" +
 	"\x04role\x18\x02 \x01(\x0e2\x1d.memos.api.v1.MotionMediaRoleR\x04role\x12\x19\n" +
 	"\bgroup_id\x18\x03 \x01(\tR\agroupId\x12:\n" +
 	"\x19presentation_timestamp_us\x18\x04 \x01(\x03R\x17presentationTimestampUs\x12,\n" +
-	"\x12has_embedded_video\x18\x05 \x01(\bR\x10hasEmbeddedVideo\"\xbe\x03\n" +
+	"\x12has_embedded_video\x18\x05 \x01(\bR\x10hasEmbeddedVideo\"\xe1\x03\n" +
 	"\n" +
 	"Attachment\x12\x17\n" +
 	"\x04name\x18\x01 \x01(\tB\x03\xe0A\bR\x04name\x12@\n" +
@@ -732,7 +741,9 @@ const file_api_v1_attachment_service_proto_rawDesc = "" +
 	"\x04type\x18\x06 \x01(\tB\x03\xe0A\x02R\x04type\x12\x17\n" +
 	"\x04size\x18\a \x01(\x03B\x03\xe0A\x03R\x04size\x12\x1c\n" +
 	"\x04memo\x18\b \x01(\tB\x03\xe0A\x01H\x00R\x04memo\x88\x01\x01\x12A\n" +
-	"\fmotion_media\x18\t \x01(\v2\x19.memos.api.v1.MotionMediaB\x03\xe0A\x01R\vmotionMedia:O\xeaAL\n" +
+	"\fmotion_media\x18\t \x01(\v2\x19.memos.api.v1.MotionMediaB\x03\xe0A\x01R\vmotionMedia\x12!\n" +
+	"\tthumbnail\x18\n" +
+	" \x01(\fB\x03\xe0A\x04R\tthumbnail:O\xeaAL\n" +
 	"\x17memos.api.v1/Attachment\x12\x18attachments/{attachment}*\vattachments2\n" +
 	"attachmentB\a\n" +
 	"\x05_memo\"\x82\x01\n" +

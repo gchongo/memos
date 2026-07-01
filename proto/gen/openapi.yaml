@@ -2492,6 +2492,11 @@ components:
                     allOf:
                         - $ref: '#/components/schemas/MotionMedia'
                     description: Optional. Motion media metadata.
+                thumbnail:
+                    writeOnly: true
+                    type: string
+                    description: Optional. Input-only JPEG thumbnail (e.g. first video frame). Stored in the instance thumbnail cache.
+                    format: bytes
         BatchDeleteAttachmentsRequest:
             required:
                 - names

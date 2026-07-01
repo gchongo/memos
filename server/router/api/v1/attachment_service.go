@@ -140,6 +140,14 @@ func (s *APIV1Service) CreateAttachment(ctx context.Context, request *v1pb.Creat
 	create.Size = int64(size)
 	create.Blob = request.Attachment.Content
 
+	if len(request.Attachment.Thumbnail) > 0 && strings.HasPrefix(create.Type, "video/") {
+		if err := saveVideoThumbnailCache(s.Profile, attachmentUID, request.Attachment.Thumbnail); err != nil {
+			slog.Warn("failed to save video thumbnail cache",
+				slog.String("uid", attachmentUID),
+				slog.Any("err", err))
+		}
+	}
+
 	if request.Attachment.Memo != nil {
 		memoUID, err := ExtractMemoUIDFromName(*request.Attachment.Memo)
 		if err != nil {

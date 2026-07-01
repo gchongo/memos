@@ -157,6 +157,10 @@ func (s *FileServerService) serveAttachmentFile(c *echo.Context) error {
 
 	contentType := s.sanitizeContentType(attachment.Type)
 
+	if wantThumbnail && strings.HasPrefix(attachment.Type, "video/") {
+		return s.serveVideoThumbnail(c, attachment)
+	}
+
 	// Stream video/audio to avoid loading entire file into memory.
 	if isMediaType(attachment.Type) {
 		return s.serveMediaStream(c, attachment, contentType)
@@ -232,6 +236,25 @@ func (s *FileServerService) serveUserCover(c *echo.Context) error {
 // =============================================================================
 // File Serving Methods
 // =============================================================================
+
+// serveVideoThumbnail serves a cached JPEG poster for video attachments.
+func (s *FileServerService) serveVideoThumbnail(c *echo.Context, attachment *store.Attachment) error {
+	thumbnailPath, err := s.getThumbnailPath(attachment)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to resolve thumbnail path").Wrap(err)
+	}
+
+	blob, err := s.readCachedThumbnail(thumbnailPath)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusNotFound, "video thumbnail not found")
+	}
+
+	setSecurityHeaders(c)
+	c.Response().Header().Set(echo.HeaderContentType, "image/jpeg")
+	c.Response().Header().Set(echo.HeaderCacheControl, cacheMaxAge)
+
+	return c.Blob(http.StatusOK, "image/jpeg", blob)
+}
 
 // serveMediaStream serves video/audio files using streaming to avoid memory exhaustion.
 func (s *FileServerService) serveMediaStream(c *echo.Context, attachment *store.Attachment, contentType string) error {
