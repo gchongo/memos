@@ -19,7 +19,6 @@ import {
   NATURAL_MEDIA_CLASS,
   OVERFLOW_TILE_OVERLAY_CLASS,
   SINGLE_MOTION_VIDEO_CLASS,
-  SINGLE_VIDEO_CARD_WIDTH_CLASS,
   VISUAL_TILE_BUTTON_CLASS,
 } from "./attachmentVisualClasses";
 import { resolveVisualGalleryLayout } from "./visualGalleryLayout";
@@ -132,10 +131,11 @@ const CollageVisualItem = ({
     return (
       <VideoVisualShell className={cn("block h-full w-full", className)} tileClassName={tileClassName}>
         <InlineFeedVideo
+          variant="collage"
           sourceUrl={item.sourceUrl}
           posterUrl={item.posterUrl}
           alt={item.filename}
-          className={cn(COVER_MEDIA_CLASS, "h-full")}
+          className={COVER_MEDIA_CLASS}
         />
         {overlayLabel && <div className={OVERFLOW_TILE_OVERLAY_CLASS}>{overlayLabel}</div>}
       </VideoVisualShell>
@@ -199,12 +199,12 @@ const SingleVisualItem = ({
 
   if (item.kind === "video") {
     return (
-      <VideoVisualShell className={cn("block", SINGLE_VIDEO_CARD_WIDTH_CLASS)} tileClassName={tileClassName}>
+      <VideoVisualShell className="block w-full max-w-full" tileClassName={tileClassName}>
         <InlineFeedVideo
+          variant="feed"
           sourceUrl={item.sourceUrl}
           posterUrl={item.posterUrl}
           alt={item.filename}
-          className="aspect-video object-contain"
         />
       </VideoVisualShell>
     );
