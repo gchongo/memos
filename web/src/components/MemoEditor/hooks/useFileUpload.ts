@@ -5,15 +5,26 @@ import type { LocalFile } from "../types/attachment";
 import { useBlobUrls } from "./useBlobUrls";
 
 /** Document / cloud file picker — excludes photos, videos, and audio. */
-export const DOCUMENT_FILE_ACCEPT =
-  ".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.md,.csv,.json,.xml,.zip,.rar,.7z,.gz,application/*,text/*";
+export const DOCUMENT_FILE_ACCEPT = ".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.md,.csv,.json,.xml,.zip,.rar,.7z,.gz,application/*,text/*";
 
 const VIDEO_FILE_EXTENSION_RE = /\.(mp4|mov|m4v|webm|mkv|avi|3gp|3g2)$/i;
 const AUDIO_FILE_EXTENSION_RE = /\.(mp3|wav|m4a|aac|flac|ogg|opus)$/i;
 
+const VIDEO_EXTENSION_MIME: Record<string, string> = {
+  mp4: "video/mp4",
+  mov: "video/quicktime",
+  m4v: "video/x-m4v",
+  webm: "video/webm",
+  mkv: "video/x-matroska",
+  avi: "video/x-msvideo",
+  "3gp": "video/3gpp",
+  "3g2": "video/3gpp2",
+};
+
 export function inferMimeTypeFromFilename(filename: string): string | undefined {
-  if (VIDEO_FILE_EXTENSION_RE.test(filename)) {
-    return "video/mp4";
+  const extension = filename.split(".").pop()?.toLowerCase();
+  if (extension && extension in VIDEO_EXTENSION_MIME) {
+    return VIDEO_EXTENSION_MIME[extension];
   }
   if (AUDIO_FILE_EXTENSION_RE.test(filename)) {
     return "audio/mpeg";

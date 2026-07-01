@@ -138,7 +138,7 @@ func (s *FileServerService) serveAttachmentFile(c *echo.Context) error {
 
 	attachment, err := s.Store.GetAttachment(ctx, &store.FindAttachment{
 		UID:     &uid,
-		GetBlob: true,
+		GetBlob: false,
 	})
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "failed to get attachment").Wrap(err)
@@ -282,9 +282,13 @@ func (s *FileServerService) serveMediaStream(c *echo.Context, attachment *store.
 		return c.Redirect(http.StatusTemporaryRedirect, presignURL)
 
 	default:
-		// Database storage fallback.
+		// Database storage fallback — load blob lazily to avoid loading it for thumbnail-only requests.
+		blob, err := s.getAttachmentBlob(c.Request().Context(), attachment)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusInternalServerError, "failed to get attachment blob").Wrap(err)
+		}
 		modTime := time.Unix(attachment.UpdatedTs, 0)
-		http.ServeContent(c.Response(), c.Request(), attachment.Filename, modTime, bytes.NewReader(attachment.Blob))
+		http.ServeContent(c.Response(), c.Request(), attachment.Filename, modTime, bytes.NewReader(blob))
 		return nil
 	}
 }
@@ -328,7 +332,11 @@ func (s *FileServerService) serveStaticFile(c *echo.Context, attachment *store.A
 		defer reader.Close()
 		return c.Stream(http.StatusOK, contentType, reader)
 	default:
-		return c.Blob(http.StatusOK, contentType, attachment.Blob)
+		blob, err := s.getAttachmentBlob(c.Request().Context(), attachment)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusInternalServerError, "failed to get attachment blob").Wrap(err)
+		}
+		return c.Blob(http.StatusOK, contentType, blob)
 	}
 }
 
@@ -337,16 +345,31 @@ func (s *FileServerService) serveStaticFile(c *echo.Context, attachment *store.A
 // =============================================================================
 
 // getAttachmentBlob retrieves the binary content of an attachment from storage.
-func (s *FileServerService) getAttachmentBlob(attachment *store.Attachment) ([]byte, error) {
+func (s *FileServerService) getAttachmentBlob(ctx context.Context, attachment *store.Attachment) ([]byte, error) {
 	switch attachment.StorageType {
 	case storepb.AttachmentStorageType_LOCAL:
 		return s.readLocalFile(attachment.Reference)
 
 	case storepb.AttachmentStorageType_S3:
-		return s.downloadFromS3(context.Background(), attachment)
+		return s.downloadFromS3(ctx, attachment)
 
 	default:
-		return attachment.Blob, nil
+		if len(attachment.Blob) > 0 {
+			return attachment.Blob, nil
+		}
+
+		full, err := s.Store.GetAttachment(ctx, &store.FindAttachment{
+			UID:     &attachment.UID,
+			GetBlob: true,
+		})
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to load attachment blob")
+		}
+		if full == nil {
+			return nil, errors.New("attachment not found")
+		}
+
+		return full.Blob, nil
 	}
 }
 
@@ -379,7 +402,11 @@ func (s *FileServerService) getAttachmentReader(ctx context.Context, attachment 
 		return reader, nil
 
 	default:
-		return io.NopCloser(bytes.NewReader(attachment.Blob)), nil
+		blob, err := s.getAttachmentBlob(ctx, attachment)
+		if err != nil {
+			return nil, err
+		}
+		return io.NopCloser(bytes.NewReader(blob)), nil
 	}
 }
 
@@ -653,7 +680,7 @@ func (s *FileServerService) serveMotionClip(c *echo.Context, attachment *store.A
 	return nil
 }
 
-func (s *FileServerService) getOrExtractMotionClip(_ context.Context, attachment *store.Attachment) ([]byte, error) {
+func (s *FileServerService) getOrExtractMotionClip(ctx context.Context, attachment *store.Attachment) ([]byte, error) {
 	motionPath, err := s.getMotionPath(attachment)
 	if err != nil {
 		return nil, err
@@ -663,7 +690,7 @@ func (s *FileServerService) getOrExtractMotionClip(_ context.Context, attachment
 		return blob, nil
 	}
 
-	blob, err := s.getAttachmentBlob(attachment)
+	blob, err := s.getAttachmentBlob(ctx, attachment)
 	if err != nil {
 		return nil, err
 	}

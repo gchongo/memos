@@ -1,5 +1,24 @@
 import { Attachment, MotionMediaFamily, MotionMediaRole } from "@/types/proto/api/v1/attachment_service_pb";
 
+const buildAttachmentFileUrl = (attachment: Attachment, query: Record<string, string>): string => {
+  const url = attachment.externalLink
+    ? new URL(attachment.externalLink)
+    : new URL(`${window.location.origin}/file/${attachment.name}/${attachment.filename}`);
+
+  const shareToken = url.searchParams.get("share_token");
+  url.search = "";
+
+  for (const [key, value] of Object.entries(query)) {
+    url.searchParams.set(key, value);
+  }
+
+  if (shareToken) {
+    url.searchParams.set("share_token", shareToken);
+  }
+
+  return url.toString();
+};
+
 export const getAttachmentUrl = (attachment: Attachment) => {
   if (attachment.externalLink) {
     return attachment.externalLink;
@@ -9,11 +28,11 @@ export const getAttachmentUrl = (attachment: Attachment) => {
 };
 
 export const getAttachmentThumbnailUrl = (attachment: Attachment) => {
-  return `${window.location.origin}/file/${attachment.name}/${attachment.filename}?thumbnail=true`;
+  return buildAttachmentFileUrl(attachment, { thumbnail: "true" });
 };
 
 export const getAttachmentMotionClipUrl = (attachment: Attachment) => {
-  return `${window.location.origin}/file/${attachment.name}/${attachment.filename}?motion=true`;
+  return buildAttachmentFileUrl(attachment, { motion: "true" });
 };
 
 export const getAttachmentType = (attachment: Attachment) => {

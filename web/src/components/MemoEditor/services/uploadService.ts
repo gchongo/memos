@@ -39,6 +39,11 @@ const prepareUploadFile = async (
   return { file };
 };
 
+const isRetryableUploadError = (error: unknown): boolean => {
+  const message = error instanceof Error ? error.message : "";
+  return message === "Network error during upload" || message === "Upload timed out";
+};
+
 const uploadPreparedFile = async (
   file: File,
   motionMedia: LocalFile["motionMedia"],
@@ -72,7 +77,11 @@ const uploadPreparedFile = async (
         reportUploadProgress(onProgress, fileIndex, fileCount, file.name, "uploading", total > 0 ? loaded / total : 0);
       },
     );
-  } catch {
+  } catch (error) {
+    if (!isRetryableUploadError(error)) {
+      throw error;
+    }
+
     const attachment = await attachmentServiceClient.createAttachment({ attachment: request.attachment });
     reportUploadProgress(onProgress, fileIndex, fileCount, file.name, "uploading", 1);
     return attachment;
