@@ -47,7 +47,7 @@ const InlineFeedVideo = ({ sourceUrl, posterUrl, alt, className, variant = "feed
   return (
     <div
       className={cn(
-        "relative inline-block max-h-[20rem] overflow-hidden bg-black",
+        "relative isolate block max-h-[20rem] overflow-hidden rounded-2xl bg-black",
         !mediaSize && "h-[12rem] w-full max-w-[20rem]",
         className,
       )}
@@ -56,7 +56,7 @@ const InlineFeedVideo = ({ sourceUrl, posterUrl, alt, className, variant = "feed
       <video
         src={sourceUrl}
         poster={poster}
-        className="block h-full w-full object-contain"
+        className="block h-full w-full rounded-2xl object-contain"
         controls
         playsInline
         preload="metadata"

@@ -199,7 +199,7 @@ const SingleVisualItem = ({
 
   if (item.kind === "video") {
     return (
-      <VideoVisualShell className="block w-full max-w-full" tileClassName={tileClassName}>
+      <VideoVisualShell className="inline-block max-w-full" tileClassName={tileClassName}>
         <InlineFeedVideo
           variant="feed"
           sourceUrl={item.sourceUrl}
