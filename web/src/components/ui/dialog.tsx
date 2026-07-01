@@ -2,6 +2,7 @@ import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { cva, type VariantProps } from "class-variance-authority";
 import { XIcon } from "lucide-react";
 import * as React from "react";
+import { OVERLAY_SCRIM_CLASS } from "@/lib/overlay";
 import { cn } from "@/lib/utils";
 
 const Dialog = DialogPrimitive.Root;
@@ -20,7 +21,8 @@ const DialogOverlay = React.forwardRef<
     ref={ref}
     data-slot="dialog-overlay"
     className={cn(
-      "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-overlay bg-black/30",
+      "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-overlay",
+      OVERLAY_SCRIM_CLASS,
       className,
     )}
     {...props}

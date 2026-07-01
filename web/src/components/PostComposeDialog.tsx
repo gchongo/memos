@@ -9,6 +9,7 @@ import { VisuallyHidden } from "@/components/ui/visually-hidden";
 import { useComposeDialog } from "@/contexts/ComposeDialogContext";
 import useCurrentUser from "@/hooks/useCurrentUser";
 import useMediaQuery from "@/hooks/useMediaQuery";
+import { OVERLAY_SCRIM_CLASS } from "@/lib/overlay";
 import { cn } from "@/lib/utils";
 import {
   MemoRelation_MemoSchema,
@@ -49,7 +50,7 @@ const PostComposeDialog = () => {
       <DialogContent
         size="2xl"
         showCloseButton={false}
-        overlayClassName={cn(isMobile ? "bg-background" : "bg-black/10")}
+        overlayClassName={cn(isMobile ? "bg-background" : OVERLAY_SCRIM_CLASS)}
         contentClassName={cn(isMobile && "h-full min-h-0 gap-0 overflow-hidden")}
         className={cn(
           "gap-0 p-0",

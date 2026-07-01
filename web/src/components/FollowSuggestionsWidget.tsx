@@ -72,7 +72,7 @@ const FollowSuggestionsWidget = () => {
   return (
     <XWidgetCard
       title={t("layout.who-to-follow")}
-      className="box-border w-full max-w-full shrink-0 overflow-hidden py-0"
+      className="box-border w-full max-w-full shrink-0 overflow-hidden bg-background py-0"
       style={{ width: EXPLORE_SIDEBAR_WIDTH }}
     >
       <div className="-mx-2 -mt-1 min-w-0 overflow-hidden">
