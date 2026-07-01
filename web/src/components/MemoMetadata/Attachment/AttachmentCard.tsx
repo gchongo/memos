@@ -1,12 +1,31 @@
+import { useRef } from "react";
 import { cn } from "@/lib/utils";
 import type { Attachment } from "@/types/proto/api/v1/attachment_service_pb";
 import { getAttachmentThumbnailUrl, getAttachmentType, getAttachmentUrl } from "@/utils/attachment";
+import { usePauseVideoWhenHidden } from "@/hooks/usePauseVideoWhenHidden";
 
 interface AttachmentCardProps {
   attachment: Attachment;
   onClick?: () => void;
   className?: string;
 }
+
+const VideoAttachmentCard = ({ sourceUrl, className }: { sourceUrl: string; className?: string }) => {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  usePauseVideoWhenHidden(videoRef);
+
+  return (
+    <video
+      ref={videoRef}
+      src={sourceUrl}
+      className={cn("w-full h-full object-cover rounded-lg", className)}
+      controls
+      controlsList="nodownload"
+      preload="metadata"
+      onContextMenu={(event) => event.preventDefault()}
+    />
+  );
+};
 
 const AttachmentCard = ({ attachment, onClick, className }: AttachmentCardProps) => {
   const attachmentType = getAttachmentType(attachment);
@@ -32,16 +51,7 @@ const AttachmentCard = ({ attachment, onClick, className }: AttachmentCardProps)
   }
 
   if (attachmentType === "video/*") {
-    return (
-      <video
-        src={sourceUrl}
-        className={cn("w-full h-full object-cover rounded-lg", className)}
-        controls
-        controlsList="nodownload"
-        preload="metadata"
-        onContextMenu={(event) => event.preventDefault()}
-      />
-    );
+    return <VideoAttachmentCard sourceUrl={sourceUrl} className={className} />;
   }
 
   if (attachmentType === "audio/*") {

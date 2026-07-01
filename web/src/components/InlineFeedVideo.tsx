@@ -1,5 +1,6 @@
 import { useCallback, useRef } from "react";
 import { FEED_VIDEO_ROUNDED_CLASS } from "@/components/MemoMetadata/Attachment/attachmentVisualClasses";
+import { usePauseVideoWhenHidden } from "@/hooks/usePauseVideoWhenHidden";
 import { useResolvedVideoPoster } from "@/hooks/useResolvedVideoPoster";
 import { cn } from "@/lib/utils";
 
@@ -15,6 +16,7 @@ interface InlineFeedVideoProps {
 const InlineFeedVideo = ({ sourceUrl, posterUrl, alt, className, variant = "feed" }: InlineFeedVideoProps) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const resolvedPoster = useResolvedVideoPoster(sourceUrl, posterUrl, videoRef);
+  usePauseVideoWhenHidden(videoRef);
 
   const blockDownloadMenu = useCallback((event: React.MouseEvent<HTMLVideoElement>) => {
     event.preventDefault();

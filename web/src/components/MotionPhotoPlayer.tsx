@@ -26,6 +26,7 @@ const MotionPhotoPlayer = ({
   active,
   loop = false,
 }: MotionPhotoPlayerProps) => {
+  const containerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
 
@@ -86,8 +87,24 @@ const MotionPhotoPlayer = ({
     void startPlayback(loop);
   }, [active, loop, startPlayback, stopPlayback]);
 
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) {
+      return;
+    }
+
+    const observer = new IntersectionObserver(([entry]) => {
+      if (!entry?.isIntersecting && isPlaying) {
+        stopPlayback();
+      }
+    });
+
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, [isPlaying, stopPlayback]);
+
   return (
-    <div className={cn("relative overflow-hidden", containerClassName)}>
+    <div ref={containerRef} className={cn("relative overflow-hidden", containerClassName)}>
       <img
         src={posterUrl}
         alt={alt}
