@@ -235,7 +235,13 @@ export const extractPosterBytesFromFile = async (file: File): Promise<Uint8Array
     }
   });
 
+const missingServerPosterUrls = new Set<string>();
+
 export const verifyPosterUrl = async (posterUrl: string): Promise<boolean> => {
+  if (missingServerPosterUrls.has(posterUrl)) {
+    return false;
+  }
+
   try {
     const response = await withTimeout(
       fetch(posterUrl, {
@@ -247,12 +253,19 @@ export const verifyPosterUrl = async (posterUrl: string): Promise<boolean> => {
     );
 
     if (!response?.ok) {
+      missingServerPosterUrls.add(posterUrl);
       return false;
     }
 
     const contentType = response.headers.get("content-type") ?? "";
-    return contentType.startsWith("image/");
+    if (!contentType.startsWith("image/")) {
+      missingServerPosterUrls.add(posterUrl);
+      return false;
+    }
+
+    return true;
   } catch {
+    missingServerPosterUrls.add(posterUrl);
     return false;
   }
 };

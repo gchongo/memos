@@ -262,7 +262,8 @@ func (s *FileServerService) serveVideoThumbnail(c *echo.Context, attachment *sto
 	}
 	if err != nil {
 		if c.Request().Method == http.MethodHead {
-			return c.NoContent(http.StatusNotFound)
+			// Avoid console 404 noise when the client probes for an optional cached poster.
+			return c.NoContent(http.StatusNoContent)
 		}
 		return echo.NewHTTPError(http.StatusNotFound, "video thumbnail not found")
 	}
