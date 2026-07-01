@@ -16,10 +16,6 @@ const InlineFeedVideo = ({ sourceUrl, posterUrl, alt, className, variant = "feed
   const videoRef = useRef<HTMLVideoElement>(null);
   const resolvedPoster = useResolvedVideoPoster(sourceUrl, posterUrl, videoRef);
 
-  const stopPropagation = useCallback((event: React.SyntheticEvent) => {
-    event.stopPropagation();
-  }, []);
-
   const blockDownloadMenu = useCallback((event: React.MouseEvent<HTMLVideoElement>) => {
     event.preventDefault();
     event.stopPropagation();
@@ -40,8 +36,6 @@ const InlineFeedVideo = ({ sourceUrl, posterUrl, alt, className, variant = "feed
       playsInline
       preload="metadata"
       aria-label={alt}
-      onClick={stopPropagation}
-      onPointerDown={stopPropagation}
       onContextMenu={blockDownloadMenu}
     />
   );

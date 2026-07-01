@@ -106,7 +106,6 @@ const VideoVisualShell = ({ className, children, onExpand }: PropsWithChildren<{
     data-no-memo-nav
     data-memo-media-preview
     onClick={(event) => event.stopPropagation()}
-    onPointerDown={(event) => event.stopPropagation()}
   >
     {children}
     {onExpand && (
