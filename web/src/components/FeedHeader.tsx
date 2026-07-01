@@ -1,4 +1,4 @@
-import { SAFE_STICKY_TOP_CLASS } from "@/lib/safe-area";
+import { MOBILE_SECONDARY_STICKY_TOP_CLASS } from "@/lib/safe-area";
 import { cn } from "@/lib/utils";
 import { useTranslate } from "@/utils/i18n";
 
@@ -21,8 +21,8 @@ const FeedHeader = ({ activeTab = "latest", onTabChange, title }: Props) => {
   return (
     <header
       className={cn(
-        SAFE_STICKY_TOP_CLASS,
-        "z-10 bg-background/80 backdrop-blur-md max-md:border-b-0 md:border-b md:border-border md:pt-0",
+        MOBILE_SECONDARY_STICKY_TOP_CLASS,
+        "bg-background/80 backdrop-blur-md max-md:border-b-0 md:border-b md:border-border md:top-0",
       )}
     >
       {title && (

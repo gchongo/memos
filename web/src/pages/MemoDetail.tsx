@@ -10,7 +10,7 @@ import useMemoDetailError from "@/hooks/useMemoDetailError";
 import useNavigateTo from "@/hooks/useNavigateTo";
 import { useInfiniteMemoComments, useMemo } from "@/hooks/useMemoQueries";
 import { useSharedMemo, withShareAttachmentLinks } from "@/hooks/useMemoShareQueries";
-import { SAFE_STICKY_TOP_CLASS } from "@/lib/safe-area";
+import { MOBILE_SECONDARY_STICKY_TOP_CLASS } from "@/lib/safe-area";
 import { cn } from "@/lib/utils";
 import { useTranslate } from "@/utils/i18n";
 import type { Attachment } from "@/types/proto/api/v1/attachment_service_pb";
@@ -82,8 +82,8 @@ const MemoDetail = () => {
     <div className="min-h-full w-full bg-background text-foreground">
       <header
         className={cn(
-          SAFE_STICKY_TOP_CLASS,
-          "z-10 flex items-center gap-6 border-b border-border bg-background/80 px-4 py-3 backdrop-blur-md md:pt-0",
+          MOBILE_SECONDARY_STICKY_TOP_CLASS,
+          "flex items-center gap-6 border-b border-border bg-background/80 px-4 py-3 backdrop-blur-md md:top-0",
         )}
       >
         <button
