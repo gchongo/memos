@@ -12,6 +12,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/disintegration/imaging"
@@ -680,7 +681,19 @@ func (s *FileServerService) serveMotionClip(c *echo.Context, attachment *store.A
 	return nil
 }
 
+var motionClipExtractLocks sync.Map
+
+func lockMotionClipExtract(uid string) func() {
+	value, _ := motionClipExtractLocks.LoadOrStore(uid, &sync.Mutex{})
+	mutex := value.(*sync.Mutex)
+	mutex.Lock()
+	return mutex.Unlock
+}
+
 func (s *FileServerService) getOrExtractMotionClip(ctx context.Context, attachment *store.Attachment) ([]byte, error) {
+	unlock := lockMotionClipExtract(attachment.UID)
+	defer unlock()
+
 	motionPath, err := s.getMotionPath(attachment)
 	if err != nil {
 		return nil, err

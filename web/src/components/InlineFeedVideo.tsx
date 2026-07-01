@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useRef } from "react";
 import { useResolvedVideoPoster } from "@/hooks/useResolvedVideoPoster";
 import { cn } from "@/lib/utils";
 
@@ -12,7 +12,8 @@ interface InlineFeedVideoProps {
 }
 
 const InlineFeedVideo = ({ sourceUrl, posterUrl, alt, className, variant = "feed" }: InlineFeedVideoProps) => {
-  const resolvedPoster = useResolvedVideoPoster(sourceUrl, posterUrl);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const resolvedPoster = useResolvedVideoPoster(sourceUrl, posterUrl, videoRef);
 
   const stopPropagation = useCallback((event: React.SyntheticEvent) => {
     event.stopPropagation();
@@ -25,6 +26,7 @@ const InlineFeedVideo = ({ sourceUrl, posterUrl, alt, className, variant = "feed
 
   return (
     <video
+      ref={videoRef}
       src={sourceUrl}
       poster={resolvedPoster}
       className={cn(

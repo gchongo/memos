@@ -1,47 +1,44 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { render, screen, waitFor } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import VideoPoster from "@/components/VideoPoster";
+import * as videoPoster from "@/utils/video-poster";
+
+class MockIntersectionObserver {
+  private readonly callback: IntersectionObserverCallback;
+
+  constructor(callback: IntersectionObserverCallback) {
+    this.callback = callback;
+  }
+
+  observe() {
+    this.callback([{ isIntersecting: true } as IntersectionObserverEntry], this as unknown as IntersectionObserver);
+  }
+
+  disconnect() {}
+  unobserve() {}
+}
 
 describe("<VideoPoster>", () => {
-  it("renders a mobile-friendly video fallback before a frame is captured", () => {
-    render(<VideoPoster sourceUrl="/file/attachments/video/video.mp4" alt="clip.mp4" className="object-cover" />);
-
-    const video = screen.getByTestId("video-poster-fallback");
-    expect(video).toHaveAttribute("preload", "auto");
-    expect(video).toHaveAttribute("playsinline");
-    expect((video as HTMLVideoElement).muted).toBe(true);
-    expect(video).toHaveClass("object-cover");
+  beforeEach(() => {
+    vi.restoreAllMocks();
+    vi.stubGlobal("IntersectionObserver", MockIntersectionObserver);
   });
 
-  it("renders a captured frame as an image poster", async () => {
-    const drawImage = vi.fn();
-    const toDataURL = vi.fn(() => "data:image/jpeg;base64,poster");
-    const originalCreateElement = document.createElement.bind(document);
+  it("shows a placeholder before the poster is resolved", async () => {
+    vi.spyOn(videoPoster, "resolveVideoPosterUrl").mockImplementation(() => new Promise(() => undefined));
 
-    vi.spyOn(document, "createElement").mockImplementation((tagName: string, options?: ElementCreationOptions) => {
-      if (tagName === "canvas") {
-        return {
-          width: 0,
-          height: 0,
-          getContext: vi.fn(() => ({ drawImage })),
-          toDataURL,
-        } as unknown as HTMLCanvasElement;
-      }
+    render(<VideoPoster sourceUrl="/file/attachments/video/video.mp4" alt="clip.mp4" className="h-20 w-20" />);
 
-      return originalCreateElement(tagName, options);
-    });
+    expect(screen.getByTestId("video-poster-placeholder")).toBeInTheDocument();
+  });
 
-    render(<VideoPoster sourceUrl="/file/attachments/video/video.mp4" alt="clip.mp4" className="object-cover" />);
+  it("renders a resolved poster image", async () => {
+    vi.spyOn(videoPoster, "resolveVideoPosterUrl").mockResolvedValue("data:image/jpeg;base64,poster");
 
-    const video = screen.getByTestId("video-poster-fallback") as HTMLVideoElement;
-    Object.defineProperty(video, "videoWidth", { configurable: true, value: 640 });
-    Object.defineProperty(video, "videoHeight", { configurable: true, value: 360 });
-
-    fireEvent.loadedData(video);
+    render(<VideoPoster sourceUrl="/file/attachments/video/video.mp4" alt="clip.mp4" className="h-20 w-20" />);
 
     await waitFor(() => {
       expect(screen.getByRole("img", { name: "clip.mp4" })).toHaveAttribute("src", "data:image/jpeg;base64,poster");
     });
-    expect(drawImage).toHaveBeenCalledWith(video, 0, 0, 640, 360);
   });
 });
