@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import useMediaQuery from "@/hooks/useMediaQuery";
+import { MOBILE_HEADER_TOP_PADDING_CLASS } from "@/lib/safe-area";
 import { cn } from "@/lib/utils";
 import NavigationDrawer from "./NavigationDrawer";
 
@@ -32,7 +33,8 @@ const MobileHeader = (props: Props) => {
   return (
     <div
       className={cn(
-        "sticky top-0 pt-3 pb-2 sm:pt-2 px-4 sm:px-6 sm:mb-1 bg-background bg-opacity-80 backdrop-blur-lg flex flex-row justify-between items-center w-full h-auto flex-nowrap shrink-0 z-1",
+        "sticky top-0 pb-2 sm:mb-1 px-4 sm:px-6 bg-background bg-opacity-80 backdrop-blur-lg flex flex-row justify-between items-center w-full h-auto flex-nowrap shrink-0 z-1",
+        MOBILE_HEADER_TOP_PADDING_CLASS,
         offsetTop > 0 && "shadow-md",
         className,
       )}

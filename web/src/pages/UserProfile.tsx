@@ -14,6 +14,7 @@ import { useFollowedUsers } from "@/hooks/useFollowedUsers";
 import useCurrentUser from "@/hooks/useCurrentUser";
 import useNavigateTo from "@/hooks/useNavigateTo";
 import { useUser, useUserStats } from "@/hooks/useUserQueries";
+import { SAFE_STICKY_TOP_CLASS } from "@/lib/safe-area";
 import { cn } from "@/lib/utils";
 import { State } from "@/types/proto/api/v1/common_pb";
 import type { Memo } from "@/types/proto/api/v1/memo_service_pb";
@@ -197,7 +198,10 @@ const UserProfile = () => {
     >
       {user ? (
         <>
-          <header ref={headerRef} className="sticky top-0 z-20 border-b border-border bg-background/80 backdrop-blur-md">
+          <header
+            ref={headerRef}
+            className={cn(SAFE_STICKY_TOP_CLASS, "z-20 border-b border-border bg-background/80 backdrop-blur-md md:pt-0")}
+          >
             <div className="flex items-center gap-6 px-4 py-2">
               <button
                 type="button"

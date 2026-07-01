@@ -1,3 +1,4 @@
+import { SAFE_STICKY_TOP_CLASS } from "@/lib/safe-area";
 import { cn } from "@/lib/utils";
 import { useTranslate } from "@/utils/i18n";
 
@@ -18,7 +19,12 @@ const FeedHeader = ({ activeTab = "latest", onTabChange, title }: Props) => {
   ];
 
   return (
-    <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-md max-md:border-b-0 md:border-b md:border-border">
+    <header
+      className={cn(
+        SAFE_STICKY_TOP_CLASS,
+        "z-10 bg-background/80 backdrop-blur-md max-md:border-b-0 md:border-b md:border-border md:pt-0",
+      )}
+    >
       {title && (
         <div className="flex h-[53px] items-center px-4">
           <h1 className="text-xl font-bold text-foreground">{title}</h1>
