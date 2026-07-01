@@ -192,8 +192,10 @@ function PreviewImageDialog({ open, onOpenChange, imgUrls = [], items, initialIn
                 poster={currentItem.posterUrl}
                 className="max-h-[calc(100vh-8rem)] max-w-[calc(100vw-1.5rem)] rounded-md object-contain sm:max-h-[calc(100vh-7rem)] sm:max-w-[calc(100vw-8rem)]"
                 controls
+                controlsList="nodownload"
                 autoPlay
                 playsInline
+                onContextMenu={(event) => event.preventDefault()}
               />
             ) : currentItem.kind === "motion" ? (
               <MotionPhotoPreview

@@ -18,6 +18,11 @@ const InlineFeedVideo = ({ sourceUrl, posterUrl, alt, className, variant = "feed
     event.stopPropagation();
   }, []);
 
+  const blockDownloadMenu = useCallback((event: React.MouseEvent<HTMLVideoElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+  }, []);
+
   return (
     <video
       src={sourceUrl}
@@ -27,11 +32,13 @@ const InlineFeedVideo = ({ sourceUrl, posterUrl, alt, className, variant = "feed
         className,
       )}
       controls
+      controlsList="nodownload"
       playsInline
       preload="metadata"
       aria-label={alt}
       onClick={stopPropagation}
       onPointerDown={stopPropagation}
+      onContextMenu={blockDownloadMenu}
     />
   );
 };
