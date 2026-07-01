@@ -96,7 +96,7 @@ const MainLayout = () => {
 
         <section
           className={cn(
-            "flex min-w-0 flex-1 flex-col max-md:transition-[padding-bottom] max-md:duration-300 max-md:ease-in-out",
+            "flex min-w-0 flex-1 flex-col max-md:transition-[padding-bottom] max-md:duration-150 max-md:ease-in-out",
             bottomNavVisible
               ? "max-md:pb-[calc(var(--mobile-bottom-nav-height)+env(safe-area-inset-bottom,0px))]"
               : "max-md:pb-[env(safe-area-inset-bottom,0px)]",

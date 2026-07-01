@@ -30,6 +30,19 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  :root {
+    /* tw-animate-css default when no duration-* class is present (was 150ms). */
+    --tw-duration: 100ms;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation-duration: 120ms;
+  }
 }
 
 @keyframes splash-pulse {

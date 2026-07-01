@@ -15,14 +15,14 @@ export const VISUAL_TILE_BUTTON_CLASS =
 
 export const MEDIA_HOVER_SURFACE_CLASS = "group/media relative h-full min-h-0 w-full overflow-hidden";
 
-export const COVER_MEDIA_CLASS = "h-full w-full rounded-none object-cover transition-transform duration-300 group-hover/media:scale-[1.02]";
+export const COVER_MEDIA_CLASS = "h-full w-full rounded-none object-cover transition-transform duration-150 group-hover/media:scale-[1.02]";
 
 export const NATURAL_MEDIA_CLASS =
-  "block h-auto max-h-[20rem] w-auto max-w-full rounded-none transition-transform duration-300 group-hover/media:scale-[1.02]";
+  "block h-auto max-h-[20rem] w-auto max-w-full rounded-none transition-transform duration-150 group-hover/media:scale-[1.02]";
 
 /** Motion overlay video in single-tile layout (pairs with {@link NATURAL_MEDIA_CLASS} poster). */
 export const SINGLE_MOTION_VIDEO_CLASS =
-  "absolute inset-0 h-full w-full rounded-none object-contain transition-transform duration-300 group-hover/media:scale-[1.02]";
+  "absolute inset-0 h-full w-full rounded-none object-contain transition-transform duration-150 group-hover/media:scale-[1.02]";
 
 export const SINGLE_VIDEO_CARD_WIDTH_CLASS = "w-full max-w-[30rem]";
 

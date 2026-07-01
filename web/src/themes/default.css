@@ -94,4 +94,16 @@
   --z-index-overlay: 50;
   --z-index-dropdown: 60;
   --z-index-tooltip: 70;
+
+  /* Snappier motion — scales every duration-* utility and default transitions app-wide. */
+  --default-transition-duration: 100ms;
+  --default-transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  --duration-75: 50ms;
+  --duration-100: 75ms;
+  --duration-150: 100ms;
+  --duration-200: 125ms;
+  --duration-300: 150ms;
+  --duration-500: 200ms;
+  --duration-700: 250ms;
+  --duration-1000: 350ms;
 }
