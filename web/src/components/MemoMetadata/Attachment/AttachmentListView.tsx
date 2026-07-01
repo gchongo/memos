@@ -1,9 +1,10 @@
-import { DownloadIcon, ExpandIcon, FileIcon, PaperclipIcon } from "lucide-react";
+import { DownloadIcon, ExpandIcon, FileIcon, PaperclipIcon, PlayIcon } from "lucide-react";
 import type { PropsWithChildren } from "react";
 import { useMemo } from "react";
 import InlineFeedVideo from "@/components/InlineFeedVideo";
 import MetadataSection from "@/components/MemoMetadata/MetadataSection";
 import MotionPhotoPreview from "@/components/MotionPhotoPreview";
+import VideoPoster from "@/components/VideoPoster";
 import { cn } from "@/lib/utils";
 import type { Attachment } from "@/types/proto/api/v1/attachment_service_pb";
 import { getAttachmentUrl } from "@/utils/attachment";
@@ -12,6 +13,7 @@ import { buildAttachmentVisualItems } from "@/utils/media-item";
 import AudioAttachmentItem from "./AudioAttachmentItem";
 import { getAttachmentMetadata, isAudioAttachment, separateAttachments } from "./attachmentHelpers";
 import {
+  COLLAGE_VIDEO_PLAY_BADGE_CLASS,
   COVER_MEDIA_CLASS,
   FEED_VIDEO_SHELL_CLASS,
   FEED_VISUAL_TILE_BUTTON_CLASS,
@@ -20,6 +22,7 @@ import {
   NATURAL_MEDIA_CLASS,
   OVERFLOW_TILE_OVERLAY_CLASS,
   SINGLE_MOTION_VIDEO_CLASS,
+  VIDEO_EXPAND_BUTTON_CLASS,
   VISUAL_TILE_BUTTON_CLASS,
 } from "./attachmentVisualClasses";
 import { resolveVisualGalleryLayout } from "./visualGalleryLayout";
@@ -109,7 +112,7 @@ const VideoVisualShell = ({ className, children, onExpand }: PropsWithChildren<{
     {onExpand && (
       <button
         type="button"
-        className="absolute right-2 top-2 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-background/80 text-foreground/70 backdrop-blur-sm transition-colors hover:bg-background hover:text-foreground"
+        className={VIDEO_EXPAND_BUTTON_CLASS}
         aria-label="Open fullscreen preview"
         onClick={(event) => {
           event.stopPropagation();
@@ -139,16 +142,19 @@ const CollageVisualItem = ({
 
   if (item.kind === "video") {
     return (
-      <VideoVisualShell className={cn("block h-full w-full", className)} onExpand={onPreview}>
-        <InlineFeedVideo
-          variant="collage"
-          sourceUrl={item.sourceUrl}
-          posterUrl={item.posterUrl}
-          alt={item.filename}
-          className={COVER_MEDIA_CLASS}
-        />
-        {overlayLabel && <div className={OVERFLOW_TILE_OVERLAY_CLASS}>{overlayLabel}</div>}
-      </VideoVisualShell>
+      <VisualTile
+        className={cn("block h-full w-full", className)}
+        onPreview={onPreview}
+        overlayLabel={overlayLabel}
+        tileClassName={tileClassName}
+      >
+        <div className="relative h-full w-full">
+          <VideoPoster sourceUrl={item.sourceUrl} posterUrl={item.posterUrl} alt={item.filename} className={COVER_MEDIA_CLASS} />
+          <span className={COLLAGE_VIDEO_PLAY_BADGE_CLASS} aria-hidden>
+            <PlayIcon className="h-3.5 w-3.5 fill-current" />
+          </span>
+        </div>
+      </VisualTile>
     );
   }
 

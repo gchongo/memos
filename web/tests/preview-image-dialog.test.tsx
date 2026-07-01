@@ -7,6 +7,23 @@ vi.mock("@/hooks/useMediaQuery", () => ({
   default: () => false,
 }));
 
+class MockIntersectionObserver {
+  private readonly callback: IntersectionObserverCallback;
+
+  constructor(callback: IntersectionObserverCallback) {
+    this.callback = callback;
+  }
+
+  observe() {
+    this.callback([{ isIntersecting: true } as IntersectionObserverEntry], this as unknown as IntersectionObserver);
+  }
+
+  disconnect() {}
+  unobserve() {}
+}
+
+vi.stubGlobal("IntersectionObserver", MockIntersectionObserver);
+
 describe("<PreviewImageDialog>", () => {
   it("provides a dialog description without Radix accessibility warnings", async () => {
     const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});

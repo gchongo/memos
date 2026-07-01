@@ -35,6 +35,12 @@ export const VISUAL_Z = {
 
 export const MEDIA_HOVER_GRADIENT_CLASS = `pointer-events-none absolute inset-0 ${VISUAL_Z.gradient} bg-gradient-to-t from-foreground/15 via-transparent to-transparent opacity-0 transition-opacity group-hover/media:opacity-100`;
 
-export const COLLAGE_VIDEO_PLAY_BADGE_CLASS = `bottom-2 right-2 ${VISUAL_Z.badge} h-7 w-7 bg-background/80 text-foreground/70`;
+export const COLLAGE_VIDEO_PLAY_BADGE_CLASS = `pointer-events-none absolute bottom-2 right-2 inline-flex ${VISUAL_Z.badge} h-7 w-7 items-center justify-center rounded-full bg-background/80 text-foreground/70 shadow-sm backdrop-blur-sm`;
+
+/** Rounded corners on the `<video>` itself — shell avoids overflow clipping for iOS controls. */
+export const FEED_VIDEO_ROUNDED_CLASS = "rounded-2xl";
+
+export const VIDEO_EXPAND_BUTTON_CLASS =
+  "absolute bottom-2 left-2 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-background/80 text-foreground/70 backdrop-blur-sm transition-colors hover:bg-background hover:text-foreground sm:bottom-auto sm:left-auto sm:right-2 sm:top-2";
 
 export const OVERFLOW_TILE_OVERLAY_CLASS = `pointer-events-none absolute inset-0 ${VISUAL_Z.overflowMask} flex items-center justify-center bg-black/45 text-2xl font-semibold text-white backdrop-blur-[2px]`;

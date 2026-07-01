@@ -1,4 +1,5 @@
 import { useCallback, useRef } from "react";
+import { FEED_VIDEO_ROUNDED_CLASS } from "@/components/MemoMetadata/Attachment/attachmentVisualClasses";
 import { useResolvedVideoPoster } from "@/hooks/useResolvedVideoPoster";
 import { cn } from "@/lib/utils";
 
@@ -30,6 +31,7 @@ const InlineFeedVideo = ({ sourceUrl, posterUrl, alt, className, variant = "feed
       src={sourceUrl}
       poster={resolvedPoster}
       className={cn(
+        FEED_VIDEO_ROUNDED_CLASS,
         variant === "collage" ? "h-full w-full object-cover" : "block max-h-[20rem] w-full max-w-full object-contain",
         className,
       )}

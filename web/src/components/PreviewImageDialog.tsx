@@ -37,6 +37,7 @@ const PreviewDialogVideo = ({ sourceUrl, posterUrl, className }: { sourceUrl: st
       controls
       controlsList="nodownload"
       autoPlay
+      muted
       playsInline
       onContextMenu={(event) => event.preventDefault()}
     />
@@ -76,6 +77,7 @@ function PreviewImageDialog({ open, onOpenChange, imgUrls = [], items, initialIn
   const currentItem = previewItems[safeIndex];
   const hasMultiple = itemCount > 1;
   const isImagePreview = currentItem?.kind === "image";
+  const isVideoOrMotionPreview = currentItem?.kind === "video" || currentItem?.kind === "motion";
   const canGoPrevious = safeIndex > 0;
   const canGoNext = safeIndex < itemCount - 1;
   const zoomPercent = Math.round(zoomScale * 100);
@@ -178,11 +180,40 @@ function PreviewImageDialog({ open, onOpenChange, imgUrls = [], items, initialIn
           <div className="pointer-events-auto flex items-start justify-between gap-3">
             <div className="min-w-0 text-white">
               <div className="truncate text-sm font-medium">{currentItem.filename || "Attachment"}</div>
-              {hasMultiple && (
-                <div className="mt-1 text-xs text-white/70">
-                  {safeIndex + 1} / {itemCount}
-                </div>
-              )}
+              {hasMultiple &&
+                (!sm && isVideoOrMotionPreview ? (
+                  <div className="pointer-events-auto mt-2 flex w-fit items-center gap-0.5 rounded-full bg-white/10 px-1 py-0.5">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={handlePrevious}
+                      disabled={!canGoPrevious}
+                      aria-label="Previous item"
+                      className="h-8 w-8 rounded-full text-white hover:bg-white/12 hover:text-white disabled:text-white/35"
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                    <div className="min-w-10 px-1 text-center text-xs tabular-nums text-white/75">
+                      {safeIndex + 1} / {itemCount}
+                    </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={handleNext}
+                      disabled={!canGoNext}
+                      aria-label="Next item"
+                      className="h-8 w-8 rounded-full text-white hover:bg-white/12 hover:text-white disabled:text-white/35"
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="mt-1 text-xs text-white/70">
+                    {safeIndex + 1} / {itemCount}
+                  </div>
+                ))}
             </div>
 
             <Button
@@ -200,7 +231,8 @@ function PreviewImageDialog({ open, onOpenChange, imgUrls = [], items, initialIn
 
         <div
           className={cn(
-            "pointer-events-none relative z-10 flex h-full w-full items-center justify-center px-3 pb-20 pt-16 sm:px-16 sm:pb-8 sm:pt-20",
+            "pointer-events-none relative z-10 flex h-full w-full items-center justify-center px-3 pt-16 sm:px-16 sm:pt-20",
+            isImagePreview ? "pb-20 sm:pb-8" : "pb-[calc(5.5rem+env(safe-area-inset-bottom,0px))] sm:pb-8",
             isImagePreview && "cursor-zoom-in",
           )}
         >
@@ -295,36 +327,6 @@ function PreviewImageDialog({ open, onOpenChange, imgUrls = [], items, initialIn
               icon={<ChevronRight className="h-5 w-5" />}
             />
           </>
-        )}
-
-        {hasMultiple && !sm && !isImagePreview && (
-          <div className="absolute inset-x-0 bottom-0 z-20 px-3 pb-3 pt-6">
-            <div className="mx-auto flex max-w-xs items-center justify-between rounded-full bg-black/55 px-2 py-2 backdrop-blur-sm">
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={handlePrevious}
-                disabled={!canGoPrevious}
-                className="rounded-full px-3 text-white hover:bg-white/10 hover:text-white disabled:text-white/35"
-              >
-                Prev
-              </Button>
-              <div className="px-3 text-xs text-white/75">
-                {safeIndex + 1} / {itemCount}
-              </div>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={handleNext}
-                disabled={!canGoNext}
-                className="rounded-full px-3 text-white hover:bg-white/10 hover:text-white disabled:text-white/35"
-              >
-                Next
-              </Button>
-            </div>
-          </div>
         )}
       </DialogContent>
     </Dialog>
