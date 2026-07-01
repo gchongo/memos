@@ -39,6 +39,17 @@
   --shadow-lg: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 4px 6px -1px hsl(0 0% 0% / 0.1);
   --shadow-xl: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 8px 10px -1px hsl(0 0% 0% / 0.1);
   --shadow-2xl: 0 1px 3px 0px hsl(0 0% 0% / 0.25);
+
+  /* Frosted glass surfaces — tuned per theme via overrides in x-dark.css, etc. */
+  --glass-saturate: 1.45;
+  --glass-blur-chrome: 20px;
+  --glass-blur-panel: 16px;
+  --glass-blur-popover: 22px;
+  --glass-chrome-bg: color-mix(in oklch, var(--background) 76%, transparent);
+  --glass-panel-bg: color-mix(in oklch, var(--background) 66%, transparent);
+  --glass-popover-bg: color-mix(in oklch, var(--popover) 80%, transparent);
+  --glass-input-bg: color-mix(in oklch, var(--background) 58%, transparent);
+  --glass-shadow: 0 1px 3px oklch(0 0 0 / 0.08);
 }
 
 /* Tailwind v4 token mappings — compiled once at build time, shared by all themes.

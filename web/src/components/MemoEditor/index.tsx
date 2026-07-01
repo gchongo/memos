@@ -9,6 +9,7 @@ import { useAutoFocusEditor } from "@/hooks/useAutoFocusEditor";
 import { memoKeys } from "@/hooks/useMemoQueries";
 import { useVisualViewportLayout } from "@/hooks/useVisualViewportBottomInset";
 import { userKeys } from "@/hooks/useUserQueries";
+import { GLASS_CHROME_CLASS, GLASS_PANEL_CLASS } from "@/lib/glass";
 import { handleError } from "@/lib/error";
 import { cn } from "@/lib/utils";
 import { InstanceSetting_Key } from "@/types/proto/api/v1/instance_service_pb";
@@ -356,7 +357,7 @@ const MemoEditorImpl: React.FC<MemoEditorProps> = ({
           "group relative flex w-full flex-col items-start justify-between gap-2",
           isFeed
             ? cn("feed-composer", isFullscreenCompose && "flex min-h-0 flex-1 flex-col")
-            : "rounded-lg border border-border bg-card px-4 pt-3 pb-1",
+            : cn("rounded-lg border border-border/60 px-4 pt-3 pb-1", GLASS_PANEL_CLASS),
           FOCUS_MODE_STYLES.transition,
           isFocusMode && cn(FOCUS_MODE_STYLES.container.base, FOCUS_MODE_STYLES.container.spacing),
           className,
@@ -408,7 +409,7 @@ const MemoEditorImpl: React.FC<MemoEditorProps> = ({
             "flex w-full flex-col",
             isFeed ? "gap-0" : "gap-2",
             isFullscreenCompose &&
-              "fixed inset-x-0 z-50 border-t border-border bg-background px-4",
+              cn("fixed inset-x-0 z-50 border-t border-border/50 px-4", GLASS_CHROME_CLASS),
             isFullscreenCompose &&
               (viewportLayout.keyboardOpen ? "pb-0" : "pb-[env(safe-area-inset-bottom,0px)]"),
           )}

@@ -10,6 +10,7 @@ import useMemoDetailError from "@/hooks/useMemoDetailError";
 import useNavigateTo from "@/hooks/useNavigateTo";
 import { useInfiniteMemoComments, useMemo } from "@/hooks/useMemoQueries";
 import { useSharedMemo, withShareAttachmentLinks } from "@/hooks/useMemoShareQueries";
+import { GLASS_CHROME_CLASS } from "@/lib/glass";
 import { MOBILE_SECONDARY_STICKY_TOP_CLASS } from "@/lib/safe-area";
 import { cn } from "@/lib/utils";
 import { useTranslate } from "@/utils/i18n";
@@ -83,7 +84,8 @@ const MemoDetail = () => {
       <header
         className={cn(
           MOBILE_SECONDARY_STICKY_TOP_CLASS,
-          "flex items-center gap-6 border-b border-border bg-background/80 px-4 py-3 backdrop-blur-md md:top-0",
+          GLASS_CHROME_CLASS,
+          "flex items-center gap-6 border-b border-border/50 px-4 py-3 md:top-0",
         )}
       >
         <button

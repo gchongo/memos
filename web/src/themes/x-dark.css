@@ -40,6 +40,12 @@
 
   /* X brand accent for links and active indicators */
   --x-accent: oklch(0.68 0.14 235);
+
+  --glass-chrome-bg: oklch(0 0 0 / 0.62);
+  --glass-panel-bg: oklch(0 0 0 / 0.5);
+  --glass-popover-bg: oklch(0.12 0.005 255 / 0.82);
+  --glass-input-bg: oklch(0 0 0 / 0.42);
+  --glass-shadow: 0 1px 3px oklch(0 0 0 / 0.45);
 }
 
 [data-theme="x-dark"] a:not([class]) {

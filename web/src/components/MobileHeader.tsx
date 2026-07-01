@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import useMediaQuery from "@/hooks/useMediaQuery";
+import { GLASS_CHROME_CLASS } from "@/lib/glass";
 import { MOBILE_HEADER_TOP_PADDING_CLASS } from "@/lib/safe-area";
 import { cn } from "@/lib/utils";
 import NavigationDrawer from "./NavigationDrawer";
@@ -34,7 +35,8 @@ const MobileHeader = (props: Props) => {
     <div
       className={cn(
         MOBILE_HEADER_TOP_PADDING_CLASS,
-        "px-4 sm:px-6 bg-background bg-opacity-80 backdrop-blur-lg flex flex-row justify-between items-center w-full h-auto flex-nowrap shrink-0 z-[2]",
+        GLASS_CHROME_CLASS,
+        "px-4 sm:px-6 flex flex-row justify-between items-center w-full h-auto flex-nowrap shrink-0 z-[2]",
         offsetTop > 0 && "shadow-md",
         className,
       )}

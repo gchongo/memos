@@ -5,6 +5,7 @@ import { useComposeDialog } from "@/contexts/ComposeDialogContext";
 import useCurrentUser from "@/hooks/useCurrentUser";
 import { useMobileNavRefresh } from "@/hooks/useMobileNavRefresh";
 import { useNotifications } from "@/hooks/useUserQueries";
+import { GLASS_CHROME_CLASS } from "@/lib/glass";
 import { cn } from "@/lib/utils";
 import { ROUTES } from "@/router/routes";
 import { UserNotification_Status } from "@/types/proto/api/v1/user_service_pb";
@@ -60,7 +61,8 @@ const MobileBottomNav = ({ visible = true }: MobileBottomNavProps) => {
   }, [openCompose]);
 
   const shellClassName = cn(
-    "fixed inset-x-0 bottom-0 z-50 flex flex-col bg-background/90 backdrop-blur-md transition-transform duration-150 ease-in-out will-change-transform md:hidden",
+    GLASS_CHROME_CLASS,
+    "fixed inset-x-0 bottom-0 z-50 flex flex-col transition-transform duration-150 ease-in-out will-change-transform md:hidden",
     !visible && "translate-y-full",
   );
 

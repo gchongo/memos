@@ -14,6 +14,7 @@ import { useFollowedUsers } from "@/hooks/useFollowedUsers";
 import useCurrentUser from "@/hooks/useCurrentUser";
 import useNavigateTo from "@/hooks/useNavigateTo";
 import { useUser, useUserStats } from "@/hooks/useUserQueries";
+import { GLASS_CHROME_CLASS } from "@/lib/glass";
 import { MOBILE_SECONDARY_STICKY_TOP_CLASS } from "@/lib/safe-area";
 import { cn } from "@/lib/utils";
 import { State } from "@/types/proto/api/v1/common_pb";
@@ -200,7 +201,7 @@ const UserProfile = () => {
         <>
           <header
             ref={headerRef}
-            className={cn(MOBILE_SECONDARY_STICKY_TOP_CLASS, "z-20 border-b border-border bg-background/80 backdrop-blur-md md:top-0")}
+            className={cn(MOBILE_SECONDARY_STICKY_TOP_CLASS, GLASS_CHROME_CLASS, "z-20 border-b border-border/50 md:top-0")}
           >
             <div className="flex items-center gap-6 px-4 py-2">
               <button
@@ -236,7 +237,7 @@ const UserProfile = () => {
           <ProfileTabs
             activeTab={activeTab}
             onTabChange={toggleTab}
-            className="sticky z-10 bg-background/80 backdrop-blur-md"
+            className="sticky z-10 glass-chrome"
             style={{ top: headerHeight }}
           />
 

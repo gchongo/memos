@@ -1,5 +1,6 @@
 import ExploreTrendsWidget, { SIDEBAR_WIDGET_CARD_CLASS, SIDEBAR_WIDGET_CARD_STYLE } from "@/components/ExploreTrendsWidget";
 import FollowSuggestionsWidget from "@/components/FollowSuggestionsWidget";
+import { GLASS_CHROME_CLASS } from "@/lib/glass";
 import SearchBar from "@/components/SearchBar";
 import TagsCloudWidget from "@/components/TagsCloudWidget";
 import XWidgetCard from "@/components/XWidgetCard";
@@ -103,7 +104,7 @@ const MemoExplorer = (props: Props) => {
   return (
     <aside className={cn("relative flex w-full min-w-0 flex-col items-start justify-start text-sidebar-foreground", className)}>
       {features.search && (
-        <div className={cn("w-full pb-1", stickySearch && "sticky top-0 z-10 bg-background pt-1")}>
+        <div className={cn("w-full pb-1", stickySearch && cn("sticky top-0 z-10 pt-1", GLASS_CHROME_CLASS))}>
           <SearchBar className={stickySearch ? undefined : "mb-3"} />
         </div>
       )}

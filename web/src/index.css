@@ -45,6 +45,45 @@
   }
 }
 
+@layer components {
+  .glass-chrome {
+    background-color: var(--glass-chrome-bg);
+    box-shadow: var(--glass-shadow);
+    backdrop-filter: blur(var(--glass-blur-chrome)) saturate(var(--glass-saturate));
+    -webkit-backdrop-filter: blur(var(--glass-blur-chrome)) saturate(var(--glass-saturate));
+  }
+
+  .glass-panel {
+    background-color: var(--glass-panel-bg);
+    box-shadow: var(--glass-shadow);
+    backdrop-filter: blur(var(--glass-blur-panel)) saturate(var(--glass-saturate));
+    -webkit-backdrop-filter: blur(var(--glass-blur-panel)) saturate(var(--glass-saturate));
+  }
+
+  .glass-popover {
+    background-color: var(--glass-popover-bg);
+    box-shadow: var(--glass-shadow);
+    backdrop-filter: blur(var(--glass-blur-popover)) saturate(var(--glass-saturate));
+    -webkit-backdrop-filter: blur(var(--glass-blur-popover)) saturate(var(--glass-saturate));
+  }
+
+  .glass-input {
+    background-color: var(--glass-input-bg);
+    backdrop-filter: blur(var(--glass-blur-panel)) saturate(var(--glass-saturate));
+    -webkit-backdrop-filter: blur(var(--glass-blur-panel)) saturate(var(--glass-saturate));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glass-chrome,
+  .glass-panel,
+  .glass-popover,
+  .glass-input {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+
 @keyframes splash-pulse {
   0%,
   100% {

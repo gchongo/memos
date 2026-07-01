@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { matchPath, Outlet, useLocation } from "react-router-dom";
 import type { MemoExplorerContext } from "@/components/MemoExplorer";
 import { MemoExplorer, MemoExplorerDrawer } from "@/components/MemoExplorer";
+import { GLASS_CHROME_CLASS, GLASS_PANEL_CLASS } from "@/lib/glass";
 import MobileBottomNav, { MOBILE_BOTTOM_NAV_HEIGHT } from "@/components/MobileBottomNav";
 import MobileHeader from "@/components/MobileHeader";
 import Navigation from "@/components/Navigation";
@@ -89,7 +90,7 @@ const MainLayout = () => {
     <div className={cn("flex min-h-svh w-full justify-center bg-background max-md:px-0 md:px-6")}>
       <div className={cn("flex w-full", X_SHELL_MAX)}>
         {md && (
-          <aside className="sticky top-0 hidden h-svh w-[275px] shrink-0 flex-col px-2 md:flex">
+          <aside className={cn("sticky top-0 hidden h-svh w-[275px] shrink-0 flex-col px-2 md:flex", GLASS_CHROME_CLASS)}>
             <Navigation />
           </aside>
         )}
@@ -111,7 +112,7 @@ const MainLayout = () => {
             </div>
 
             {xl && showMemoExplorer && (
-              <aside className="sticky top-0 hidden h-svh w-[350px] min-w-[350px] max-w-[350px] shrink-0 overflow-x-hidden overflow-y-auto pl-6 pt-2 xl:block">
+              <aside className={cn("sticky top-0 hidden h-svh w-[350px] min-w-[350px] max-w-[350px] shrink-0 overflow-x-hidden overflow-y-auto pl-6 pt-2 xl:block", GLASS_PANEL_CLASS)}>
                 <MemoExplorer {...memoExplorerProps} />
               </aside>
             )}

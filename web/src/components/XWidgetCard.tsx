@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { GLASS_PANEL_CLASS } from "@/lib/glass";
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -11,7 +12,7 @@ interface Props {
 
 const XWidgetCard = ({ title, children, className, action, style }: Props) => (
   <div
-    className={cn("mb-4 overflow-hidden rounded-2xl border border-border bg-background", className)}
+    className={cn("mb-4 overflow-hidden rounded-2xl border border-border/60", GLASS_PANEL_CLASS, className)}
     style={style}
   >
     {(title || action) && (

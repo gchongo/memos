@@ -1,3 +1,4 @@
+import { GLASS_CHROME_CLASS } from "@/lib/glass";
 import { MOBILE_SECONDARY_STICKY_TOP_CLASS } from "@/lib/safe-area";
 import { cn } from "@/lib/utils";
 import { useTranslate } from "@/utils/i18n";
@@ -22,7 +23,8 @@ const FeedHeader = ({ activeTab = "latest", onTabChange, title }: Props) => {
     <header
       className={cn(
         MOBILE_SECONDARY_STICKY_TOP_CLASS,
-        "bg-background/80 backdrop-blur-md max-md:border-b-0 md:border-b md:border-border md:top-0",
+        GLASS_CHROME_CLASS,
+        "max-md:border-b-0 md:border-b md:border-border/50 md:top-0",
       )}
     >
       {title && (
