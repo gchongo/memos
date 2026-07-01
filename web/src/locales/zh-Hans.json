@@ -219,6 +219,10 @@
     "no-changes-detected": "未检测到更改",
     "save": "保存",
     "saving": "保存中...",
+    "upload-progress": {
+      "compressing": "正在压缩视频",
+      "uploading": "正在上传"
+    },
     "insert-menu": {
       "add-attachment": "添加附件",
       "add-location": "添加位置",

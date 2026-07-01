@@ -7,3 +7,4 @@ export * from "./EditorToolbar";
 export { FocusModeExitButton, FocusModeOverlay } from "./FocusModeOverlay";
 export { FormattingToolbar } from "./FormattingToolbar";
 export { TimestampPopover } from "./TimestampPopover";
+export * from "./UploadProgressBar";

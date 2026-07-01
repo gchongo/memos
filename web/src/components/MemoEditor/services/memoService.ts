@@ -7,7 +7,7 @@ import { AttachmentSchema } from "@/types/proto/api/v1/attachment_service_pb";
 import type { Memo } from "@/types/proto/api/v1/memo_service_pb";
 import { MemoSchema } from "@/types/proto/api/v1/memo_service_pb";
 import type { EditorState } from "../state";
-import { uploadService } from "./uploadService";
+import { type UploadProgressCallback, uploadService } from "./uploadService";
 
 /**
  * Converts attachments to reference format for API requests.
@@ -80,9 +80,10 @@ export const memoService = {
       memoName?: string;
       parentMemoName?: string;
     },
+    onUploadProgress?: UploadProgressCallback,
   ): Promise<{ memoName: string; hasChanges: boolean }> {
     // 1. Upload local files first
-    const newAttachments = await uploadService.uploadFiles(state.localFiles);
+    const newAttachments = await uploadService.uploadFiles(state.localFiles, onUploadProgress);
     const allAttachments = [...state.metadata.attachments, ...newAttachments];
 
     // 2. Update existing memo

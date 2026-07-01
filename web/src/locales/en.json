@@ -274,6 +274,10 @@
     "no-changes-detected": "No changes detected",
     "save": "Save",
     "saving": "Saving...",
+    "upload-progress": {
+      "compressing": "Compressing video",
+      "uploading": "Uploading"
+    },
     "unsupported-syntax-raw-mode": "This memo contains syntax the rich-text editor can't safely edit, so it opened in raw Markdown mode.",
     "wysiwyg-editor": "WYSIWYG Editor",
     "audio-recorder": {

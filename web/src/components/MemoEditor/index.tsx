@@ -23,6 +23,7 @@ import {
   FocusModeOverlay,
   FormattingToolbar,
   TimestampPopover,
+  UploadProgressBar,
 } from "./components";
 import { FOCUS_MODE_STYLES, FULLSCREEN_COMPOSE_TOOLBAR_HEIGHT } from "./constants";
 import { useAudioRecorder, useAutoSave, useFocusMode, useKeyboard, useMemoInit } from "./hooks";
@@ -65,6 +66,9 @@ const MemoEditorImpl: React.FC<MemoEditorProps> = ({
   const isFocusMode = useEditorSelector((s) => s.ui.isFocusMode);
   const editorMode = useEditorSelector((s) => s.ui.editorMode);
   const hasTimestamp = useEditorSelector((s) => Boolean(s.timestamps.createTime));
+  const isSaving = useEditorSelector((s) => s.ui.isLoading.saving);
+  const isUploading = useEditorSelector((s) => s.ui.isLoading.uploading);
+  const uploadProgress = useEditorSelector((s) => s.ui.uploadProgress);
   const { userGeneralSetting } = useAuth();
   const { aiSetting, fetchSetting } = useInstance();
   const { markNewMemo } = useNewMemo();
@@ -273,9 +277,14 @@ const MemoEditorImpl: React.FC<MemoEditorProps> = ({
     }
 
     dispatch(actions.setLoading("saving", true));
+    if (state.localFiles.length > 0) {
+      dispatch(actions.setLoading("uploading", true));
+    }
 
     try {
-      const result = await memoService.save(state, { memoName, parentMemoName });
+      const result = await memoService.save(state, { memoName, parentMemoName }, (progress) => {
+        dispatch(actions.setUploadProgress(progress));
+      });
 
       if (!result.hasChanges) {
         toast.error(t("editor.no-changes-detected"));
@@ -332,6 +341,8 @@ const MemoEditorImpl: React.FC<MemoEditorProps> = ({
         fallbackMessage: errorService.getErrorMessage(error),
       });
     } finally {
+      dispatch(actions.setUploadProgress(null));
+      dispatch(actions.setLoading("uploading", false));
       dispatch(actions.setLoading("saving", false));
     }
   }
@@ -410,6 +421,7 @@ const MemoEditorImpl: React.FC<MemoEditorProps> = ({
           }
         >
           {!isFullscreenCompose && <EditorMetadata memoName={memoName} />}
+          {uploadProgress && (isSaving || isUploading) && <UploadProgressBar progress={uploadProgress} />}
           <EditorToolbar
             variant={variant}
             hideCancel={isFullscreenCompose}

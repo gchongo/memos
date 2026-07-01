@@ -42,6 +42,9 @@ export default defineConfig({
       "@/": `${resolve(__dirname, "src")}/`,
     },
   },
+  optimizeDeps: {
+    exclude: ["@ffmpeg/ffmpeg", "@ffmpeg/util"],
+  },
   build: {
     rolldownOptions: {
       output: {

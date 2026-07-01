@@ -1,6 +1,6 @@
 import type { EditorMode } from "../editorMode";
 import type { LocalFile } from "../types/attachment";
-import type { EditorAction, EditorState, LoadingKey } from "./types";
+import type { EditorAction, EditorState, LoadingKey, UploadProgressState } from "./types";
 
 export const editorActions = {
   initMemo: (payload: { content: string; metadata: EditorState["metadata"]; timestamps: EditorState["timestamps"] }): EditorAction => ({
@@ -40,6 +40,11 @@ export const editorActions = {
   setLoading: (key: LoadingKey, value: boolean): EditorAction => ({
     type: "SET_LOADING",
     payload: { key, value },
+  }),
+
+  setUploadProgress: (progress: UploadProgressState | null): EditorAction => ({
+    type: "SET_UPLOAD_PROGRESS",
+    payload: progress,
   }),
 
   setTimestamps: (timestamps: Partial<EditorState["timestamps"]>): EditorAction => ({

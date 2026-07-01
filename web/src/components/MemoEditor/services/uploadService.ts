@@ -1,37 +1,106 @@
 import { create } from "@bufbuild/protobuf";
 import { attachmentServiceClient } from "@/connect";
 import type { Attachment } from "@/types/proto/api/v1/attachment_service_pb";
-import { AttachmentSchema, MotionMediaSchema } from "@/types/proto/api/v1/attachment_service_pb";
+import { AttachmentSchema, CreateAttachmentRequestSchema, MotionMediaSchema } from "@/types/proto/api/v1/attachment_service_pb";
 import { compressImageFile } from "@/utils/compress-image";
-import { inferMimeTypeFromFilename } from "../hooks/useFileUpload";
+import { compressVideoFile } from "@/utils/compress-video";
+import { connectUnaryUpload } from "@/utils/connectUnaryUpload";
+import { inferMimeTypeFromFilename, isVideoFile } from "../hooks/useFileUpload";
 import type { LocalFile } from "../types/attachment";
+import { reportUploadProgress, type UploadProgressCallback } from "./uploadProgress";
+
+const CREATE_ATTACHMENT_PROCEDURE = "/memos.api.v1.AttachmentService/CreateAttachment";
+
+const prepareUploadFile = async (
+  localFile: LocalFile,
+  fileIndex: number,
+  fileCount: number,
+  onProgress?: UploadProgressCallback,
+): Promise<File> => {
+  let { file, motionMedia } = localFile;
+  const mimeType = file.type || inferMimeTypeFromFilename(file.name) || "application/octet-stream";
+
+  if (mimeType.startsWith("image/")) {
+    reportUploadProgress(onProgress, fileIndex, fileCount, file.name, "compressing", 0);
+    file = await compressImageFile(file);
+    reportUploadProgress(onProgress, fileIndex, fileCount, file.name, "compressing", 1);
+    return file;
+  }
+
+  if (isVideoFile(file) && !motionMedia) {
+    reportUploadProgress(onProgress, fileIndex, fileCount, file.name, "compressing", 0);
+    file = await compressVideoFile(file, (ratio) => {
+      reportUploadProgress(onProgress, fileIndex, fileCount, file.name, "compressing", ratio);
+    });
+    reportUploadProgress(onProgress, fileIndex, fileCount, file.name, "compressing", 1);
+    return file;
+  }
+
+  return file;
+};
+
+const uploadPreparedFile = async (
+  file: File,
+  motionMedia: LocalFile["motionMedia"],
+  fileIndex: number,
+  fileCount: number,
+  onProgress?: UploadProgressCallback,
+): Promise<Attachment> => {
+  const mimeType = file.type || inferMimeTypeFromFilename(file.name) || "application/octet-stream";
+  const buffer = new Uint8Array(await file.arrayBuffer());
+  const request = create(CreateAttachmentRequestSchema, {
+    attachment: create(AttachmentSchema, {
+      filename: file.name,
+      size: BigInt(file.size),
+      type: file.type || mimeType,
+      content: buffer,
+      motionMedia: motionMedia ? create(MotionMediaSchema, motionMedia) : undefined,
+    }),
+  });
+
+  reportUploadProgress(onProgress, fileIndex, fileCount, file.name, "uploading", 0);
+
+  try {
+    return await connectUnaryUpload(
+      CREATE_ATTACHMENT_PROCEDURE,
+      CreateAttachmentRequestSchema,
+      AttachmentSchema,
+      request,
+      (loaded, total) => {
+        reportUploadProgress(onProgress, fileIndex, fileCount, file.name, "uploading", total > 0 ? loaded / total : 0);
+      },
+    );
+  } catch {
+    const attachment = await attachmentServiceClient.createAttachment({ attachment: request.attachment });
+    reportUploadProgress(onProgress, fileIndex, fileCount, file.name, "uploading", 1);
+    return attachment;
+  }
+};
 
 export const uploadService = {
-  async uploadFiles(localFiles: LocalFile[]): Promise<Attachment[]> {
-    if (localFiles.length === 0) return [];
+  async uploadFiles(localFiles: LocalFile[], onProgress?: UploadProgressCallback): Promise<Attachment[]> {
+    if (localFiles.length === 0) {
+      return [];
+    }
 
     const attachments: Attachment[] = [];
 
-    for (const localFile of localFiles) {
-      let { file, motionMedia } = localFile;
-      const mimeType = file.type || inferMimeTypeFromFilename(file.name) || "application/octet-stream";
-      if (mimeType.startsWith("image/")) {
-        file = await compressImageFile(file);
-      }
-
-      const buffer = new Uint8Array(await file.arrayBuffer());
-      const attachment = await attachmentServiceClient.createAttachment({
-        attachment: create(AttachmentSchema, {
-          filename: file.name,
-          size: BigInt(file.size),
-          type: file.type || mimeType,
-          content: buffer,
-          motionMedia: motionMedia ? create(MotionMediaSchema, motionMedia) : undefined,
-        }),
-      });
+    for (const [fileIndex, localFile] of localFiles.entries()) {
+      const file = await prepareUploadFile(localFile, fileIndex, localFiles.length, onProgress);
+      const attachment = await uploadPreparedFile(file, localFile.motionMedia, fileIndex, localFiles.length, onProgress);
       attachments.push(attachment);
     }
+
+    onProgress?.({
+      phase: "uploading",
+      percent: 100,
+      fileIndex: localFiles.length,
+      fileCount: localFiles.length,
+      filename: localFiles.at(-1)?.file.name ?? "",
+    });
 
     return attachments;
   },
 };
+
+export type { UploadProgressCallback, UploadProgressUpdate } from "./uploadProgress";

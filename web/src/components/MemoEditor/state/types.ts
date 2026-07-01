@@ -6,6 +6,16 @@ import type { LocalFile } from "../types/attachment";
 
 export type LoadingKey = "saving" | "uploading" | "loading";
 
+export type UploadProgressPhase = "compressing" | "uploading";
+
+export interface UploadProgressState {
+  phase: UploadProgressPhase;
+  percent: number;
+  fileIndex: number;
+  fileCount: number;
+  filename: string;
+}
+
 export interface EditorState {
   content: string;
   metadata: {
@@ -22,6 +32,7 @@ export interface EditorState {
       loading: boolean;
     };
     editorMode: EditorMode;
+    uploadProgress: UploadProgressState | null;
   };
   timestamps: {
     createTime?: Date;
@@ -42,6 +53,7 @@ export type EditorAction =
   | { type: "SET_LOCAL_FILES"; payload: LocalFile[] }
   | { type: "TOGGLE_FOCUS_MODE" }
   | { type: "SET_LOADING"; payload: { key: LoadingKey; value: boolean } }
+  | { type: "SET_UPLOAD_PROGRESS"; payload: UploadProgressState | null }
   | { type: "SET_TIMESTAMPS"; payload: Partial<EditorState["timestamps"]> }
   | { type: "SET_RECORDER_BUSY"; payload: boolean }
   | { type: "SET_EDITOR_MODE"; payload: EditorMode }
@@ -66,6 +78,7 @@ const defaultState: EditorState = {
       loading: false,
     },
     editorMode: "wysiwyg",
+    uploadProgress: null,
   },
   timestamps: {
     createTime: undefined,
