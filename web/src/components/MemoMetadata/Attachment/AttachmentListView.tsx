@@ -97,12 +97,14 @@ const VisualTile = ({
   );
 };
 
-const VideoVisualShell = ({
-  className,
-  tileClassName = FEED_VIDEO_SHELL_CLASS,
-  children,
-}: PropsWithChildren<{ className?: string; tileClassName?: string }>) => (
-  <div className={cn(tileClassName, className)} data-no-memo-nav data-memo-media-preview>
+const VideoVisualShell = ({ className, children }: PropsWithChildren<{ className?: string }>) => (
+  <div
+    className={cn(FEED_VIDEO_SHELL_CLASS, className)}
+    data-no-memo-nav
+    data-memo-media-preview
+    onClick={(event) => event.stopPropagation()}
+    onPointerDown={(event) => event.stopPropagation()}
+  >
     {children}
   </div>
 );
@@ -124,7 +126,7 @@ const CollageVisualItem = ({
 
   if (item.kind === "video") {
     return (
-      <VideoVisualShell className={cn("block h-full w-full", className)} tileClassName={tileClassName}>
+      <VideoVisualShell className={cn("block h-full w-full", className)}>
         <InlineFeedVideo
           variant="collage"
           sourceUrl={item.sourceUrl}
@@ -138,7 +140,12 @@ const CollageVisualItem = ({
   }
 
   return (
-    <VisualTile className={cn("block h-full w-full", className)} onPreview={onPreview} overlayLabel={overlayLabel} tileClassName={tileClassName}>
+    <VisualTile
+      className={cn("block h-full w-full", className)}
+      onPreview={onPreview}
+      overlayLabel={overlayLabel}
+      tileClassName={tileClassName}
+    >
       {item.kind === "motion" && motionPreviewProps ? (
         <MotionPhotoPreview
           posterUrl={item.posterUrl}
@@ -156,15 +163,7 @@ const CollageVisualItem = ({
   );
 };
 
-const SingleVisualItem = ({
-  item,
-  onPreview,
-  tileClassName,
-}: {
-  item: VisualItem;
-  onPreview?: () => void;
-  tileClassName?: string;
-}) => {
+const SingleVisualItem = ({ item, onPreview, tileClassName }: { item: VisualItem; onPreview?: () => void; tileClassName?: string }) => {
   const motionPreviewProps = item.kind === "motion" ? getMotionPreviewProps(item) : undefined;
 
   if (item.kind === "image") {
@@ -194,13 +193,8 @@ const SingleVisualItem = ({
 
   if (item.kind === "video") {
     return (
-      <VideoVisualShell className="inline-block max-w-full" tileClassName={tileClassName}>
-        <InlineFeedVideo
-          variant="feed"
-          sourceUrl={item.sourceUrl}
-          posterUrl={item.posterUrl}
-          alt={item.filename}
-        />
+      <VideoVisualShell className="inline-block max-w-full">
+        <InlineFeedVideo variant="feed" sourceUrl={item.sourceUrl} posterUrl={item.posterUrl} alt={item.filename} />
       </VideoVisualShell>
     );
   }
@@ -281,10 +275,7 @@ const Divider = () => <div className="border-t border-border/70 opacity-80" />;
 const AttachmentListView = ({ attachments, onImagePreview }: AttachmentListViewProps) => {
   const { visual, audio, docs } = useMemo(() => separateAttachments(attachments), [attachments]);
   const visualItems = useMemo(() => buildAttachmentVisualItems(visual), [visual]);
-  const previewItems = useMemo(
-    () => visualItems.filter((item) => item.kind !== "video").map((item) => item.previewItem),
-    [visualItems],
-  );
+  const previewItems = useMemo(() => visualItems.filter((item) => item.kind !== "video").map((item) => item.previewItem), [visualItems]);
   const hasVisual = visualItems.length > 0;
   const hasAudio = audio.length > 0;
   const hasDocs = docs.length > 0;
@@ -305,12 +296,7 @@ const AttachmentListView = ({ attachments, onImagePreview }: AttachmentListViewP
       {hasAudio && <AudioList attachments={audio.filter(isAudioAttachment)} compact />}
       {hasMedia && hasDocs && <Divider />}
       {hasDocs && (
-        <MetadataSection
-          icon={PaperclipIcon}
-          title="Attachments"
-          count={docs.length}
-          contentClassName="flex flex-col gap-2 p-2"
-        >
+        <MetadataSection icon={PaperclipIcon} title="Attachments" count={docs.length} contentClassName="flex flex-col gap-2 p-2">
           <DocsList attachments={docs} />
         </MetadataSection>
       )}
