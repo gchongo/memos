@@ -1,6 +1,7 @@
 import { create } from "@bufbuild/protobuf";
+import { attachmentServiceClient } from "@/connect";
 import type { Attachment } from "@/types/proto/api/v1/attachment_service_pb";
-import { AttachmentSchema, MotionMediaSchema } from "@/types/proto/api/v1/attachment_service_pb";
+import { AttachmentSchema, CreateAttachmentRequestSchema, MotionMediaSchema } from "@/types/proto/api/v1/attachment_service_pb";
 import { compressImageFile } from "@/utils/compress-image";
 import { prepareVideoUpload } from "@/utils/compress-video";
 import { sendConnectUpload } from "@/utils/connectUnaryUpload";
@@ -44,6 +45,40 @@ const isRetryableUploadError = (error: unknown): boolean => {
   return message === "Network error during upload" || message === "Upload timed out";
 };
 
+const isHttpUploadError = (error: unknown): boolean => {
+  const message = error instanceof Error ? error.message : "";
+  return /^Upload failed \(\d+\)$/.test(message);
+};
+
+const uploadViaConnectClient = async (
+  file: File,
+  attachmentId: string,
+  mimeType: string,
+  motionMedia: LocalFile["motionMedia"],
+  thumbnail: Uint8Array | undefined,
+  fileIndex: number,
+  fileCount: number,
+  onProgress?: UploadProgressCallback,
+): Promise<Attachment> => {
+  const buffer = new Uint8Array(await file.arrayBuffer());
+  const request = create(CreateAttachmentRequestSchema, {
+    attachmentId,
+    attachment: create(AttachmentSchema, {
+      filename: file.name,
+      size: BigInt(file.size),
+      type: mimeType,
+      content: buffer,
+      thumbnail: thumbnail ?? new Uint8Array(0),
+      motionMedia: motionMedia ? create(MotionMediaSchema, motionMedia) : undefined,
+    }),
+  });
+
+  reportUploadProgress(onProgress, fileIndex, fileCount, file.name, "uploading", 0);
+  const attachment = await attachmentServiceClient.createAttachment({ attachment: request.attachment, attachmentId });
+  reportUploadProgress(onProgress, fileIndex, fileCount, file.name, "uploading", 1);
+  return attachment;
+};
+
 const uploadPreparedFile = async (
   file: File,
   motionMedia: LocalFile["motionMedia"],
@@ -73,11 +108,19 @@ const uploadPreparedFile = async (
   try {
     return await sendConnectUpload(CREATE_ATTACHMENT_PROCEDURE, AttachmentSchema, body, reportProgress);
   } catch (error) {
-    if (!isRetryableUploadError(error)) {
-      throw error;
+    if (isRetryableUploadError(error)) {
+      try {
+        return await sendConnectUpload(CREATE_ATTACHMENT_PROCEDURE, AttachmentSchema, body, reportProgress);
+      } catch {
+        return uploadViaConnectClient(file, attachmentId, mimeType, motionMedia, thumbnail, fileIndex, fileCount, onProgress);
+      }
     }
 
-    return await sendConnectUpload(CREATE_ATTACHMENT_PROCEDURE, AttachmentSchema, body, reportProgress);
+    if (isHttpUploadError(error)) {
+      return uploadViaConnectClient(file, attachmentId, mimeType, motionMedia, thumbnail, fileIndex, fileCount, onProgress);
+    }
+
+    throw error;
   }
 };
 

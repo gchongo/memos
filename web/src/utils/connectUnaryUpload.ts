@@ -42,6 +42,7 @@ export async function sendConnectUpload<TRes extends Message>(
     xhr.withCredentials = true;
     xhr.timeout = CONNECT_TIMEOUT_MS;
     xhr.setRequestHeader("Content-Type", "application/connect+proto");
+    xhr.setRequestHeader("Accept", "application/connect+proto");
     xhr.setRequestHeader("Connect-Protocol-Version", "1");
     xhr.setRequestHeader("Connect-Timeout-Ms", String(CONNECT_TIMEOUT_MS));
     if (token) {
@@ -82,7 +83,7 @@ export async function sendConnectUpload<TRes extends Message>(
 
     xhr.onerror = () => reject(new Error("Network error during upload"));
     xhr.ontimeout = () => reject(new Error("Upload timed out"));
-    xhr.send(body);
+    xhr.send(new Blob([body], { type: "application/connect+proto" }));
   });
 }
 
