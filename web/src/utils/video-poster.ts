@@ -235,17 +235,27 @@ export const extractPosterBytesFromFile = async (file: File): Promise<Uint8Array
     }
   });
 
-export const verifyPosterUrl = (posterUrl: string): Promise<boolean> =>
-  withTimeout(
-    new Promise((resolve) => {
-      const img = new Image();
-      img.onload = () => resolve(true);
-      img.onerror = () => resolve(false);
-      img.src = posterUrl;
-    }),
-    POSTER_TIMEOUT_MS,
-    false,
-  );
+export const verifyPosterUrl = async (posterUrl: string): Promise<boolean> => {
+  try {
+    const response = await withTimeout(
+      fetch(posterUrl, {
+        method: "HEAD",
+        credentials: "include",
+      }),
+      POSTER_TIMEOUT_MS,
+      null as Response | null,
+    );
+
+    if (!response?.ok) {
+      return false;
+    }
+
+    const contentType = response.headers.get("content-type") ?? "";
+    return contentType.startsWith("image/");
+  } catch {
+    return false;
+  }
+};
 
 export const resolveVideoPosterUrl = async (sourceUrl: string, posterUrl?: string): Promise<string | undefined> => {
   const candidatePoster = posterUrl && posterUrl !== sourceUrl ? posterUrl : undefined;

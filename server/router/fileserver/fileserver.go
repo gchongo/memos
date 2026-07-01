@@ -12,6 +12,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -126,6 +127,7 @@ func NewFileServerService(profile *profile.Profile, store *store.Store, secret s
 func (s *FileServerService) RegisterRoutes(echoServer *echo.Echo) {
 	fileGroup := echoServer.Group("/file")
 	fileGroup.GET("/attachments/:uid/:filename", s.serveAttachmentFile)
+	fileGroup.HEAD("/attachments/:uid/:filename", s.serveAttachmentFile)
 	fileGroup.GET("/users/:identifier/avatar", s.serveUserAvatar)
 	fileGroup.GET("/users/:identifier/cover", s.serveUserCover)
 }
@@ -259,12 +261,20 @@ func (s *FileServerService) serveVideoThumbnail(c *echo.Context, attachment *sto
 		blob, err = s.readCachedThumbnail(legacyPath)
 	}
 	if err != nil {
+		if c.Request().Method == http.MethodHead {
+			return c.NoContent(http.StatusNotFound)
+		}
 		return echo.NewHTTPError(http.StatusNotFound, "video thumbnail not found")
 	}
 
 	setSecurityHeaders(c)
 	c.Response().Header().Set(echo.HeaderContentType, "image/jpeg")
 	c.Response().Header().Set(echo.HeaderCacheControl, cacheMaxAge)
+	c.Response().Header().Set(echo.HeaderContentLength, strconv.Itoa(len(blob)))
+
+	if c.Request().Method == http.MethodHead {
+		return c.NoContent(http.StatusOK)
+	}
 
 	return c.Blob(http.StatusOK, "image/jpeg", blob)
 }

@@ -25,7 +25,7 @@
           if (stored) {
             theme = resolveTheme(stored);
           }
-        } catch (error) {
+        } catch (_error) {
           theme = "x-dark";
         }
 
@@ -34,7 +34,6 @@
         html.style.backgroundColor = background;
         html.style.colorScheme = theme.indexOf("dark") >= 0 || theme === "x-dark" ? "dark" : "light";
         html.setAttribute("data-theme", theme);
-        document.body.style.backgroundColor = background;
 
         var meta = document.querySelector('meta[name="theme-color"]');
         if (meta) {
@@ -79,6 +78,10 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <style>
+      body {
+        background-color: inherit;
+      }
+
       #app-splash {
         position: fixed;
         inset: 0;

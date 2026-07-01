@@ -68,12 +68,14 @@ const SheetContent = React.forwardRef<
             "data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom inset-x-0 bottom-0 h-auto border-t",
           className,
         )}
-        onOpenAutoFocus={(e) => {
-          e.preventDefault();
+        onOpenAutoFocus={(event) => {
+          event.currentTarget.focus({ preventScroll: true });
         }}
         onCloseAutoFocus={(e) => {
           e.preventDefault();
-          document.body.style.pointerEvents = "auto";
+          if (document.body) {
+            document.body.style.pointerEvents = "auto";
+          }
         }}
         {...props}
       >

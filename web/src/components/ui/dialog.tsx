@@ -63,12 +63,14 @@ const DialogContent = React.forwardRef<
     <DialogPrimitive.Content
       ref={ref}
       className={cn(dialogContentVariants({ size }), className)}
-      onOpenAutoFocus={(e) => {
-        e.preventDefault();
+      onOpenAutoFocus={(event) => {
+        event.currentTarget.focus({ preventScroll: true });
       }}
       onCloseAutoFocus={(e) => {
         e.preventDefault();
-        document.body.style.pointerEvents = "auto";
+        if (document.body) {
+          document.body.style.pointerEvents = "auto";
+        }
       }}
       {...props}
     >

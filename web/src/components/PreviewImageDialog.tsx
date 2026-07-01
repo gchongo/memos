@@ -1,10 +1,11 @@
 import { ChevronLeft, ChevronRight, RotateCcw, X, ZoomIn, ZoomOut } from "lucide-react";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import MotionPhotoPreview from "@/components/MotionPhotoPreview";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { VisuallyHidden } from "@/components/ui/visually-hidden";
 import useMediaQuery from "@/hooks/useMediaQuery";
+import { useResolvedVideoPoster } from "@/hooks/useResolvedVideoPoster";
 import { cn } from "@/lib/utils";
 import type { PreviewMediaItem } from "@/utils/media-item";
 
@@ -22,6 +23,25 @@ const ZOOM_STEP = 0.2;
 const DOUBLE_TAP_ZOOM = 2;
 
 const clampZoom = (scale: number) => Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, scale));
+
+const PreviewDialogVideo = ({ sourceUrl, posterUrl, className }: { sourceUrl: string; posterUrl?: string; className?: string }) => {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const resolvedPoster = useResolvedVideoPoster(sourceUrl, posterUrl, videoRef);
+
+  return (
+    <video
+      ref={videoRef}
+      src={sourceUrl}
+      poster={resolvedPoster}
+      className={className}
+      controls
+      controlsList="nodownload"
+      autoPlay
+      playsInline
+      onContextMenu={(event) => event.preventDefault()}
+    />
+  );
+};
 
 const swallowNextPointerClick = () => {
   const consumeEvent = (event: Event) => {
@@ -127,6 +147,11 @@ function PreviewImageDialog({ open, onOpenChange, imgUrls = [], items, initialIn
         className="!fixed !inset-0 !top-0 !left-0 !h-[100vh] !w-[100vw] !max-h-[100vh] !max-w-[100vw] !translate-x-0 !translate-y-0 overflow-hidden border-0 bg-black/92 p-0 shadow-none"
         onPointerDownOutside={(event) => event.preventDefault()}
         onInteractOutside={(event) => event.preventDefault()}
+        onOpenAutoFocus={(event) => {
+          event.preventDefault();
+          const closeButton = event.currentTarget.querySelector<HTMLButtonElement>('[aria-label="Close preview"]');
+          closeButton?.focus({ preventScroll: true });
+        }}
       >
         <VisuallyHidden>
           <DialogTitle>{currentItem.filename || "Attachment preview"}</DialogTitle>
@@ -186,16 +211,11 @@ function PreviewImageDialog({ open, onOpenChange, imgUrls = [], items, initialIn
             onWheel={handleWheel}
           >
             {currentItem.kind === "video" ? (
-              <video
+              <PreviewDialogVideo
                 key={currentItem.id}
-                src={currentItem.sourceUrl}
-                poster={currentItem.posterUrl}
+                sourceUrl={currentItem.sourceUrl}
+                posterUrl={currentItem.posterUrl}
                 className="max-h-[calc(100vh-8rem)] max-w-[calc(100vw-1.5rem)] rounded-md object-contain sm:max-h-[calc(100vh-7rem)] sm:max-w-[calc(100vw-8rem)]"
-                controls
-                controlsList="nodownload"
-                autoPlay
-                playsInline
-                onContextMenu={(event) => event.preventDefault()}
               />
             ) : currentItem.kind === "motion" ? (
               <MotionPhotoPreview
