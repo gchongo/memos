@@ -7,6 +7,7 @@ const POSTER_MAX_DIMENSION = 600;
 const MAX_POSTER_BYTES = 512 * 1024;
 const SKIP_BELOW_BYTES = 8 * 1024 * 1024;
 const POSTER_JPEG_QUALITY = 0.82;
+const MIN_VALID_VIDEO_BYTES = 32 * 1024;
 
 export interface VideoUploadPreparation {
   file: File;
@@ -84,6 +85,26 @@ const probeVideoDimensions = (file: File): Promise<{ width: number; height: numb
     video.src = url;
   });
 
+const canPlayVideoFile = (file: File): Promise<boolean> =>
+  new Promise((resolve) => {
+    const url = URL.createObjectURL(file);
+    const video = document.createElement("video");
+    video.preload = "metadata";
+    video.muted = true;
+    video.playsInline = true;
+
+    const finish = (ok: boolean) => {
+      video.removeAttribute("src");
+      video.load();
+      URL.revokeObjectURL(url);
+      resolve(ok);
+    };
+
+    video.onloadedmetadata = () => finish(true);
+    video.onerror = () => finish(false);
+    video.src = url;
+  });
+
 export const shouldCompressVideo = async (file: File): Promise<boolean> => {
   if (!file.type.startsWith("video/") && !/\.(mp4|mov|m4v|webm|mkv|avi|3gp|3g2)$/i.test(file.name)) {
     return false;
@@ -126,37 +147,6 @@ const getFFmpeg = async (): Promise<FFmpeg> => {
   }
 
   return ffmpegLoadPromise;
-};
-
-const extractPosterWithFfmpeg = async (ffmpeg: FFmpeg, inputName: string): Promise<Uint8Array | null> => {
-  const posterName = "poster.jpg";
-
-  try {
-    await ffmpeg.exec([
-      "-ss",
-      "0",
-      "-i",
-      inputName,
-      "-vframes",
-      "1",
-      "-vf",
-      `scale=${POSTER_MAX_DIMENSION}:${POSTER_MAX_DIMENSION}:force_original_aspect_ratio=decrease`,
-      "-q:v",
-      "8",
-      posterName,
-    ]);
-
-    const output = await ffmpeg.readFile(posterName);
-    const bytes = toUint8Array(output);
-    if (bytes.byteLength === 0 || bytes.byteLength > MAX_POSTER_BYTES) {
-      return null;
-    }
-    return bytes;
-  } catch {
-    return null;
-  } finally {
-    await ffmpeg.deleteFile(posterName).catch(() => undefined);
-  }
 };
 
 const extractPosterWithCanvas = async (file: File): Promise<Uint8Array | null> => {
@@ -203,82 +193,136 @@ const extractPosterWithCanvas = async (file: File): Promise<Uint8Array | null> =
   }
 };
 
-/** Compress video when needed and extract a small JPEG poster from the first frame. */
-export async function prepareVideoUpload(file: File, onProgress?: (ratio: number) => void): Promise<VideoUploadPreparation> {
-  const shouldCompress = await shouldCompressVideo(file);
+const extractPosterWithFfmpeg = async (ffmpeg: FFmpeg, inputName: string): Promise<Uint8Array | null> => {
+  const posterName = "poster.jpg";
 
   try {
-    const ffmpeg = await getFFmpeg();
-    const inputName = "input";
-    const outputName = "output.mp4";
-    let resultFile = file;
-    let posterSource = inputName;
+    await ffmpeg.exec([
+      "-ss",
+      "0",
+      "-i",
+      inputName,
+      "-vframes",
+      "1",
+      "-vf",
+      `scale=${POSTER_MAX_DIMENSION}:${POSTER_MAX_DIMENSION}:force_original_aspect_ratio=decrease`,
+      "-q:v",
+      "8",
+      posterName,
+    ]);
 
-    const progressHandler = ({ progress }: { progress?: number }) => {
-      if (typeof progress === "number" && Number.isFinite(progress)) {
-        onProgress?.(Math.min(0.9, Math.max(0, progress)));
-      }
-    };
-
-    ffmpeg.on("progress", progressHandler);
-
-    try {
-      await ffmpeg.writeFile(inputName, await fetchFile(file));
-
-      if (shouldCompress) {
-        await ffmpeg.exec([
-          "-i",
-          inputName,
-          "-vf",
-          `scale=${MAX_VIDEO_DIMENSION}:${MAX_VIDEO_DIMENSION}:force_original_aspect_ratio=decrease`,
-          "-c:v",
-          "libx264",
-          "-pix_fmt",
-          "yuv420p",
-          "-preset",
-          "ultrafast",
-          "-crf",
-          "28",
-          "-c:a",
-          "aac",
-          "-b:a",
-          "96k",
-          "-movflags",
-          "+faststart",
-          outputName,
-        ]);
-
-        const output = await ffmpeg.readFile(outputName);
-        const bytes = toUint8Array(output);
-        const buffer = new ArrayBuffer(bytes.byteLength);
-        new Uint8Array(buffer).set(bytes);
-        const compressed = new File([buffer], replaceExtension(file.name, ".mp4"), {
-          type: "video/mp4",
-          lastModified: Date.now(),
-        });
-
-        if (compressed.size < file.size || file.type !== "video/mp4") {
-          resultFile = compressed;
-          posterSource = outputName;
-        }
-      }
-
-      const poster =
-        (await extractPosterWithFfmpeg(ffmpeg, posterSource)) ??
-        (await extractPosterWithCanvas(resultFile)) ??
-        (await extractPosterWithCanvas(file));
-      onProgress?.(1);
-      return { file: resultFile, poster: poster ?? undefined };
-    } finally {
-      ffmpeg.off("progress", progressHandler);
-      await ffmpeg.deleteFile(inputName).catch(() => undefined);
-      await ffmpeg.deleteFile(outputName).catch(() => undefined);
+    const output = await ffmpeg.readFile(posterName);
+    const bytes = toUint8Array(output);
+    if (bytes.byteLength === 0 || bytes.byteLength > MAX_POSTER_BYTES) {
+      return null;
     }
+    return bytes;
   } catch {
-    const poster = await extractPosterWithCanvas(file);
-    onProgress?.(1);
-    return { file, poster: poster ?? undefined };
+    return null;
+  } finally {
+    await ffmpeg.deleteFile(posterName).catch(() => undefined);
   }
+};
+
+const compressWithFfmpeg = async (file: File, onProgress?: (ratio: number) => void): Promise<File | null> => {
+  const ffmpeg = await getFFmpeg();
+  const inputName = "input";
+  const outputName = "output.mp4";
+
+  const progressHandler = ({ progress }: { progress?: number }) => {
+    if (typeof progress === "number" && Number.isFinite(progress)) {
+      onProgress?.(Math.min(0.85, Math.max(0, progress)));
+    }
+  };
+
+  ffmpeg.on("progress", progressHandler);
+
+  try {
+    await ffmpeg.writeFile(inputName, await fetchFile(file));
+    await ffmpeg.exec([
+      "-i",
+      inputName,
+      "-vf",
+      `scale=${MAX_VIDEO_DIMENSION}:${MAX_VIDEO_DIMENSION}:force_original_aspect_ratio=decrease`,
+      "-c:v",
+      "libx264",
+      "-pix_fmt",
+      "yuv420p",
+      "-preset",
+      "ultrafast",
+      "-crf",
+      "28",
+      "-c:a",
+      "aac",
+      "-b:a",
+      "96k",
+      "-movflags",
+      "+faststart",
+      outputName,
+    ]);
+
+    const output = await ffmpeg.readFile(outputName);
+    const bytes = toUint8Array(output);
+    if (bytes.byteLength < MIN_VALID_VIDEO_BYTES) {
+      return null;
+    }
+
+    const buffer = new ArrayBuffer(bytes.byteLength);
+    new Uint8Array(buffer).set(bytes);
+    const compressed = new File([buffer], replaceExtension(file.name, ".mp4"), {
+      type: "video/mp4",
+      lastModified: Date.now(),
+    });
+
+    if (!(await canPlayVideoFile(compressed))) {
+      return null;
+    }
+
+    if (compressed.size >= file.size && file.type === "video/mp4") {
+      return null;
+    }
+
+    return compressed;
+  } catch {
+    return null;
+  } finally {
+    ffmpeg.off("progress", progressHandler);
+    await ffmpeg.deleteFile(inputName).catch(() => undefined);
+    await ffmpeg.deleteFile(outputName).catch(() => undefined);
+  }
+};
+
+/** Compress large videos when safe and extract a small JPEG poster from the first frame. */
+export async function prepareVideoUpload(file: File, onProgress?: (ratio: number) => void): Promise<VideoUploadPreparation> {
+  onProgress?.(0.05);
+
+  let resultFile = file;
+  if (await shouldCompressVideo(file)) {
+    const compressed = await compressWithFfmpeg(file, onProgress);
+    if (compressed) {
+      resultFile = compressed;
+    }
+  }
+
+  onProgress?.(0.9);
+  let poster = await extractPosterWithCanvas(resultFile);
+  if (!poster && resultFile !== file) {
+    poster = await extractPosterWithCanvas(file);
+  }
+  if (!poster && (await shouldCompressVideo(file))) {
+    try {
+      const ffmpeg = await getFFmpeg();
+      const inputName = "poster-input";
+      await ffmpeg.writeFile(inputName, await fetchFile(resultFile));
+      poster = await extractPosterWithFfmpeg(ffmpeg, inputName);
+      await ffmpeg.deleteFile(inputName).catch(() => undefined);
+    } catch {
+      // Ignore poster extraction failures; playback must still work.
+    }
+  }
+
+  onProgress?.(1);
+  return { file: resultFile, poster: poster ?? undefined };
 }
 
 /** @deprecated Use {@link prepareVideoUpload} */

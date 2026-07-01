@@ -13,6 +13,7 @@ import AudioAttachmentItem from "./AudioAttachmentItem";
 import { getAttachmentMetadata, isAudioAttachment, separateAttachments } from "./attachmentHelpers";
 import {
   COVER_MEDIA_CLASS,
+  FEED_VIDEO_SHELL_CLASS,
   FEED_VISUAL_TILE_BUTTON_CLASS,
   MEDIA_HOVER_GRADIENT_CLASS,
   MEDIA_HOVER_SURFACE_CLASS,
@@ -98,16 +99,10 @@ const VisualTile = ({
 
 const VideoVisualShell = ({
   className,
-  tileClassName = FEED_VISUAL_TILE_BUTTON_CLASS,
+  tileClassName = FEED_VIDEO_SHELL_CLASS,
   children,
 }: PropsWithChildren<{ className?: string; tileClassName?: string }>) => (
-  <div
-    className={cn(tileClassName, className)}
-    data-no-memo-nav
-    data-memo-media-preview
-    onClick={(event) => event.stopPropagation()}
-    onPointerDown={(event) => event.stopPropagation()}
-  >
+  <div className={cn(tileClassName, className)} data-no-memo-nav data-memo-media-preview>
     {children}
   </div>
 );
