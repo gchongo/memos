@@ -1,9 +1,9 @@
-import { DownloadIcon, FileIcon, PaperclipIcon, PlayIcon } from "lucide-react";
+import { DownloadIcon, FileIcon, PaperclipIcon } from "lucide-react";
 import type { PropsWithChildren } from "react";
 import { useMemo } from "react";
+import InlineFeedVideo from "@/components/InlineFeedVideo";
 import MetadataSection from "@/components/MemoMetadata/MetadataSection";
 import MotionPhotoPreview from "@/components/MotionPhotoPreview";
-import VideoPoster from "@/components/VideoPoster";
 import { cn } from "@/lib/utils";
 import type { Attachment } from "@/types/proto/api/v1/attachment_service_pb";
 import { getAttachmentUrl } from "@/utils/attachment";
@@ -12,7 +12,6 @@ import { buildAttachmentVisualItems } from "@/utils/media-item";
 import AudioAttachmentItem from "./AudioAttachmentItem";
 import { getAttachmentMetadata, isAudioAttachment, separateAttachments } from "./attachmentHelpers";
 import {
-  COLLAGE_VIDEO_PLAY_BADGE_CLASS,
   COVER_MEDIA_CLASS,
   FEED_VISUAL_TILE_BUTTON_CLASS,
   MEDIA_HOVER_GRADIENT_CLASS,
@@ -98,15 +97,20 @@ const VisualTile = ({
   );
 };
 
-const VideoPlayBadge = ({ className, children }: PropsWithChildren<{ className?: string }>) => (
-  <span
-    className={cn(
-      "pointer-events-none absolute inline-flex items-center justify-center rounded-full bg-background/85 text-foreground shadow-sm backdrop-blur-sm",
-      className,
-    )}
+const VideoVisualShell = ({
+  className,
+  tileClassName = FEED_VISUAL_TILE_BUTTON_CLASS,
+  children,
+}: PropsWithChildren<{ className?: string; tileClassName?: string }>) => (
+  <div
+    className={cn(tileClassName, className)}
+    data-no-memo-nav
+    data-memo-media-preview
+    onClick={(event) => event.stopPropagation()}
+    onPointerDown={(event) => event.stopPropagation()}
   >
     {children}
-  </span>
+  </div>
 );
 
 const CollageVisualItem = ({
@@ -124,18 +128,23 @@ const CollageVisualItem = ({
 }) => {
   const motionPreviewProps = item.kind === "motion" ? getMotionPreviewProps(item) : undefined;
 
+  if (item.kind === "video") {
+    return (
+      <VideoVisualShell className={cn("block h-full w-full", className)} tileClassName={tileClassName}>
+        <InlineFeedVideo
+          sourceUrl={item.sourceUrl}
+          posterUrl={item.posterUrl}
+          alt={item.filename}
+          className={cn(COVER_MEDIA_CLASS, "h-full")}
+        />
+        {overlayLabel && <div className={OVERFLOW_TILE_OVERLAY_CLASS}>{overlayLabel}</div>}
+      </VideoVisualShell>
+    );
+  }
+
   return (
     <VisualTile className={cn("block h-full w-full", className)} onPreview={onPreview} overlayLabel={overlayLabel} tileClassName={tileClassName}>
-      {item.kind === "video" ? (
-        <>
-          <VideoPoster sourceUrl={item.sourceUrl} posterUrl={item.posterUrl} alt={item.filename} className={COVER_MEDIA_CLASS} />
-          {!overlayLabel && (
-            <VideoPlayBadge className={COLLAGE_VIDEO_PLAY_BADGE_CLASS}>
-              <PlayIcon className="h-3.5 w-3.5 fill-current" />
-            </VideoPlayBadge>
-          )}
-        </>
-      ) : item.kind === "motion" && motionPreviewProps ? (
+      {item.kind === "motion" && motionPreviewProps ? (
         <MotionPhotoPreview
           posterUrl={item.posterUrl}
           motionUrl={motionPreviewProps.motionUrl}
@@ -188,17 +197,20 @@ const SingleVisualItem = ({
     );
   }
 
-  return (
-    <VisualTile className={cn("block", SINGLE_VIDEO_CARD_WIDTH_CLASS)} onPreview={onPreview} tileClassName={tileClassName}>
-      <div className="relative aspect-video bg-black/5">
-        <VideoPoster sourceUrl={item.sourceUrl} posterUrl={item.posterUrl} alt={item.filename} className={COVER_MEDIA_CLASS} />
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/35 via-black/5 to-transparent" />
-        <VideoPlayBadge className="bottom-3 right-3 h-9 w-9">
-          <PlayIcon className="h-4 w-4 fill-current" />
-        </VideoPlayBadge>
-      </div>
-    </VisualTile>
-  );
+  if (item.kind === "video") {
+    return (
+      <VideoVisualShell className={cn("block", SINGLE_VIDEO_CARD_WIDTH_CLASS)} tileClassName={tileClassName}>
+        <InlineFeedVideo
+          sourceUrl={item.sourceUrl}
+          posterUrl={item.posterUrl}
+          alt={item.filename}
+          className="aspect-video object-contain"
+        />
+      </VideoVisualShell>
+    );
+  }
+
+  return null;
 };
 
 const VisualGallery = ({
@@ -219,7 +231,11 @@ const VisualGallery = ({
   if (layout.mode === "single") {
     return (
       <div className="w-full">
-        <SingleVisualItem item={layout.item} onPreview={() => onPreview?.(layout.item.id)} tileClassName={tileClassName} />
+        <SingleVisualItem
+          item={layout.item}
+          onPreview={layout.item.kind === "video" ? undefined : () => onPreview?.(layout.item.id)}
+          tileClassName={tileClassName}
+        />
       </div>
     );
   }
@@ -232,7 +248,7 @@ const VisualGallery = ({
           item={item}
           className={className}
           overlayLabel={overlayLabel}
-          onPreview={() => onPreview?.(item.id)}
+          onPreview={item.kind === "video" ? undefined : () => onPreview?.(item.id)}
           tileClassName={tileClassName}
         />
       ))}
@@ -270,7 +286,10 @@ const Divider = () => <div className="border-t border-border/70 opacity-80" />;
 const AttachmentListView = ({ attachments, onImagePreview }: AttachmentListViewProps) => {
   const { visual, audio, docs } = useMemo(() => separateAttachments(attachments), [attachments]);
   const visualItems = useMemo(() => buildAttachmentVisualItems(visual), [visual]);
-  const previewItems = useMemo(() => visualItems.map((item) => item.previewItem), [visualItems]);
+  const previewItems = useMemo(
+    () => visualItems.filter((item) => item.kind !== "video").map((item) => item.previewItem),
+    [visualItems],
+  );
   const hasVisual = visualItems.length > 0;
   const hasAudio = audio.length > 0;
   const hasDocs = docs.length > 0;
