@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { getNaturalMediaFitStyle } from "@/utils/naturalMediaFit";
 
@@ -13,8 +13,35 @@ interface InlineFeedVideoProps {
 
 const InlineFeedVideo = ({ sourceUrl, posterUrl, alt, className, variant = "feed" }: InlineFeedVideoProps) => {
   const [mediaSize, setMediaSize] = useState<{ width: number; height: number } | null>(null);
+  const [resolvedPoster, setResolvedPoster] = useState<string | undefined>();
 
-  const poster = posterUrl && posterUrl !== sourceUrl ? posterUrl : undefined;
+  const candidatePoster = posterUrl && posterUrl !== sourceUrl ? posterUrl : undefined;
+
+  useEffect(() => {
+    if (!candidatePoster) {
+      setResolvedPoster(undefined);
+      return;
+    }
+
+    let cancelled = false;
+    const probe = new Image();
+
+    probe.onload = () => {
+      if (!cancelled) {
+        setResolvedPoster(candidatePoster);
+      }
+    };
+    probe.onerror = () => {
+      if (!cancelled) {
+        setResolvedPoster(undefined);
+      }
+    };
+    probe.src = candidatePoster;
+
+    return () => {
+      cancelled = true;
+    };
+  }, [candidatePoster]);
 
   const handleLoadedMetadata = useCallback((event: React.SyntheticEvent<HTMLVideoElement>) => {
     const video = event.currentTarget;
@@ -31,7 +58,7 @@ const InlineFeedVideo = ({ sourceUrl, posterUrl, alt, className, variant = "feed
     return (
       <video
         src={sourceUrl}
-        poster={poster}
+        poster={resolvedPoster}
         className={cn("h-full w-full object-cover", className)}
         controls
         playsInline
@@ -53,15 +80,24 @@ const InlineFeedVideo = ({ sourceUrl, posterUrl, alt, className, variant = "feed
       )}
       style={mediaSize ? getNaturalMediaFitStyle(mediaSize.width, mediaSize.height) : undefined}
     >
+      {resolvedPoster && (
+        <img
+          src={resolvedPoster}
+          alt=""
+          aria-hidden
+          className="pointer-events-none absolute inset-0 z-[1] h-full w-full rounded-2xl object-contain"
+        />
+      )}
       <video
         src={sourceUrl}
-        poster={poster}
-        className="block h-full w-full rounded-2xl object-contain"
+        poster={resolvedPoster}
+        className="relative z-[2] block h-full w-full rounded-2xl object-contain"
         controls
         playsInline
         preload="metadata"
         aria-label={alt}
         onLoadedMetadata={handleLoadedMetadata}
+        onPlay={stopPropagation}
         onClick={stopPropagation}
         onPointerDown={stopPropagation}
       />

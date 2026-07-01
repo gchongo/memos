@@ -27,10 +27,13 @@ func saveVideoThumbnailCache(profile *profile.Profile, uid string, data []byte) 
 		return errors.Wrap(err, "failed to create thumbnail cache folder")
 	}
 
-	cachePath := filepath.Join(cacheDir, uid+".jpeg")
+	cachePath := filepath.Join(cacheDir, uid+".v2.jpeg")
 	if err := os.WriteFile(cachePath, data, 0o644); err != nil {
 		return errors.Wrap(err, "failed to write video thumbnail cache")
 	}
+
+	// Remove legacy filename written by an earlier version.
+	_ = os.Remove(filepath.Join(cacheDir, uid+".jpeg"))
 
 	return nil
 }

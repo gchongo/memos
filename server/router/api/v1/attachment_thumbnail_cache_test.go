@@ -20,7 +20,7 @@ func TestSaveVideoThumbnailCache(t *testing.T) {
 
 	require.NoError(t, saveVideoThumbnailCache(profile, uid, data))
 
-	cachePath := filepath.Join(dir, attachmentThumbnailCacheFolder, uid+".jpeg")
+	cachePath := filepath.Join(dir, attachmentThumbnailCacheFolder, uid+".v2.jpeg")
 	saved, err := os.ReadFile(cachePath)
 	require.NoError(t, err)
 	require.Equal(t, data, saved)

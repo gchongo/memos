@@ -168,8 +168,12 @@ const extractPosterWithCanvas = async (file: File): Promise<Uint8Array | null> =
 
   try {
     await new Promise<void>((resolve, reject) => {
-      video.onloadeddata = () => resolve();
-      video.onerror = () => reject(new Error("Failed to decode video frame"));
+      const fail = () => reject(new Error("Failed to decode video frame"));
+      video.onerror = fail;
+      video.onloadeddata = () => {
+        video.currentTime = 0.001;
+      };
+      video.onseeked = () => resolve();
       video.src = url;
     });
 
@@ -259,7 +263,10 @@ export async function prepareVideoUpload(file: File, onProgress?: (ratio: number
         }
       }
 
-      const poster = (await extractPosterWithFfmpeg(ffmpeg, posterSource)) ?? (await extractPosterWithCanvas(resultFile));
+      const poster =
+        (await extractPosterWithFfmpeg(ffmpeg, posterSource)) ??
+        (await extractPosterWithCanvas(resultFile)) ??
+        (await extractPosterWithCanvas(file));
       onProgress?.(1);
       return { file: resultFile, poster: poster ?? undefined };
     } finally {

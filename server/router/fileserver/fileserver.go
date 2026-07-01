@@ -246,6 +246,10 @@ func (s *FileServerService) serveVideoThumbnail(c *echo.Context, attachment *sto
 
 	blob, err := s.readCachedThumbnail(thumbnailPath)
 	if err != nil {
+		legacyPath := filepath.Join(s.Profile.Data, ThumbnailCacheFolder, attachment.UID+".jpeg")
+		blob, err = s.readCachedThumbnail(legacyPath)
+	}
+	if err != nil {
 		return echo.NewHTTPError(http.StatusNotFound, "video thumbnail not found")
 	}
 
