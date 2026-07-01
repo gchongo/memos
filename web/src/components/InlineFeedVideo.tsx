@@ -1,3 +1,5 @@
+import { useCallback } from "react";
+import { useResolvedVideoPoster } from "@/hooks/useResolvedVideoPoster";
 import { cn } from "@/lib/utils";
 
 interface InlineFeedVideoProps {
@@ -10,12 +12,16 @@ interface InlineFeedVideoProps {
 }
 
 const InlineFeedVideo = ({ sourceUrl, posterUrl, alt, className, variant = "feed" }: InlineFeedVideoProps) => {
-  const poster = posterUrl && posterUrl !== sourceUrl ? posterUrl : undefined;
+  const resolvedPoster = useResolvedVideoPoster(sourceUrl, posterUrl);
+
+  const stopPropagation = useCallback((event: React.SyntheticEvent) => {
+    event.stopPropagation();
+  }, []);
 
   return (
     <video
       src={sourceUrl}
-      poster={poster}
+      poster={resolvedPoster}
       className={cn(
         variant === "collage" ? "h-full w-full object-cover" : "block max-h-[20rem] w-full max-w-full object-contain",
         className,
@@ -24,8 +30,8 @@ const InlineFeedVideo = ({ sourceUrl, posterUrl, alt, className, variant = "feed
       playsInline
       preload="metadata"
       aria-label={alt}
-      onClick={(event) => event.stopPropagation()}
-      onPointerDown={(event) => event.stopPropagation()}
+      onClick={stopPropagation}
+      onPointerDown={stopPropagation}
     />
   );
 };

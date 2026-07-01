@@ -82,11 +82,12 @@ function attachmentGroupToItem(attachment: Attachment): AttachmentItem {
     filename: attachment.filename,
     category: categorizeFile(attachment.type, undefined, attachment.filename),
     mimeType: attachment.type,
-    thumbnailUrl: attachmentType === "image/*" ? getAttachmentThumbnailUrl(attachment) : sourceUrl,
+    thumbnailUrl: attachmentType === "image/*" || attachmentType === "video/*" ? getAttachmentThumbnailUrl(attachment) : sourceUrl,
     sourceUrl,
     size: Number(attachment.size),
     isLocal: false,
-    isVoiceNote: categorizeFile(attachment.type, undefined, attachment.filename) === "audio" && isAudioRecordingFilename(attachment.filename),
+    isVoiceNote:
+      categorizeFile(attachment.type, undefined, attachment.filename) === "audio" && isAudioRecordingFilename(attachment.filename),
     audioMeta: undefined,
   };
 }
