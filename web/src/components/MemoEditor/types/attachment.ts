@@ -51,11 +51,24 @@ export const getAudioRecordingTimeLabel = (filename: string): string | undefined
   return undefined;
 };
 
-function categorizeFile(mimeType: string, motionMedia?: MotionMedia): FileCategory {
+const VIDEO_FILE_EXTENSION_RE = /\.(mp4|mov|m4v|webm|mkv|avi|3gp|3g2)$/i;
+const AUDIO_FILE_EXTENSION_RE = /\.(mp3|wav|m4a|aac|flac|ogg|opus)$/i;
+
+function inferMimeTypeFromFilename(filename: string): string | undefined {
+  if (VIDEO_FILE_EXTENSION_RE.test(filename)) {
+    return "video/mp4";
+  }
+  if (AUDIO_FILE_EXTENSION_RE.test(filename)) {
+    return "audio/mpeg";
+  }
+  return undefined;
+}
+
+function categorizeFile(mimeType: string, motionMedia?: MotionMedia, filename = ""): FileCategory {
   if (motionMedia) return "motion";
   if (mimeType.startsWith("image/")) return "image";
-  if (mimeType.startsWith("video/")) return "video";
-  if (mimeType.startsWith("audio/")) return "audio";
+  if (mimeType.startsWith("video/") || VIDEO_FILE_EXTENSION_RE.test(filename)) return "video";
+  if (mimeType.startsWith("audio/") || AUDIO_FILE_EXTENSION_RE.test(filename)) return "audio";
   return "document";
 }
 
@@ -67,13 +80,13 @@ function attachmentGroupToItem(attachment: Attachment): AttachmentItem {
     id: attachment.name,
     memberIds: [attachment.name],
     filename: attachment.filename,
-    category: categorizeFile(attachment.type),
+    category: categorizeFile(attachment.type, undefined, attachment.filename),
     mimeType: attachment.type,
     thumbnailUrl: attachmentType === "image/*" ? getAttachmentThumbnailUrl(attachment) : sourceUrl,
     sourceUrl,
     size: Number(attachment.size),
     isLocal: false,
-    isVoiceNote: categorizeFile(attachment.type) === "audio" && isAudioRecordingFilename(attachment.filename),
+    isVoiceNote: categorizeFile(attachment.type, undefined, attachment.filename) === "audio" && isAudioRecordingFilename(attachment.filename),
     audioMeta: undefined,
   };
 }
@@ -99,14 +112,14 @@ function fileToItem(file: LocalFile): AttachmentItem {
     id: file.motionMedia?.groupId || file.previewUrl,
     memberIds: [file.previewUrl],
     filename: file.file.name,
-    category: categorizeFile(file.file.type, file.motionMedia),
-    mimeType: file.file.type,
+    category: categorizeFile(file.file.type, file.motionMedia, file.file.name),
+    mimeType: file.file.type || inferMimeTypeFromFilename(file.file.name) || "",
     thumbnailUrl: file.previewUrl,
     sourceUrl: file.previewUrl,
     size: file.file.size,
     isLocal: true,
     isVoiceNote:
-      categorizeFile(file.file.type, file.motionMedia) === "audio" &&
+      categorizeFile(file.file.type, file.motionMedia, file.file.name) === "audio" &&
       (file.origin === "audio_recording" || isAudioRecordingFilename(file.file.name)),
     audioMeta: file.audioMeta,
   };

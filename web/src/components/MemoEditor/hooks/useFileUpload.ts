@@ -8,28 +8,41 @@ import { useBlobUrls } from "./useBlobUrls";
 export const DOCUMENT_FILE_ACCEPT =
   ".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.md,.csv,.json,.xml,.zip,.rar,.7z,.gz,application/*,text/*";
 
+const VIDEO_FILE_EXTENSION_RE = /\.(mp4|mov|m4v|webm|mkv|avi|3gp|3g2)$/i;
+const AUDIO_FILE_EXTENSION_RE = /\.(mp3|wav|m4a|aac|flac|ogg|opus)$/i;
+
+export function inferMimeTypeFromFilename(filename: string): string | undefined {
+  if (VIDEO_FILE_EXTENSION_RE.test(filename)) {
+    return "video/mp4";
+  }
+  if (AUDIO_FILE_EXTENSION_RE.test(filename)) {
+    return "audio/mpeg";
+  }
+  return undefined;
+}
+
 export const isImageFile = (file: File) => file.type.startsWith("image/");
 
-export const isVideoFile = (file: File) => file.type.startsWith("video/");
+export const isVideoFile = (file: File) => file.type.startsWith("video/") || VIDEO_FILE_EXTENSION_RE.test(file.name);
 
 export const isAudioFile = (file: File) => file.type.startsWith("audio/");
 
 export const isDocumentFile = (file: File) => !isImageFile(file) && !isVideoFile(file) && !isAudioFile(file);
 
-/** Gallery/camera picks: images only, plus a paired live-photo video when selected together. */
+/** Gallery/camera picks: images and videos, plus paired live-photo video when selected together. */
 export function filterPhotoPickerFiles(files: File[]): File[] {
   const images = files.filter(isImageFile);
   const videos = files.filter(isVideoFile);
 
   if (images.length === 0) {
-    return [];
+    return videos;
   }
 
   if (images.length === 1 && videos.length === 1) {
     return [images[0], videos[0]];
   }
 
-  return images;
+  return [...images, ...videos];
 }
 
 export const useFileUpload = (onFilesSelected: (localFiles: LocalFile[]) => void) => {
@@ -126,8 +139,8 @@ const pairAppleLivePhotoFiles = (localFiles: LocalFile[]): LocalFile[] => {
   return localFiles.map((localFile) => {
     const stem = normalizeFilenameStem(localFile.file.name);
     const group = stemMap.get(stem) ?? [];
-    const images = group.filter((item) => item.file.type.startsWith("image/"));
-    const videos = group.filter((item) => item.file.type.startsWith("video/"));
+    const images = group.filter((item) => isImageFile(item.file));
+    const videos = group.filter((item) => isVideoFile(item.file));
     if (images.length !== 1 || videos.length !== 1) {
       return localFile;
     }

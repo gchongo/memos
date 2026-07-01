@@ -3,6 +3,7 @@ import { attachmentServiceClient } from "@/connect";
 import type { Attachment } from "@/types/proto/api/v1/attachment_service_pb";
 import { AttachmentSchema, MotionMediaSchema } from "@/types/proto/api/v1/attachment_service_pb";
 import { compressImageFile } from "@/utils/compress-image";
+import { inferMimeTypeFromFilename } from "../hooks/useFileUpload";
 import type { LocalFile } from "../types/attachment";
 
 export const uploadService = {
@@ -13,7 +14,8 @@ export const uploadService = {
 
     for (const localFile of localFiles) {
       let { file, motionMedia } = localFile;
-      if (file.type.startsWith("image/")) {
+      const mimeType = file.type || inferMimeTypeFromFilename(file.name) || "application/octet-stream";
+      if (mimeType.startsWith("image/")) {
         file = await compressImageFile(file);
       }
 
@@ -22,7 +24,7 @@ export const uploadService = {
         attachment: create(AttachmentSchema, {
           filename: file.name,
           size: BigInt(file.size),
-          type: file.type,
+          type: file.type || mimeType,
           content: buffer,
           motionMedia: motionMedia ? create(MotionMediaSchema, motionMedia) : undefined,
         }),

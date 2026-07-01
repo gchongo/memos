@@ -10,6 +10,7 @@ export { COMPACT_TOOLBAR_WIDTH, isCompactWidth, useElementWidth } from "./useEle
 export {
   DOCUMENT_FILE_ACCEPT,
   filterPhotoPickerFiles,
+  inferMimeTypeFromFilename,
   isAudioFile,
   isDocumentFile,
   isImageFile,
