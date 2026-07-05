@@ -16,6 +16,7 @@ import {
   TrashIcon,
 } from "lucide-react";
 import { useContext, useState } from "react";
+import { useLocation } from "react-router-dom";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import { Button } from "@/components/ui/button";
 import {
@@ -30,7 +31,9 @@ import {
 import { MemoViewContext } from "@/components/MemoView/MemoViewContext";
 import useCurrentUser from "@/hooks/useCurrentUser";
 import { State } from "@/types/proto/api/v1/common_pb";
+import { Visibility } from "@/types/proto/api/v1/memo_service_pb";
 import { useTranslate } from "@/utils/i18n";
+import { ROUTES } from "@/router/routes";
 import { isSuperUser } from "@/utils/user";
 import { countTasks } from "@/utils/markdown-manipulation";
 import { useMemoActionHandlers } from "./hooks";
@@ -40,6 +43,7 @@ const MemoActionMenu = (props: MemoActionMenuProps) => {
   const { memo, readonly } = props;
   const t = useTranslate();
   const currentUser = useCurrentUser();
+  const location = useLocation();
   const memoViewContext = useContext(MemoViewContext);
 
   const withMenuSelect = (handler: () => void) => () => {
@@ -78,6 +82,8 @@ const MemoActionMenu = (props: MemoActionMenuProps) => {
 
   const canPinToProfile = memo.creator === currentUser?.name;
   const canFeatureOnExplore = isSuperUser(currentUser);
+  const isExplorePage = location.pathname === ROUTES.EXPLORE;
+  const canFeatureThisMemo = memo.visibility === Visibility.PUBLIC;
 
   return (
     <div
@@ -93,7 +99,10 @@ const MemoActionMenu = (props: MemoActionMenuProps) => {
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" sideOffset={2} data-no-memo-nav>
           {canFeatureOnExplore && !isArchived && !isComment && (
-            <DropdownMenuItem onSelect={withMenuSelect(() => void handleToggleFeatureMemoBtnClick())}>
+            <DropdownMenuItem
+              disabled={!canFeatureThisMemo}
+              onSelect={withMenuSelect(() => void handleToggleFeatureMemoBtnClick())}
+            >
               {memo.featured ? <PinOffIcon className="w-4 h-auto" /> : <PinIcon className="w-4 h-auto" />}
               {memo.featured ? t("common.unfeature") : t("common.feature")}
             </DropdownMenuItem>
@@ -102,10 +111,10 @@ const MemoActionMenu = (props: MemoActionMenuProps) => {
           {/* Edit actions (non-readonly, non-archived) */}
           {!readonly && !isArchived && (
             <>
-              {!isComment && canPinToProfile && (
+              {!isComment && canPinToProfile && !(isExplorePage && canFeatureOnExplore) && (
                 <DropdownMenuItem onSelect={withMenuSelect(() => void handleTogglePinMemoBtnClick())}>
                   {memo.pinned ? <BookmarkMinusIcon className="w-4 h-auto" /> : <BookmarkPlusIcon className="w-4 h-auto" />}
-                  {memo.pinned ? t("common.unpin") : t("common.pin")}
+                  {memo.pinned ? t("layout.profile-unpin") : t("layout.profile-pin")}
                 </DropdownMenuItem>
               )}
               <DropdownMenuItem onSelect={withMenuSelect(handleEditMemoClick)}>

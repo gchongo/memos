@@ -211,9 +211,11 @@ export function useUpdateMemo() {
       }
 
       const isPinOnly = updateMask.length === 1 && updateMask[0] === "pinned";
+      const isFeatureOnly = updateMask.length === 1 && updateMask[0] === "featured";
+      const isLightweightUpdate = isPinOnly || isFeatureOnly;
 
-      // Pin toggles are optimistic-only; canceling all memo queries causes sidebar widgets to flash.
-      if (!isPinOnly) {
+      // Pin/feature toggles are optimistic-only; canceling all memo queries causes sidebar widgets to flash.
+      if (!isLightweightUpdate) {
         await queryClient.cancelQueries({ queryKey: memoKeys.all });
       }
 
@@ -242,11 +244,17 @@ export function useUpdateMemo() {
       patchMemoInCollectionQueries(queryClient, updatedMemo);
 
       const isPinOnly = updateMask.length === 1 && updateMask[0] === "pinned";
-      if (!isPinOnly) {
+      const isFeatureOnly = updateMask.length === 1 && updateMask[0] === "featured";
+      if (isFeatureOnly) {
+        queryClient.invalidateQueries({ queryKey: memoKeys.lists() });
+      }
+      if (!isPinOnly && !isFeatureOnly) {
         queryClient.invalidateQueries({ queryKey: memoKeys.lists() });
         if (updatedMemo.parent) {
           queryClient.invalidateQueries({ queryKey: memoKeys.comments(updatedMemo.parent) });
         }
+        queryClient.invalidateQueries({ queryKey: userKeys.stats() });
+      } else if (isPinOnly) {
         queryClient.invalidateQueries({ queryKey: userKeys.stats() });
       }
     },

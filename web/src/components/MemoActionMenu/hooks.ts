@@ -10,7 +10,7 @@ import { userKeys } from "@/hooks/useUserQueries";
 import { handleError } from "@/lib/error";
 import { ROUTES } from "@/router/routes";
 import { State } from "@/types/proto/api/v1/common_pb";
-import type { Memo } from "@/types/proto/api/v1/memo_service_pb";
+import { Visibility, type Memo } from "@/types/proto/api/v1/memo_service_pb";
 import { useTranslate } from "@/utils/i18n";
 import { checkAllTasks, uncheckAllTasks } from "@/utils/markdown-task-actions";
 
@@ -69,12 +69,21 @@ export const useMemoActionHandlers = ({ memo, onEdit, setDeleteDialogOpen }: Use
         },
         updateMask: ["pinned"],
       });
-    } catch {
-      // do nothing
+      toast.success(memo.pinned ? t("message.unpinned-from-profile-successfully") : t("message.pinned-to-profile-successfully"));
+    } catch (error: unknown) {
+      handleError(error, toast.error, {
+        context: "Pin memo to profile",
+        fallbackMessage: t("message.update-succeed"),
+      });
     }
-  }, [memo.name, memo.pinned, updateMemo]);
+  }, [memo.name, memo.pinned, t, updateMemo]);
 
   const handleToggleFeatureMemoBtnClick = useCallback(async () => {
+    if (memo.visibility !== Visibility.PUBLIC) {
+      toast.error(t("message.feature-public-only"));
+      return;
+    }
+
     try {
       await updateMemo({
         update: {
@@ -90,7 +99,7 @@ export const useMemoActionHandlers = ({ memo, onEdit, setDeleteDialogOpen }: Use
         fallbackMessage: t("message.feature-failed"),
       });
     }
-  }, [memo.featured, memo.name, t, updateMemo]);
+  }, [memo.featured, memo.name, memo.visibility, t, updateMemo]);
 
   const handleEditMemoClick = useCallback(() => {
     onEdit?.();
