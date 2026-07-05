@@ -514,7 +514,18 @@ func (s *APIV1Service) UpdateMemo(ctx context.Context, request *v1pb.UpdateMemoR
 			}
 			update.Visibility = &visibility
 		} else if path == "pinned" {
+			if memo.CreatorID != user.ID {
+				return nil, status.Errorf(codes.PermissionDenied, "only the creator can pin a memo")
+			}
 			update.Pinned = &request.Memo.Pinned
+		} else if path == "featured" {
+			if !isSuperUser(user) {
+				return nil, status.Errorf(codes.PermissionDenied, "permission denied")
+			}
+			if request.Memo.Featured && memo.Visibility != store.Public {
+				return nil, status.Errorf(codes.InvalidArgument, "only public memos can be featured")
+			}
+			update.Featured = &request.Memo.Featured
 		} else if path == "state" {
 			rowStatus := convertStateToStore(request.Memo.State)
 			update.RowStatus = &rowStatus
@@ -990,7 +1001,7 @@ func (s *APIV1Service) getMemoContentSnippet(content string) (string, error) {
 
 // parseMemoOrderBy parses the order_by field and sets the appropriate ordering in memoFind.
 // Follows AIP-132: supports comma-separated list of fields with optional "desc" suffix.
-// Example: "pinned desc, create_time desc" or "update_time asc".
+// Example: "featured desc, create_time desc" or "update_time asc".
 func (*APIV1Service) parseMemoOrderBy(orderBy string, memoFind *store.FindMemo) error {
 	if strings.TrimSpace(orderBy) == "" {
 		return errors.New("empty order_by")
@@ -999,7 +1010,8 @@ func (*APIV1Service) parseMemoOrderBy(orderBy string, memoFind *store.FindMemo) 
 	// Split by comma to support multiple sort fields per AIP-132.
 	fields := strings.Split(orderBy, ",")
 
-	// Track if we've seen pinned field.
+	// Track if we've seen boolean sort fields.
+	hasFeatured := false
 	hasPinned := false
 	hasExplicitTimeField := false
 
@@ -1019,6 +1031,10 @@ func (*APIV1Service) parseMemoOrderBy(orderBy string, memoFind *store.FindMemo) 
 		}
 
 		switch fieldName {
+		case "featured":
+			hasFeatured = true
+			memoFind.OrderByFeatured = true
+			// Note: featured is always DESC (true first) regardless of direction specified.
 		case "pinned":
 			hasPinned = true
 			memoFind.OrderByPinned = true
@@ -1037,12 +1053,12 @@ func (*APIV1Service) parseMemoOrderBy(orderBy string, memoFind *store.FindMemo) 
 			}
 			hasExplicitTimeField = true
 		default:
-			return errors.Errorf("unsupported order field: %s, supported fields are: pinned, create_time, update_time, name", fieldName)
+			return errors.Errorf("unsupported order field: %s, supported fields are: featured, pinned, create_time, update_time, name", fieldName)
 		}
 	}
 
-	// If only pinned was specified, still need to set a default time ordering.
-	if hasPinned && !memoFind.OrderByUpdatedTs && len(fields) == 1 {
+	// If only boolean sort fields were specified, still need to set a default time ordering.
+	if (hasFeatured || hasPinned) && !memoFind.OrderByUpdatedTs && !hasExplicitTimeField {
 		memoFind.OrderByTimeAsc = false // default to desc
 	}
 

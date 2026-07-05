@@ -11,6 +11,8 @@ import {
   ListChecksIcon,
   ListRestartIcon,
   MoreVerticalIcon,
+  PinIcon,
+  PinOffIcon,
   TrashIcon,
 } from "lucide-react";
 import { useContext, useState } from "react";
@@ -26,8 +28,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { MemoViewContext } from "@/components/MemoView/MemoViewContext";
+import useCurrentUser from "@/hooks/useCurrentUser";
 import { State } from "@/types/proto/api/v1/common_pb";
 import { useTranslate } from "@/utils/i18n";
+import { isSuperUser } from "@/utils/user";
 import { countTasks } from "@/utils/markdown-manipulation";
 import { useMemoActionHandlers } from "./hooks";
 import type { MemoActionMenuProps } from "./types";
@@ -35,6 +39,7 @@ import type { MemoActionMenuProps } from "./types";
 const MemoActionMenu = (props: MemoActionMenuProps) => {
   const { memo, readonly } = props;
   const t = useTranslate();
+  const currentUser = useCurrentUser();
   const memoViewContext = useContext(MemoViewContext);
 
   const withMenuSelect = (handler: () => void) => () => {
@@ -56,6 +61,7 @@ const MemoActionMenu = (props: MemoActionMenuProps) => {
   // Action handlers
   const {
     handleTogglePinMemoBtnClick,
+    handleToggleFeatureMemoBtnClick,
     handleEditMemoClick,
     handleToggleMemoStatusClick,
     handleCopyLink,
@@ -70,6 +76,9 @@ const MemoActionMenu = (props: MemoActionMenuProps) => {
     setDeleteDialogOpen,
   });
 
+  const canPinToProfile = memo.creator === currentUser?.name;
+  const canFeatureOnExplore = isSuperUser(currentUser);
+
   return (
     <div
       data-no-memo-nav
@@ -83,10 +92,17 @@ const MemoActionMenu = (props: MemoActionMenuProps) => {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" sideOffset={2} data-no-memo-nav>
+          {canFeatureOnExplore && !isArchived && !isComment && (
+            <DropdownMenuItem onSelect={withMenuSelect(() => void handleToggleFeatureMemoBtnClick())}>
+              {memo.featured ? <PinOffIcon className="w-4 h-auto" /> : <PinIcon className="w-4 h-auto" />}
+              {memo.featured ? t("common.unfeature") : t("common.feature")}
+            </DropdownMenuItem>
+          )}
+
           {/* Edit actions (non-readonly, non-archived) */}
           {!readonly && !isArchived && (
             <>
-              {!isComment && (
+              {!isComment && canPinToProfile && (
                 <DropdownMenuItem onSelect={withMenuSelect(() => void handleTogglePinMemoBtnClick())}>
                   {memo.pinned ? <BookmarkMinusIcon className="w-4 h-auto" /> : <BookmarkPlusIcon className="w-4 h-auto" />}
                   {memo.pinned ? t("common.unpin") : t("common.pin")}

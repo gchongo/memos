@@ -40,6 +40,7 @@ CREATE TABLE `memo` (
   `content` TEXT NOT NULL,
   `visibility` VARCHAR(256) NOT NULL DEFAULT 'PRIVATE',
   `pinned` BOOLEAN NOT NULL DEFAULT FALSE,
+  `featured` BOOLEAN NOT NULL DEFAULT FALSE,
   `payload` JSON NOT NULL
 );
 

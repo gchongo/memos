@@ -1,4 +1,4 @@
-import { BookmarkIcon } from "lucide-react";
+import { BookmarkIcon, PinIcon } from "lucide-react";
 import { useCallback, useState } from "react";
 import { Link } from "react-router-dom";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -21,6 +21,8 @@ import type { MemoHeaderProps } from "../types";
 const MemoHeader: React.FC<MemoHeaderProps> = ({
   showCreator,
   showVisibility,
+  showPinned,
+  showFeatured,
   showReactions = true,
   showActions = true,
   variant = "x",
@@ -81,6 +83,18 @@ const MemoHeader: React.FC<MemoHeaderProps> = ({
         {memo.name === newMemoName && (
           <span className="ml-2 shrink-0 rounded-full bg-[var(--x-accent)]/10 px-1.5 py-0.5 text-xs font-medium leading-none text-[var(--x-accent)]">
             {t("memo.new-badge")}
+          </span>
+        )}
+        {showFeatured && memo.featured && (
+          <span className="ml-2 inline-flex shrink-0 items-center gap-0.5 rounded-full bg-[var(--x-accent)]/10 px-1.5 py-0.5 text-xs font-medium leading-none text-[var(--x-accent)]">
+            <PinIcon className="h-3 w-3" />
+            {t("common.featured")}
+          </span>
+        )}
+        {showPinned && memo.pinned && (
+          <span className="ml-2 inline-flex shrink-0 items-center gap-0.5 rounded-full bg-[var(--x-accent)]/10 px-1.5 py-0.5 text-xs font-medium leading-none text-[var(--x-accent)]">
+            <BookmarkIcon className="h-3 w-3" />
+            {t("common.pinned")}
           </span>
         )}
       </div>

@@ -6,6 +6,7 @@ import { State } from "@/types/proto/api/v1/common_pb";
 import type { Memo } from "@/types/proto/api/v1/memo_service_pb";
 
 export interface UseMemoSortingOptions {
+  featuredFirst?: boolean;
   pinnedFirst?: boolean;
   state?: State;
 }
@@ -34,14 +35,20 @@ export const hoistMemoToFront = (memos: Memo[], name: string | null): Memo[] => 
 };
 
 export const useMemoSorting = (options: UseMemoSortingOptions = {}): UseMemoSortingResult => {
-  const { pinnedFirst = false, state = State.NORMAL } = options;
+  const { featuredFirst = false, pinnedFirst = false, state = State.NORMAL } = options;
   const { orderByTimeAsc, timeBasis } = useView();
 
   // Generate orderBy string for API
   const orderBy = useMemo(() => {
     const timeOrder = orderByTimeAsc ? `${timeBasis} asc` : `${timeBasis} desc`;
-    return pinnedFirst ? `pinned desc, ${timeOrder}` : timeOrder;
-  }, [pinnedFirst, orderByTimeAsc, timeBasis]);
+    if (featuredFirst) {
+      return `featured desc, ${timeOrder}`;
+    }
+    if (pinnedFirst) {
+      return `pinned desc, ${timeOrder}`;
+    }
+    return timeOrder;
+  }, [featuredFirst, pinnedFirst, orderByTimeAsc, timeBasis]);
 
   // Generate listSort function for client-side sorting
   const listSort = useMemo(() => {
@@ -49,6 +56,10 @@ export const useMemoSorting = (options: UseMemoSortingOptions = {}): UseMemoSort
       return memos
         .filter((memo) => memo.state === state)
         .sort((a, b) => {
+          if (featuredFirst && a.featured !== b.featured) {
+            return b.featured ? 1 : -1;
+          }
+
           // First, sort by pinned status if enabled
           if (pinnedFirst && a.pinned !== b.pinned) {
             return b.pinned ? 1 : -1;
@@ -60,7 +71,7 @@ export const useMemoSorting = (options: UseMemoSortingOptions = {}): UseMemoSort
           return orderByTimeAsc ? dayjs(aTime).unix() - dayjs(bTime).unix() : dayjs(bTime).unix() - dayjs(aTime).unix();
         });
     };
-  }, [pinnedFirst, state, orderByTimeAsc, timeBasis]);
+  }, [featuredFirst, pinnedFirst, state, orderByTimeAsc, timeBasis]);
 
   return { listSort, orderBy };
 };

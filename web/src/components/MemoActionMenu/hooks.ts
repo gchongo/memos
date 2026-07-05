@@ -74,6 +74,24 @@ export const useMemoActionHandlers = ({ memo, onEdit, setDeleteDialogOpen }: Use
     }
   }, [memo.name, memo.pinned, updateMemo]);
 
+  const handleToggleFeatureMemoBtnClick = useCallback(async () => {
+    try {
+      await updateMemo({
+        update: {
+          name: memo.name,
+          featured: !memo.featured,
+        },
+        updateMask: ["featured"],
+      });
+      toast.success(memo.featured ? t("message.unfeatured-successfully") : t("message.featured-successfully"));
+    } catch (error: unknown) {
+      handleError(error, toast.error, {
+        context: "Feature memo",
+        fallbackMessage: t("message.feature-failed"),
+      });
+    }
+  }, [memo.featured, memo.name, t, updateMemo]);
+
   const handleEditMemoClick = useCallback(() => {
     onEdit?.();
   }, [onEdit]);
@@ -151,6 +169,7 @@ export const useMemoActionHandlers = ({ memo, onEdit, setDeleteDialogOpen }: Use
 
   return {
     handleTogglePinMemoBtnClick,
+    handleToggleFeatureMemoBtnClick,
     handleEditMemoClick,
     handleToggleMemoStatusClick,
     handleCopyLink,

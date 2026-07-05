@@ -22,7 +22,7 @@ import type { Memo } from "@/types/proto/api/v1/memo_service_pb";
 import { isImage } from "@/utils/attachment";
 import { useTranslate } from "@/utils/i18n";
 
-type TabView = "memos" | "replies" | "media" | "map";
+type TabView = "memos" | "pinned" | "replies" | "media" | "map";
 
 const UserMemoMap = lazy(() => import("@/components/UserMemoMap"));
 
@@ -48,6 +48,7 @@ const parseTabView = (value: string | null): TabView => {
   if (value === "map") return "map";
   if (value === "media") return "media";
   if (value === "replies") return "replies";
+  if (value === "pinned") return "pinned";
   return "memos";
 };
 
@@ -63,6 +64,7 @@ const ProfileTabs = ({ activeTab, onTabChange, className, style }: ProfileTabsPr
 
   const tabs: { id: TabView; label: string }[] = [
     { id: "memos", label: t("layout.profile-tab-posts") },
+    { id: "pinned", label: t("layout.profile-tab-pinned") },
     { id: "replies", label: t("layout.profile-tab-replies") },
     { id: "media", label: t("layout.profile-tab-media") },
     { id: "map", label: t("layout.profile-tab-map") },
@@ -134,10 +136,23 @@ const UserProfile = () => {
     ignoreContextFilters: true,
   });
 
+  const pinnedMemoFilter = useMemoFilters({
+    creatorName: user?.name,
+    includeShortcuts: false,
+    includePinned: false,
+    pinnedOnly: true,
+    ignoreContextFilters: true,
+  });
+
   const { listSort, orderBy } = useMemoSorting({
-    pinnedFirst: false,
+    pinnedFirst: true,
     state: State.NORMAL,
   });
+
+  const pinnedListSort = useCallback(
+    (memos: Memo[]) => listSort(memos).filter(isTopLevelMemo),
+    [listSort],
+  );
 
   const postsListSort = useCallback(
     (memos: Memo[]) => listSort(memos).filter(isTopLevelMemo),
@@ -188,7 +203,9 @@ const UserProfile = () => {
       ? t("layout.profile-empty-media")
       : activeTab === "replies"
         ? t("layout.profile-empty-replies")
-        : undefined;
+        : activeTab === "pinned"
+          ? t("layout.profile-empty-pinned")
+          : undefined;
 
   if (isLoading) return null;
 
@@ -251,6 +268,18 @@ const UserProfile = () => {
                 orderBy={orderBy}
                 filter={memoFilter}
                 scrollRestorationPath={scrollRestorationPath}
+              />
+            )}
+            {activeTab === "pinned" && (
+              <PagedMemoList
+                renderer={(memo: Memo) => (
+                  <MemoView key={`${memo.name}-${memo.updateTime}`} memo={memo} showVisibility showPinned compact={compactMode} />
+                )}
+                listSort={pinnedListSort}
+                orderBy={orderBy}
+                filter={pinnedMemoFilter}
+                scrollRestorationPath={scrollRestorationPath}
+                emptyMessage={emptyMessage}
               />
             )}
             {activeTab === "replies" && (

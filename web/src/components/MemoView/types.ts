@@ -6,6 +6,7 @@ export interface MemoViewProps {
   showCreator?: boolean;
   showVisibility?: boolean;
   showPinned?: boolean;
+  showFeatured?: boolean;
   /** Hide reaction picker, action menu, and X action bar (e.g. compact sidebar embed). */
   showReactions?: boolean;
   /** Hide the action menu in the header (e.g. compact sidebar embed). */
@@ -22,6 +23,7 @@ export interface MemoHeaderProps {
   showCreator?: boolean;
   showVisibility?: boolean;
   showPinned?: boolean;
+  showFeatured?: boolean;
   showReactions?: boolean;
   showActions?: boolean;
   variant?: "default" | "x";

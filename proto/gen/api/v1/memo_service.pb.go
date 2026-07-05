@@ -242,6 +242,8 @@ type Memo struct {
 	Tags []string `protobuf:"bytes,10,rep,name=tags,proto3" json:"tags,omitempty"`
 	// Whether the memo is pinned.
 	Pinned bool `protobuf:"varint,11,opt,name=pinned,proto3" json:"pinned,omitempty"`
+	// Whether the memo is featured on the Explore page (admin only).
+	Featured bool `protobuf:"varint,19,opt,name=featured,proto3" json:"featured,omitempty"`
 	// Optional. The attachments of the memo.
 	Attachments []*Attachment `protobuf:"bytes,12,rep,name=attachments,proto3" json:"attachments,omitempty"`
 	// Optional. The relations of the memo.
@@ -350,6 +352,13 @@ func (x *Memo) GetTags() []string {
 func (x *Memo) GetPinned() bool {
 	if x != nil {
 		return x.Pinned
+	}
+	return false
+}
+
+func (x *Memo) GetFeatured() bool {
+	if x != nil {
+		return x.Featured
 	}
 	return false
 }
@@ -537,8 +546,8 @@ type ListMemosRequest struct {
 	// Optional. The order to sort results by.
 	// Default to "create_time desc".
 	// Supports comma-separated list of fields following AIP-132.
-	// Example: "pinned desc, create_time desc" or "update_time asc"
-	// Supported fields: pinned, create_time, update_time, name.
+	// Example: "featured desc, create_time desc" or "update_time asc"
+	// Supported fields: featured, pinned, create_time, update_time, name.
 	// Note: order_by uses create_time / update_time, while the filter
 	// expression uses created_ts / updated_ts for the same timestamps.
 	OrderBy string `protobuf:"bytes,4,opt,name=order_by,json=orderBy,proto3" json:"order_by,omitempty"`
@@ -546,7 +555,7 @@ type ListMemosRequest struct {
 	// Available fields:
 	//
 	//	content (string), creator (string, e.g. "users/1"),
-	//	created_ts / updated_ts (timestamp), pinned (bool),
+	//	created_ts / updated_ts (timestamp), pinned (bool), featured (bool),
 	//	visibility (string: PRIVATE | PROTECTED | PUBLIC),
 	//	tags (list<string>; match with `"work" in tags`, not `tag == "work"`),
 	//	has_task_list / has_link / has_code / has_incomplete_tasks (bool).
@@ -2352,7 +2361,7 @@ const file_api_v1_memo_service_proto_rawDesc = "" +
 	"\rreaction_type\x18\x04 \x01(\tB\x03\xe0A\x02R\freactionType\x12@\n" +
 	"\vcreate_time\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\n" +
 	"createTime:X\xeaAU\n" +
-	"\x15memos.api.v1/Reaction\x12!memos/{memo}/reactions/{reaction}\x1a\x04name*\treactions2\breaction\"\xbe\b\n" +
+	"\x15memos.api.v1/Reaction\x12!memos/{memo}/reactions/{reaction}\x1a\x04name*\treactions2\breaction\"\xdf\b\n" +
 	"\x04Memo\x12\x17\n" +
 	"\x04name\x18\x01 \x01(\tB\x03\xe0A\bR\x04name\x12.\n" +
 	"\x05state\x18\x02 \x01(\x0e2\x13.memos.api.v1.StateB\x03\xe0A\x02R\x05state\x123\n" +
@@ -2368,7 +2377,8 @@ const file_api_v1_memo_service_proto_rawDesc = "" +
 	"visibility\x12\x17\n" +
 	"\x04tags\x18\n" +
 	" \x03(\tB\x03\xe0A\x03R\x04tags\x12\x1b\n" +
-	"\x06pinned\x18\v \x01(\bB\x03\xe0A\x01R\x06pinned\x12?\n" +
+	"\x06pinned\x18\v \x01(\bB\x03\xe0A\x01R\x06pinned\x12\x1f\n" +
+	"\bfeatured\x18\x13 \x01(\bB\x03\xe0A\x01R\bfeatured\x12?\n" +
 	"\vattachments\x18\f \x03(\v2\x18.memos.api.v1.AttachmentB\x03\xe0A\x01R\vattachments\x12=\n" +
 	"\trelations\x18\r \x03(\v2\x1a.memos.api.v1.MemoRelationB\x03\xe0A\x01R\trelations\x129\n" +
 	"\treactions\x18\x0e \x03(\v2\x16.memos.api.v1.ReactionB\x03\xe0A\x03R\treactions\x12<\n" +

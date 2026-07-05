@@ -31,6 +31,7 @@ const MemoView: React.FC<MemoViewProps> = (props: MemoViewProps) => {
     showCreator = true,
     showVisibility,
     showPinned,
+    showFeatured,
     showReactions = false,
     showActions = true,
     showActionBar = true,
@@ -213,6 +214,7 @@ const MemoView: React.FC<MemoViewProps> = (props: MemoViewProps) => {
           showCreator={showCreator}
           showVisibility={showVisibility}
           showPinned={showPinned}
+          showFeatured={showFeatured}
           showReactions={showReactions}
           showActions={showActions}
           variant="x"

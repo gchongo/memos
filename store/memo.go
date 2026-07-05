@@ -48,6 +48,7 @@ type Memo struct {
 	Content    string
 	Visibility Visibility
 	Pinned     bool
+	Featured   bool
 	Payload    *storepb.MemoPayload
 
 	// Composed fields
@@ -76,6 +77,7 @@ type FindMemo struct {
 	Offset *int
 
 	// Ordering
+	OrderByFeatured  bool
 	OrderByPinned    bool
 	OrderByUpdatedTs bool
 	OrderByTimeAsc   bool
@@ -99,6 +101,7 @@ type UpdateMemo struct {
 	Content    *string
 	Visibility *Visibility
 	Pinned     *bool
+	Featured   *bool
 	Payload    *storepb.MemoPayload
 }
 

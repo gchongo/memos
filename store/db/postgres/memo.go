@@ -103,6 +103,9 @@ func (d *DB) ListMemos(ctx context.Context, find *store.FindMemo) ([]*store.Memo
 		order = "ASC"
 	}
 	orderBy := []string{}
+	if find.OrderByFeatured {
+		orderBy = append(orderBy, "featured DESC")
+	}
 	if find.OrderByPinned {
 		orderBy = append(orderBy, "pinned DESC")
 	}
@@ -122,6 +125,7 @@ func (d *DB) ListMemos(ctx context.Context, find *store.FindMemo) ([]*store.Memo
 		`memo.row_status AS row_status`,
 		`memo.visibility AS visibility`,
 		`memo.pinned AS pinned`,
+		`memo.featured AS featured`,
 		`memo.payload AS payload`,
 		`CASE WHEN parent_memo.uid IS NOT NULL THEN parent_memo.uid ELSE NULL END AS parent_uid`,
 	}
@@ -162,6 +166,7 @@ func (d *DB) ListMemos(ctx context.Context, find *store.FindMemo) ([]*store.Memo
 			&memo.RowStatus,
 			&memo.Visibility,
 			&memo.Pinned,
+			&memo.Featured,
 			&payloadBytes,
 			&memo.ParentUID,
 		}
@@ -221,6 +226,9 @@ func (d *DB) UpdateMemo(ctx context.Context, update *store.UpdateMemo) error {
 	}
 	if v := update.Pinned; v != nil {
 		set, args = append(set, "pinned = "+placeholder(len(args)+1)), append(args, *v)
+	}
+	if v := update.Featured; v != nil {
+		set, args = append(set, "featured = "+placeholder(len(args)+1)), append(args, *v)
 	}
 	if v := update.Payload; v != nil {
 		payloadBytes, err := protojson.Marshal(v)

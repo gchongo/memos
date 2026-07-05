@@ -243,6 +243,9 @@ message Memo {
   // Whether the memo is pinned.
   bool pinned = 11 [(google.api.field_behavior) = OPTIONAL];
 
+  // Whether the memo is featured on the Explore page (admin only).
+  bool featured = 19 [(google.api.field_behavior) = OPTIONAL];
+
   // Optional. The attachments of the memo.
   repeated Attachment attachments = 12 [(google.api.field_behavior) = OPTIONAL];
 
@@ -317,8 +320,8 @@ message ListMemosRequest {
   // Optional. The order to sort results by.
   // Default to "create_time desc".
   // Supports comma-separated list of fields following AIP-132.
-  // Example: "pinned desc, create_time desc" or "update_time asc"
-  // Supported fields: pinned, create_time, update_time, name.
+  // Example: "featured desc, create_time desc" or "update_time asc"
+  // Supported fields: featured, pinned, create_time, update_time, name.
   // Note: order_by uses create_time / update_time, while the filter
   // expression uses created_ts / updated_ts for the same timestamps.
   string order_by = 4 [(google.api.field_behavior) = OPTIONAL];
@@ -326,7 +329,7 @@ message ListMemosRequest {
   // Optional. A CEL expression to filter memos. Combine terms with && and ||.
   // Available fields:
   //   content (string), creator (string, e.g. "users/1"),
-  //   created_ts / updated_ts (timestamp), pinned (bool),
+  //   created_ts / updated_ts (timestamp), pinned (bool), featured (bool),
   //   visibility (string: PRIVATE | PROTECTED | PUBLIC),
   //   tags (list<string>; match with `"work" in tags`, not `tag == "work"`),
   //   has_task_list / has_link / has_code / has_incomplete_tasks (bool).

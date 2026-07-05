@@ -647,8 +647,8 @@ paths:
                     Optional. The order to sort results by.
                      Default to "create_time desc".
                      Supports comma-separated list of fields following AIP-132.
-                     Example: "pinned desc, create_time desc" or "update_time asc"
-                     Supported fields: pinned, create_time, update_time, name.
+                     Example: "featured desc, create_time desc" or "update_time asc"
+                     Supported fields: featured, pinned, create_time, update_time, name.
                      Note: order_by uses create_time / update_time, while the filter
                      expression uses created_ts / updated_ts for the same timestamps.
                   schema:
@@ -659,7 +659,7 @@ paths:
                     Optional. A CEL expression to filter memos. Combine terms with && and ||.
                      Available fields:
                        content (string), creator (string, e.g. "users/1"),
-                       created_ts / updated_ts (timestamp), pinned (bool),
+                       created_ts / updated_ts (timestamp), pinned (bool), featured (bool),
                        visibility (string: PRIVATE | PROTECTED | PUBLIC),
                        tags (list<string>; match with `"work" in tags`, not `tag == "work"`),
                        has_task_list / has_link / has_code / has_incomplete_tasks (bool).
@@ -3413,6 +3413,9 @@ components:
                 pinned:
                     type: boolean
                     description: Whether the memo is pinned.
+                featured:
+                    type: boolean
+                    description: Whether the memo is featured on the Explore page (admin only).
                 attachments:
                     type: array
                     items:

@@ -26,9 +26,9 @@ const Explore = () => {
     visibilities,
   });
 
-  // Get sorting logic using unified hook (no pinned sorting)
+  // Get sorting logic using unified hook (featured memos first on Explore)
   const { listSort, orderBy } = useMemoSorting({
-    pinnedFirst: false,
+    featuredFirst: true,
     state: State.NORMAL,
   });
 
@@ -37,7 +37,7 @@ const Explore = () => {
       <FeedHeader title={t("common.explore")} />
       <PagedMemoList
       renderer={(memo: Memo) => (
-        <MemoView key={`${memo.name}-${memo.updateTime}`} memo={memo} showCreator showVisibility compact={compactMode} />
+        <MemoView key={`${memo.name}-${memo.updateTime}`} memo={memo} showCreator showVisibility showFeatured compact={compactMode} />
       )}
       listSort={listSort}
       orderBy={orderBy}
