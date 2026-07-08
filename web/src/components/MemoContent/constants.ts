@@ -4,14 +4,14 @@ import { defaultSchema } from "rehype-sanitize";
 export const TASK_LIST_CLASS = "contains-task-list";
 export const TASK_LIST_ITEM_CLASS = "task-list-item";
 
-// Content rows use leading-6 (1.5rem line-height = 24px at the 16px root font).
-const ROW_HEIGHT_PX = 24;
+// Timeline content uses text-[15px] leading-5 (20px line-height).
+const ROW_HEIGHT_PX = 20;
 
-// Compact mode display settings
+// Compact mode display settings — tuned for ~5 lines in the timeline (X-style).
 export const COMPACT_MODE_CONFIG = {
-  previewRows: 6, // collapsed preview height, in content rows
-  triggerRows: 8, // only fold when content is taller than this (2-row buffer over the preview)
-  gradientHeight: "h-12", // Tailwind class for the bottom fade overlay (~2 rows)
+  previewRows: 5, // collapsed preview height, in content rows
+  triggerRows: 7, // only fold when content is taller than this
+  gradientHeight: "h-10", // fade overlay above the "Show more" link
 } as const;
 
 // Height the collapsed preview is clamped to, in pixels.
@@ -24,8 +24,8 @@ export const getCompactTriggerHeightPx = () => COMPACT_MODE_CONFIG.triggerRows *
 export const shouldCompactContent = (contentHeightPx: number, triggerHeightPx: number) => contentHeightPx > triggerHeightPx;
 
 export const COMPACT_STATES: Record<"ALL" | "SNIPPET", { textKey: string; next: "ALL" | "SNIPPET" }> = {
-  ALL: { textKey: "memo.show-more", next: "SNIPPET" },
-  SNIPPET: { textKey: "memo.show-less", next: "ALL" },
+  ALL: { textKey: "layout.show-more", next: "SNIPPET" },
+  SNIPPET: { textKey: "layout.show-less", next: "ALL" },
 };
 
 const TRUSTED_IFRAME_SRC_PATTERNS = [

@@ -25,7 +25,7 @@ const ViewContext = createContext<ViewContextValue | null>(null);
 
 const LOCAL_STORAGE_KEY = "memos-view-setting";
 
-const DEFAULT_VIEW_STATE: ViewState = { orderByTimeAsc: false, compactMode: false, linkPreview: true };
+const DEFAULT_VIEW_STATE: ViewState = { orderByTimeAsc: false, compactMode: true, linkPreview: true };
 
 export function ViewProvider({ children }: { children: ReactNode }) {
   const getInitialState = (): ViewState => {
@@ -38,7 +38,7 @@ export function ViewProvider({ children }: { children: ReactNode }) {
         return {
           orderByTimeAsc: Boolean(data.orderByTimeAsc ?? DEFAULT_VIEW_STATE.orderByTimeAsc),
           timeBasis,
-          compactMode: Boolean(data.compactMode ?? DEFAULT_VIEW_STATE.compactMode),
+          compactMode: "compactMode" in data ? Boolean(data.compactMode) : DEFAULT_VIEW_STATE.compactMode,
           linkPreview: Boolean(data.linkPreview ?? DEFAULT_VIEW_STATE.linkPreview),
         };
       }

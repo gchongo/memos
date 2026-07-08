@@ -1,4 +1,3 @@
-import { ChevronDown, ChevronUp } from "lucide-react";
 import { memo, useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { useTranslate } from "@/utils/i18n";
@@ -21,47 +20,56 @@ const MemoContent = (props: MemoContentProps) => {
   const resolvedMentionUsernames = useResolvedMentionUsernames(mentionUsernames);
 
   const compactLabel = useCompactLabel(showCompactMode, t as (key: string) => string);
+  const isCollapsed = showCompactMode === "ALL";
 
   return (
-    <div className={`w-full flex flex-col justify-start items-start text-foreground ${className || ""}`}>
+    <div className={cn("flex w-full flex-col items-start justify-start text-foreground", className)}>
       <div
         ref={memoContentContainerRef}
         data-memo-content
         className={cn(
-          "relative w-full max-w-full wrap-break-word text-base leading-6",
+          "relative w-full max-w-full wrap-break-word text-[15px] leading-5",
           "[&>*:last-child]:mb-0",
           "[&_.katex-display]:max-w-full",
           "[&_.katex-display]:overflow-x-auto",
           "[&_.katex-display]:overflow-y-hidden",
-          showCompactMode === "ALL" && "overflow-hidden",
+          isCollapsed && "overflow-hidden",
           contentClassName,
         )}
-        style={showCompactMode === "ALL" ? { maxHeight: `${getPreviewMaxHeightPx()}px` } : undefined}
+        style={isCollapsed ? { maxHeight: `${getPreviewMaxHeightPx()}px` } : undefined}
         onMouseUp={onClick}
         onDoubleClick={onDoubleClick}
       >
         <MemoMarkdownRenderer content={content} resolvedMentionUsernames={resolvedMentionUsernames} />
-        {showCompactMode === "ALL" && (
-          <div
-            className={cn(
-              "absolute inset-x-0 bottom-0 pointer-events-none",
-              COMPACT_MODE_CONFIG.gradientHeight,
-              "bg-linear-to-t from-background from-0% via-background/60 via-40% to-transparent to-100%",
-            )}
-          />
+        {isCollapsed && (
+          <>
+            <div
+              className={cn(
+                "pointer-events-none absolute inset-x-0 bottom-0",
+                COMPACT_MODE_CONFIG.gradientHeight,
+                "bg-linear-to-t from-background from-20% via-background/80 via-60% to-transparent to-100%",
+              )}
+            />
+            <button
+              type="button"
+              data-no-memo-nav
+              className="absolute bottom-0 left-0 z-10 bg-background pr-2 text-[15px] leading-5 text-[var(--x-accent)] hover:underline"
+              onClick={toggleCompactMode}
+            >
+              {compactLabel}
+            </button>
+          </>
         )}
       </div>
-      {showCompactMode !== undefined && (
-        <div className="relative w-full mt-2">
-          <button
-            type="button"
-            className="group inline-flex items-center gap-1 px-2 py-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
-            onClick={toggleCompactMode}
-          >
-            <span>{compactLabel}</span>
-            {showCompactMode === "ALL" ? <ChevronDown className="w-3 h-3" /> : <ChevronUp className="w-3 h-3" />}
-          </button>
-        </div>
+      {showCompactMode === "SNIPPET" && (
+        <button
+          type="button"
+          data-no-memo-nav
+          className="mt-1 text-[15px] leading-5 text-[var(--x-accent)] hover:underline"
+          onClick={toggleCompactMode}
+        >
+          {compactLabel}
+        </button>
       )}
     </div>
   );

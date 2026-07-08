@@ -74,13 +74,13 @@ describe("<MemoBody /> compact content", () => {
     mockState.memo = createMemo("line 1\nline 2");
     const { rerender } = render(<MemoBody compact={true} />);
 
-    await waitFor(() => expect(screen.getByRole("button", { name: /memo\.show-more/ })).toBeInTheDocument());
-    fireEvent.click(screen.getByRole("button", { name: /memo\.show-more/ }));
-    expect(screen.getByRole("button", { name: /memo\.show-less/ })).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByRole("button", { name: /layout\.show-more/ })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole("button", { name: /layout\.show-more/ }));
+    expect(screen.getByRole("button", { name: /layout\.show-less/ })).toBeInTheDocument();
 
     mockState.memo = createMemo("line 1\nline 2 updated");
     rerender(<MemoBody compact={true} />);
 
-    expect(screen.getByRole("button", { name: /memo\.show-less/ })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /layout\.show-less/ })).toBeInTheDocument();
   });
 });

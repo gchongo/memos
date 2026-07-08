@@ -13,7 +13,7 @@ interface Props {
 function MemoDisplaySettingMenu({ className }: Props) {
   const t = useTranslate();
   const { orderByTimeAsc, timeBasis, compactMode, linkPreview, setTimeBasis, toggleSortOrder, setCompactMode, setLinkPreview } = useView();
-  const isApplying = orderByTimeAsc !== false || timeBasis !== "create_time" || compactMode || !linkPreview;
+  const isApplying = orderByTimeAsc !== false || timeBasis !== "create_time" || !compactMode || !linkPreview;
 
   return (
     <Popover>
