@@ -1,8 +1,7 @@
 import FeedHeader from "@/components/FeedHeader";
 import MemoView from "@/components/MemoView";
 import PagedMemoList from "@/components/PagedMemoList";
-import { useView } from "@/contexts/ViewContext";
-import { useMemoFilters, useMemoSorting } from "@/hooks";
+import { useMemoFilters, useMemoSorting, useTimelineCompact } from "@/hooks";
 import useCurrentUser from "@/hooks/useCurrentUser";
 import { State } from "@/types/proto/api/v1/common_pb";
 import { Memo, Visibility } from "@/types/proto/api/v1/memo_service_pb";
@@ -10,7 +9,7 @@ import { useTranslate } from "@/utils/i18n";
 
 const Explore = () => {
   const currentUser = useCurrentUser();
-  const { compactMode } = useView();
+  const collapseLongPosts = useTimelineCompact();
   const t = useTranslate();
 
   // Determine visibility filter based on authentication status
@@ -37,7 +36,7 @@ const Explore = () => {
       <FeedHeader title={t("common.explore")} />
       <PagedMemoList
       renderer={(memo: Memo) => (
-        <MemoView key={`${memo.name}-${memo.updateTime}`} memo={memo} showCreator showVisibility showFeatured compact={compactMode} />
+        <MemoView key={`${memo.name}-${memo.updateTime}`} memo={memo} showCreator showVisibility showFeatured compact={collapseLongPosts} />
       )}
       listSort={listSort}
       orderBy={orderBy}

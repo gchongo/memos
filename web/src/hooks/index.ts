@@ -10,5 +10,6 @@ export * from "./useMediaQuery";
 export * from "./useMemoFilters";
 export * from "./useMemoSorting";
 export * from "./useNavigateTo";
+export * from "./useTimelineCompact";
 export * from "./useUserLocale";
 export * from "./useUserTheme";

@@ -704,6 +704,11 @@
       "language-description": "Updates the interface language immediately and saves it to your account.",
       "memo-defaults-description": "Set the defaults used when composing new memos.",
       "memo-defaults-title": "Memo defaults",
+      "reading-title": "Reading",
+      "reading-description": "Control how long posts appear in the timeline.",
+      "collapse-long-posts": "Collapse long posts",
+      "collapse-long-posts-description": "Fold long timeline posts and show a “Show more” link.",
+      "link-preview-description": "Show link preview cards inside posts.",
       "theme-description": "Applies the selected theme immediately on this device.",
       "theme": "Theme"
     },

@@ -4,8 +4,7 @@ import MemoView from "@/components/MemoView";
 import PagedMemoList from "@/components/PagedMemoList";
 import { useMemoFilterContext } from "@/contexts/MemoFilterContext";
 import { useInstance } from "@/contexts/InstanceContext";
-import { useView } from "@/contexts/ViewContext";
-import { useMemoFilters, useMemoSorting } from "@/hooks";
+import { useMemoFilters, useMemoSorting, useTimelineCompact } from "@/hooks";
 import useCurrentUser from "@/hooks/useCurrentUser";
 import { ROUTES } from "@/router/routes";
 import { State } from "@/types/proto/api/v1/common_pb";
@@ -14,7 +13,7 @@ import { Memo } from "@/types/proto/api/v1/memo_service_pb";
 const Home = () => {
   const user = useCurrentUser();
   const { isInitialized } = useInstance();
-  const { compactMode } = useView();
+  const collapseLongPosts = useTimelineCompact();
   const { removeFilter } = useMemoFilterContext();
   const [feedTab, setFeedTab] = useState<FeedTab>("latest");
 
@@ -42,7 +41,7 @@ const Home = () => {
       <FeedHeader activeTab={feedTab} onTabChange={setFeedTab} />
       <PagedMemoList
           renderer={(memo: Memo) => (
-            <MemoView key={`${memo.name}-${memo.updateTime}`} memo={memo} showVisibility showPinned compact={compactMode} />
+            <MemoView key={`${memo.name}-${memo.updateTime}`} memo={memo} showVisibility showPinned compact={collapseLongPosts} />
           )}
           listSort={listSort}
           orderBy={orderBy}

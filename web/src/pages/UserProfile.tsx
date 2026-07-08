@@ -8,8 +8,7 @@ import i18n from "@/i18n";
 import MemoView from "@/components/MemoView";
 import PagedMemoList from "@/components/PagedMemoList";
 import ProfileHero, { profileLayoutVars } from "@/components/Profile/ProfileHero";
-import { useView } from "@/contexts/ViewContext";
-import { useMemoFilters, useMemoSorting } from "@/hooks";
+import { useMemoFilters, useMemoSorting, useTimelineCompact } from "@/hooks";
 import { useFollowedUsers } from "@/hooks/useFollowedUsers";
 import useCurrentUser from "@/hooks/useCurrentUser";
 import useNavigateTo from "@/hooks/useNavigateTo";
@@ -100,7 +99,7 @@ const UserProfile = () => {
   const [headerHeight, setHeaderHeight] = useState(53);
   const [searchParams, setSearchParams] = useSearchParams();
   const activeTab = parseTabView(searchParams.get("view"));
-  const { compactMode } = useView();
+  const collapseLongPosts = useTimelineCompact();
   const { isFollowing, toggleFollow } = useFollowedUsers();
 
   const { data: user, isLoading, error } = useUser(`users/${username}`, { enabled: !!username });
@@ -262,7 +261,7 @@ const UserProfile = () => {
             {activeTab === "memos" && (
               <PagedMemoList
                 renderer={(memo: Memo) => (
-                  <MemoView key={`${memo.name}-${memo.updateTime}`} memo={memo} showVisibility showPinned compact={compactMode} />
+                  <MemoView key={`${memo.name}-${memo.updateTime}`} memo={memo} showVisibility showPinned compact={collapseLongPosts} />
                 )}
                 listSort={postsListSort}
                 orderBy={orderBy}
@@ -273,7 +272,7 @@ const UserProfile = () => {
             {activeTab === "pinned" && (
               <PagedMemoList
                 renderer={(memo: Memo) => (
-                  <MemoView key={`${memo.name}-${memo.updateTime}`} memo={memo} showVisibility showPinned compact={compactMode} />
+                  <MemoView key={`${memo.name}-${memo.updateTime}`} memo={memo} showVisibility showPinned compact={collapseLongPosts} />
                 )}
                 listSort={pinnedListSort}
                 orderBy={orderBy}
@@ -285,7 +284,7 @@ const UserProfile = () => {
             {activeTab === "replies" && (
               <PagedMemoList
                 renderer={(memo: Memo) => (
-                  <MemoView key={`${memo.name}-${memo.updateTime}`} memo={memo} showVisibility showPinned compact={compactMode} />
+                  <MemoView key={`${memo.name}-${memo.updateTime}`} memo={memo} showVisibility showPinned compact={collapseLongPosts} />
                 )}
                 listSort={repliesListSort}
                 orderBy={orderBy}
@@ -298,7 +297,7 @@ const UserProfile = () => {
             {activeTab === "media" && (
               <PagedMemoList
                 renderer={(memo: Memo) => (
-                  <MemoView key={`${memo.name}-${memo.updateTime}`} memo={memo} showVisibility showPinned compact={compactMode} />
+                  <MemoView key={`${memo.name}-${memo.updateTime}`} memo={memo} showVisibility showPinned compact={collapseLongPosts} />
                 )}
                 listSort={mediaListSort}
                 orderBy={orderBy}

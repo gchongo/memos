@@ -320,7 +320,7 @@
       "has-task-list": "有待办",
       "label": "过滤器"
     },
-    "compact-mode": "紧凑模式",
+    "compact-mode": "折叠长帖子",
     "link-preview": "链接预览",
     "links": "链接",
     "load-more": "加载更多",
@@ -540,6 +540,11 @@
       "memo-defaults-title": "备忘录默认值",
       "theme-description": "立即在当前设备上应用所选主题。",
       "theme": "主题",
+      "reading-title": "阅读体验",
+      "reading-description": "控制时间线中长帖子的展示方式。",
+      "collapse-long-posts": "折叠长帖子",
+      "collapse-long-posts-description": "在时间线中自动折叠超长帖子，并显示「显示更多」。",
+      "link-preview-description": "在帖子中显示链接预览卡片。",
       "label": "偏好设置"
     },
     "shortcut": {

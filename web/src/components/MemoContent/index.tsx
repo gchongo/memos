@@ -8,6 +8,9 @@ import { MemoMarkdownRenderer } from "./MemoMarkdownRenderer";
 import { useResolvedMentionUsernames } from "./MentionResolutionContext";
 import type { MemoContentProps } from "./types";
 
+const showMoreButtonClass =
+  "inline-flex min-h-11 items-center py-1 text-[15px] leading-5 text-[var(--x-accent)] hover:underline active:opacity-80";
+
 const MemoContent = (props: MemoContentProps) => {
   const { className, contentClassName, content, onClick, onDoubleClick } = props;
   const t = useTranslate();
@@ -42,31 +45,32 @@ const MemoContent = (props: MemoContentProps) => {
       >
         <MemoMarkdownRenderer content={content} resolvedMentionUsernames={resolvedMentionUsernames} />
         {isCollapsed && (
-          <>
-            <div
-              className={cn(
-                "pointer-events-none absolute inset-x-0 bottom-0",
-                COMPACT_MODE_CONFIG.gradientHeight,
-                "bg-linear-to-t from-background from-20% via-background/80 via-60% to-transparent to-100%",
-              )}
-            />
-            <button
-              type="button"
-              data-no-memo-nav
-              className="absolute bottom-0 left-0 z-20 min-h-11 bg-background py-1 pr-3 text-[15px] leading-5 text-[var(--x-accent)] hover:underline active:opacity-80"
-              onPointerDown={(event) => event.stopPropagation()}
-              onClick={toggleCompactMode}
-            >
-              {compactLabel}
-            </button>
-          </>
+          <div
+            aria-hidden
+            className={cn(
+              "pointer-events-none absolute inset-x-0 bottom-0",
+              COMPACT_MODE_CONFIG.gradientHeight,
+              "bg-linear-to-t from-background from-35% via-background/70 via-70% to-transparent to-100%",
+            )}
+          />
         )}
       </div>
+      {isCollapsed && (
+        <button
+          type="button"
+          data-no-memo-nav
+          className={showMoreButtonClass}
+          onPointerDown={(event) => event.stopPropagation()}
+          onClick={toggleCompactMode}
+        >
+          {compactLabel}
+        </button>
+      )}
       {showCompactMode === "SNIPPET" && (
         <button
           type="button"
           data-no-memo-nav
-          className="mt-1 min-h-11 py-1 text-[15px] leading-5 text-[var(--x-accent)] hover:underline active:opacity-80"
+          className={cn(showMoreButtonClass, "mt-0.5")}
           onPointerDown={(event) => event.stopPropagation()}
           onClick={toggleCompactMode}
         >

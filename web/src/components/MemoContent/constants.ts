@@ -35,8 +35,8 @@ export const estimateContentNeedsCompact = (content: string): boolean => {
     return true;
   }
 
-  // Roughly 40 characters per line on a narrow phone screen.
-  return normalized.length > COMPACT_MODE_CONFIG.triggerRows * 40;
+  // Roughly 28 characters per line on a narrow phone screen.
+  return normalized.length > COMPACT_MODE_CONFIG.triggerRows * 28;
 };
 
 export const COMPACT_STATES: Record<"ALL" | "SNIPPET", { textKey: string; next: "ALL" | "SNIPPET" }> = {
