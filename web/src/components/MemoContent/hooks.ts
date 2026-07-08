@@ -1,22 +1,37 @@
-import { useCallback, useEffect, useRef, useState, type MouseEvent } from "react";
-import { COMPACT_STATES, getCompactTriggerHeightPx, shouldCompactContent } from "./constants";
+import { useCallback, useEffect, useRef, useState, type PointerEvent } from "react";
+import { COMPACT_STATES, estimateContentNeedsCompact, getCompactTriggerHeightPx, shouldCompactContent } from "./constants";
 import type { ContentCompactView } from "./types";
 
-export const useCompactMode = (enabled: boolean, revision: string) => {
+const REMEASURE_DELAYS_MS = [0, 50, 200, 600];
+
+export const useCompactMode = (enabled: boolean, content: string) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [mode, setMode] = useState<ContentCompactView | undefined>(undefined);
 
   useEffect(() => {
-    if (!enabled || !containerRef.current) {
+    if (!enabled) {
       setMode(undefined);
       return;
     }
 
     const element = containerRef.current;
+    if (!element) {
+      return;
+    }
+
+    let cancelled = false;
+    const timeouts: number[] = [];
 
     const measure = () => {
-      const contentHeight = Math.max(element.scrollHeight, element.getBoundingClientRect().height);
-      const shouldCompact = shouldCompactContent(contentHeight, getCompactTriggerHeightPx());
+      if (cancelled || !containerRef.current) {
+        return;
+      }
+
+      const target = containerRef.current;
+      const contentHeight = Math.max(target.scrollHeight, target.getBoundingClientRect().height);
+      const triggerHeight = getCompactTriggerHeightPx();
+      const shouldCompact = estimateContentNeedsCompact(content) || shouldCompactContent(contentHeight, triggerHeight);
+
       setMode((currentMode) => {
         if (!shouldCompact) {
           return undefined;
@@ -27,18 +42,36 @@ export const useCompactMode = (enabled: boolean, revision: string) => {
 
     measure();
 
-    if (typeof ResizeObserver === "undefined") {
-      return;
+    for (const delay of REMEASURE_DELAYS_MS) {
+      timeouts.push(window.setTimeout(measure, delay));
     }
 
-    const observer = new ResizeObserver(measure);
-    observer.observe(element);
-    return () => observer.disconnect();
-  }, [enabled, revision]);
+    let resizeObserver: ResizeObserver | undefined;
+    if (typeof ResizeObserver !== "undefined") {
+      resizeObserver = new ResizeObserver(measure);
+      resizeObserver.observe(element);
+    }
+
+    let mutationObserver: MutationObserver | undefined;
+    if (typeof MutationObserver !== "undefined") {
+      mutationObserver = new MutationObserver(measure);
+      mutationObserver.observe(element, { childList: true, subtree: true, characterData: true });
+    }
+
+    return () => {
+      cancelled = true;
+      for (const timeout of timeouts) {
+        window.clearTimeout(timeout);
+      }
+      resizeObserver?.disconnect();
+      mutationObserver?.disconnect();
+    };
+  }, [enabled, content]);
 
   const toggle = useCallback(
-    (event?: MouseEvent) => {
+    (event?: PointerEvent) => {
       event?.stopPropagation();
+      event?.preventDefault();
       if (!mode) return;
       setMode(COMPACT_STATES[mode].next);
     },

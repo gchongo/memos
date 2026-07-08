@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   COMPACT_MODE_CONFIG,
+  estimateContentNeedsCompact,
   getCompactTriggerHeightPx,
   getPreviewMaxHeightPx,
   shouldCompactContent,
@@ -23,5 +24,11 @@ describe("compact folded preview sizing", () => {
     // A memo a row or two over the preview but within the buffer stays open.
     expect(shouldCompactContent(getPreviewMaxHeightPx() + 1, trigger)).toBe(false);
     expect(shouldCompactContent(trigger, trigger)).toBe(false);
+  });
+
+  it("estimates long plain-text memos as compactable before layout is measured", () => {
+    const longText = "line\n".repeat(COMPACT_MODE_CONFIG.triggerRows + 2);
+    expect(estimateContentNeedsCompact(longText)).toBe(true);
+    expect(estimateContentNeedsCompact("short memo")).toBe(false);
   });
 });

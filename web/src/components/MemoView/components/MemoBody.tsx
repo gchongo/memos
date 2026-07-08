@@ -43,7 +43,7 @@ const MemoBody: React.FC<MemoBodyProps> = ({ compact, showReactions = true }) =>
           content={memo.content}
           onClick={handleMemoContentClick}
           onDoubleClick={handleMemoContentDoubleClick}
-          compact={memo.pinned ? false : compact} // Always show full content when pinned
+          compact={compact}
         />
         <AttachmentListView attachments={memo.attachments} onImagePreview={openPreview} />
         <QuotedMemoList relations={memo.relations} currentMemoName={memo.name} parentPage={parentPage} />

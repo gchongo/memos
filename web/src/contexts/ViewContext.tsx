@@ -24,23 +24,30 @@ interface ViewContextValue {
 const ViewContext = createContext<ViewContextValue | null>(null);
 
 const LOCAL_STORAGE_KEY = "memos-view-setting";
+const VIEW_SETTING_VERSION = 2;
 
 const DEFAULT_VIEW_STATE: ViewState = { orderByTimeAsc: false, compactMode: true, linkPreview: true };
+
+const normalizeViewState = (data: Partial<ViewState> & { version?: number }): ViewState => {
+  const cachedTimeBasis = data.timeBasis ?? data.sortTimeField;
+  const timeBasis = cachedTimeBasis === "create_time" || cachedTimeBasis === "update_time" ? cachedTimeBasis : undefined;
+  const hasStoredCompactPreference = "compactMode" in data && data.version === VIEW_SETTING_VERSION;
+
+  return {
+    orderByTimeAsc: Boolean(data.orderByTimeAsc ?? DEFAULT_VIEW_STATE.orderByTimeAsc),
+    timeBasis,
+    compactMode: hasStoredCompactPreference ? Boolean(data.compactMode) : DEFAULT_VIEW_STATE.compactMode,
+    linkPreview: Boolean(data.linkPreview ?? DEFAULT_VIEW_STATE.linkPreview),
+  };
+};
 
 export function ViewProvider({ children }: { children: ReactNode }) {
   const getInitialState = (): ViewState => {
     try {
       const cached = localStorage.getItem(LOCAL_STORAGE_KEY);
       if (cached) {
-        const data = JSON.parse(cached) as Partial<ViewState>;
-        const cachedTimeBasis = data.timeBasis ?? data.sortTimeField;
-        const timeBasis = cachedTimeBasis === "create_time" || cachedTimeBasis === "update_time" ? cachedTimeBasis : undefined;
-        return {
-          orderByTimeAsc: Boolean(data.orderByTimeAsc ?? DEFAULT_VIEW_STATE.orderByTimeAsc),
-          timeBasis,
-          compactMode: "compactMode" in data ? Boolean(data.compactMode) : DEFAULT_VIEW_STATE.compactMode,
-          linkPreview: Boolean(data.linkPreview ?? DEFAULT_VIEW_STATE.linkPreview),
-        };
+        const data = JSON.parse(cached) as Partial<ViewState> & { version?: number };
+        return normalizeViewState(data);
       }
     } catch (error) {
       console.warn("Failed to load view settings from localStorage:", error);
@@ -53,7 +60,7 @@ export function ViewProvider({ children }: { children: ReactNode }) {
 
   const persistToStorage = (newState: ViewState) => {
     try {
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(newState));
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify({ ...newState, version: VIEW_SETTING_VERSION }));
     } catch (error) {
       console.warn("Failed to persist view settings:", error);
     }

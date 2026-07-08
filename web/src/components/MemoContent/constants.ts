@@ -23,6 +23,22 @@ export const getCompactTriggerHeightPx = () => COMPACT_MODE_CONFIG.triggerRows *
 // Whether content of the given rendered height should be collapsed. Kept pure for unit testing.
 export const shouldCompactContent = (contentHeightPx: number, triggerHeightPx: number) => contentHeightPx > triggerHeightPx;
 
+/** Fallback when DOM height is unavailable (common on mobile before layout settles). */
+export const estimateContentNeedsCompact = (content: string): boolean => {
+  const normalized = content.trim();
+  if (normalized.length === 0) {
+    return false;
+  }
+
+  const lineCount = normalized.split(/\r?\n/).length;
+  if (lineCount > COMPACT_MODE_CONFIG.triggerRows) {
+    return true;
+  }
+
+  // Roughly 40 characters per line on a narrow phone screen.
+  return normalized.length > COMPACT_MODE_CONFIG.triggerRows * 40;
+};
+
 export const COMPACT_STATES: Record<"ALL" | "SNIPPET", { textKey: string; next: "ALL" | "SNIPPET" }> = {
   ALL: { textKey: "layout.show-more", next: "SNIPPET" },
   SNIPPET: { textKey: "layout.show-less", next: "ALL" },

@@ -53,7 +53,8 @@ const MemoContent = (props: MemoContentProps) => {
             <button
               type="button"
               data-no-memo-nav
-              className="absolute bottom-0 left-0 z-10 bg-background pr-2 text-[15px] leading-5 text-[var(--x-accent)] hover:underline"
+              className="absolute bottom-0 left-0 z-20 min-h-11 bg-background py-1 pr-3 text-[15px] leading-5 text-[var(--x-accent)] hover:underline active:opacity-80"
+              onPointerDown={(event) => event.stopPropagation()}
               onClick={toggleCompactMode}
             >
               {compactLabel}
@@ -65,7 +66,8 @@ const MemoContent = (props: MemoContentProps) => {
         <button
           type="button"
           data-no-memo-nav
-          className="mt-1 text-[15px] leading-5 text-[var(--x-accent)] hover:underline"
+          className="mt-1 min-h-11 py-1 text-[15px] leading-5 text-[var(--x-accent)] hover:underline active:opacity-80"
+          onPointerDown={(event) => event.stopPropagation()}
           onClick={toggleCompactMode}
         >
           {compactLabel}
