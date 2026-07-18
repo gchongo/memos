@@ -4,6 +4,7 @@ import {
   estimateContentNeedsCompact,
   getCompactTriggerHeightPx,
   getPreviewMaxHeightPx,
+  isPastCompactContentFloor,
   shouldCompactContent,
 } from "@/components/MemoContent/constants";
 
@@ -12,6 +13,12 @@ describe("compact folded preview sizing", () => {
     // Preview must be shorter than the trigger, otherwise folding shows everything.
     expect(COMPACT_MODE_CONFIG.previewRows).toBeLessThan(COMPACT_MODE_CONFIG.triggerRows);
     expect(getPreviewMaxHeightPx()).toBeLessThan(getCompactTriggerHeightPx());
+  });
+
+  it("requires more than 250 characters before folding", () => {
+    expect(COMPACT_MODE_CONFIG.minContentLength).toBe(250);
+    expect(isPastCompactContentFloor("a".repeat(250))).toBe(false);
+    expect(isPastCompactContentFloor("a".repeat(251))).toBe(true);
   });
 
   it("folds only when content is taller than the trigger height", () => {
@@ -27,8 +34,12 @@ describe("compact folded preview sizing", () => {
   });
 
   it("estimates long plain-text memos as compactable before layout is measured", () => {
-    const longText = "line\n".repeat(COMPACT_MODE_CONFIG.triggerRows + 2);
-    expect(estimateContentNeedsCompact(longText)).toBe(true);
+    const longByLines = Array.from({ length: COMPACT_MODE_CONFIG.triggerRows + 2 }, () => "x".repeat(20)).join("\n");
+    const longByChars = "x".repeat(COMPACT_MODE_CONFIG.triggerRows * 28 + 1);
+    expect(longByLines.length).toBeGreaterThan(COMPACT_MODE_CONFIG.minContentLength);
+    expect(estimateContentNeedsCompact(longByLines)).toBe(true);
+    expect(estimateContentNeedsCompact(longByChars)).toBe(true);
     expect(estimateContentNeedsCompact("short memo")).toBe(false);
+    expect(estimateContentNeedsCompact("a".repeat(COMPACT_MODE_CONFIG.minContentLength))).toBe(false);
   });
 });

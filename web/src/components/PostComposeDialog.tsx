@@ -65,16 +65,8 @@ const PostComposeDialog = () => {
         </VisuallyHidden>
 
         <div className={cn("flex flex-col", isMobile && "h-full min-h-0")}>
-          <div className="flex shrink-0 items-center justify-between border-b border-border px-4 py-3">
-            {isMobile ? (
-              <button
-                type="button"
-                className="rounded-full px-2 py-1.5 text-[15px] font-medium text-foreground transition-colors hover:bg-accent"
-                onClick={closeCompose}
-              >
-                {t("common.cancel")}
-              </button>
-            ) : (
+          {!isMobile && (
+            <div className="flex shrink-0 items-center justify-between border-b border-border px-4 py-3">
               <button
                 type="button"
                 className="rounded-full p-2 transition-colors hover:bg-accent"
@@ -83,8 +75,8 @@ const PostComposeDialog = () => {
               >
                 <XIcon className="h-5 w-5" />
               </button>
-            )}
-          </div>
+            </div>
+          )}
 
           <div
             data-compose-editor

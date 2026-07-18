@@ -7,10 +7,11 @@ export const TASK_LIST_ITEM_CLASS = "task-list-item";
 // Timeline content uses text-[15px] leading-5 (20px line-height).
 const ROW_HEIGHT_PX = 20;
 
-// Compact mode display settings — tuned for ~5 lines in the timeline (X-style).
+// Compact mode display settings — fold only after ~250 characters, show a similar-length preview.
 export const COMPACT_MODE_CONFIG = {
-  previewRows: 5, // collapsed preview height, in content rows
-  triggerRows: 7, // only fold when content is taller than this
+  previewRows: 10, // collapsed preview height (~250 chars at ~25/line)
+  triggerRows: 13, // only fold when content is taller than this
+  minContentLength: 250, // never fold memos at or under this length
   gradientHeight: "h-10", // fade overlay above the "Show more" link
 } as const;
 
@@ -23,10 +24,14 @@ export const getCompactTriggerHeightPx = () => COMPACT_MODE_CONFIG.triggerRows *
 // Whether content of the given rendered height should be collapsed. Kept pure for unit testing.
 export const shouldCompactContent = (contentHeightPx: number, triggerHeightPx: number) => contentHeightPx > triggerHeightPx;
 
+/** True when plain-text length is past the fold floor. */
+export const isPastCompactContentFloor = (content: string): boolean =>
+  content.trim().length > COMPACT_MODE_CONFIG.minContentLength;
+
 /** Fallback when DOM height is unavailable (common on mobile before layout settles). */
 export const estimateContentNeedsCompact = (content: string): boolean => {
   const normalized = content.trim();
-  if (normalized.length === 0) {
+  if (!isPastCompactContentFloor(normalized)) {
     return false;
   }
 

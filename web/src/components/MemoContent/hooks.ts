@@ -1,5 +1,11 @@
 import { useCallback, useEffect, useRef, useState, type PointerEvent } from "react";
-import { COMPACT_STATES, estimateContentNeedsCompact, getCompactTriggerHeightPx, shouldCompactContent } from "./constants";
+import {
+  COMPACT_STATES,
+  estimateContentNeedsCompact,
+  getCompactTriggerHeightPx,
+  isPastCompactContentFloor,
+  shouldCompactContent,
+} from "./constants";
 import type { ContentCompactView } from "./types";
 
 const REMEASURE_DELAYS_MS = [0, 50, 200, 600];
@@ -30,7 +36,9 @@ export const useCompactMode = (enabled: boolean, content: string) => {
       const target = containerRef.current;
       const contentHeight = Math.max(target.scrollHeight, target.getBoundingClientRect().height);
       const triggerHeight = getCompactTriggerHeightPx();
-      const shouldCompact = estimateContentNeedsCompact(content) || shouldCompactContent(contentHeight, triggerHeight);
+      const shouldCompact =
+        isPastCompactContentFloor(content) &&
+        (estimateContentNeedsCompact(content) || shouldCompactContent(contentHeight, triggerHeight));
 
       setMode((currentMode) => {
         if (!shouldCompact) {

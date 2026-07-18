@@ -425,7 +425,6 @@ const MemoEditorImpl: React.FC<MemoEditorProps> = ({
           {uploadProgress && (isSaving || isUploading) && <UploadProgressBar progress={uploadProgress} />}
           <EditorToolbar
             variant={variant}
-            hideCancel={isFullscreenCompose}
             compact={isFullscreenCompose}
             onSave={handleSave}
             onCancel={onCancel}
