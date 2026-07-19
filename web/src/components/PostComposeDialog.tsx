@@ -64,7 +64,12 @@ const PostComposeDialog = () => {
           <DialogTitle>{quoteTarget ? t("layout.repost-placeholder") : t("layout.post")}</DialogTitle>
         </VisuallyHidden>
 
-        <div className={cn("flex flex-col", isMobile && "h-full min-h-0")}>
+        <div
+          className={cn(
+            "flex flex-col",
+            isMobile && "h-full min-h-0 pt-[env(safe-area-inset-top,0px)]",
+          )}
+        >
           {!isMobile && (
             <div className="flex shrink-0 items-center justify-between border-b border-border px-4 py-3">
               <button

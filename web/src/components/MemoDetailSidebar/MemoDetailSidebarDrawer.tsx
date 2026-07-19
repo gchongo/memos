@@ -26,7 +26,10 @@ const MemoDetailSidebarDrawer = ({ memo, onShareImageOpen }: Props) => {
           <GanttChartIcon className="w-5 h-auto text-muted-foreground" />
         </Button>
       </SheetTrigger>
-      <SheetContent side="right" className="w-full sm:w-80 px-4 bg-background">
+      <SheetContent
+        side="right"
+        className="w-full bg-background px-4 pt-[calc(env(safe-area-inset-top,0px)+3.5rem)] sm:w-80"
+      >
         <MemoDetailSidebar className="py-4" memo={memo} onShareImageOpen={onShareImageOpen} />
       </SheetContent>
     </Sheet>

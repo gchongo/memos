@@ -25,11 +25,11 @@ const NavigationDrawer = () => {
           <span className="font-bold text-lg leading-10 text-ellipsis overflow-hidden text-foreground">{title}</span>
         </Button>
       </SheetTrigger>
-      <SheetContent side="left" className="w-80 max-w-full overflow-auto px-2 bg-background">
-        <SheetHeader>
-          <SheetTitle />
+      <SheetContent side="left" className="w-80 max-w-full overflow-auto bg-background px-2">
+        <SheetHeader className="sr-only">
+          <SheetTitle>{title}</SheetTitle>
         </SheetHeader>
-        <Navigation className="pb-4" hidePostButton />
+        <Navigation className="pt-2 pb-4" hidePostButton />
       </SheetContent>
     </Sheet>
   );

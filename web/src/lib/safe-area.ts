@@ -11,3 +11,10 @@ export const MOBILE_SECONDARY_STICKY_TOP_CLASS =
 
 /** Standalone sticky page header when MobileHeader is not shown above (rare on mobile). */
 export const SAFE_STICKY_TOP_CLASS = "sticky top-0 pt-[env(safe-area-inset-top,0px)]";
+
+/** Left/right edge sheets in PWA/fullscreen: keep content clear of the status bar and home indicator. */
+export const SHEET_EDGE_SAFE_INSET_CLASS =
+  "pt-[env(safe-area-inset-top,0px)] pb-[env(safe-area-inset-bottom,0px)]";
+
+/** Absolute sheet close control — sits below the status bar. */
+export const SHEET_CLOSE_TOP_CLASS = "top-[calc(env(safe-area-inset-top,0px)+1rem)]";
